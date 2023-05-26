@@ -47,12 +47,12 @@ class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
         )
         for col in self.source_data["metadata_columns"]:
             first_notnull = session_df.loc[session_df[col].notnull(), col].iloc[0]
-            metadata['NWBFile'][col] = first_notnull
+            metadata["NWBFile"][col] = first_notnull
         session_name = set(session_df.session_name[session_df.session_name.notnull()]) | set(
             session_df.SessionName[session_df.SessionName.notnull()]
         )
         assert len(session_name) == 1, "Multiple session names found"
-        metadata['NWBFile']["session_name"] = session_name.pop()
+        metadata["NWBFile"]["session_name"] = session_name.pop()
         print(f"metadata: {metadata}")
 
         return metadata
