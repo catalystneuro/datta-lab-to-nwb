@@ -16,7 +16,7 @@ from neuroconv.tools import nwb_helpers
 class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
     """Behavior interface for markowitz_gillis_nature_2023 conversion"""
 
-    def __init__(self, file_path: FilePath):
+    def __init__(self, file_path: FilePath, session_uuid : str):
         # This should load the data lazily and prepare variables you need
         columns = (
             "predicted_syllable (offline)",
@@ -35,15 +35,22 @@ class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
             "date",
             "mouse_id",
         )
-        super().__init__(file_path=file_path, columns=columns, metadata_columns=metadata_columns)
+        super().__init__(
+            file_path=file_path,
+            session_uuid=session_uuid,
+            columns=columns,
+            metadata_columns=metadata_columns
+        )
 
-    def get_metadata(self, session_uuid: str) -> dict:
+    def get_metadata(self) -> dict:
         # TODO: store metadata in .yaml file
         metadata = super().get_metadata()
 
         # get session metadata TODO: move session metadata to a separate file to avoid multiple reads
         session_df = pd.read_parquet(
-            self.source_data["file_path"], columns=self.source_data["columns"], filters=[("uuid", "==", session_uuid)]
+            self.source_data["file_path"],
+            columns=self.source_data["columns"],
+            filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
         for col in self.source_data["metadata_columns"]:
             first_notnull = session_df.loc[session_df[col].notnull(), col].iloc[0]
@@ -57,10 +64,12 @@ class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
 
         return metadata
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict, session_uuid: str) -> NWBFile:
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict) -> NWBFile:
         """Run conversion of data from the source file into the nwbfile."""
         session_df = pd.read_parquet(
-            self.source_data["file_path"], columns=self.source_data["columns"], filters=[("uuid", "==", session_uuid)]
+            self.source_data["file_path"],
+            columns=self.source_data["columns"],
+            filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
 
         # Add Position Data
