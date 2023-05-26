@@ -56,12 +56,11 @@ def reproduce_fig1d(nwbfile):
         nwbfile.processing["behavior"]["Position"]["SpatialSeries"].data, columns=["x", "y", "height"]
     )
     angle = pd.DataFrame(
-        nwbfile.processing["behavior"]["CompassDirection"]["OrientationEllipse"].data,
-        columns=["angle"]
+        nwbfile.processing["behavior"]["CompassDirection"]["OrientationEllipse"].data, columns=["angle"]
     )
     syllables = pd.DataFrame(
         nwbfile.processing["behavior"]["SyllableTimeSeries"].time_series["BehavioralSyllable"].data,
-        columns=["syllable"]
+        columns=["syllable"],
     )
     vel_height = (
         position["height"].interpolate(limit_direction="both").diff(2).iloc[start : start + n_frames].to_numpy()
