@@ -8,10 +8,10 @@ import colorcet as cc
 
 
 def run_conversion():
-    filename = "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/dlight_photometry_processed_full.parquet"
-    interface = markowitz_gillis_nature_2023behaviorinterface.MarkowitzGillisNature2023BehaviorInterface(filename)
+    file_path = "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/dlight_photometry_processed_full.parquet"
     example_session = "2891f649-4fbd-4119-a807-b8ef507edfab"
-    metadata = interface.get_metadata(example_session)
+    interface = markowitz_gillis_nature_2023behaviorinterface.MarkowitzGillisNature2023BehaviorInterface(file_path, example_session)
+    metadata = interface.get_metadata()
     metadata["Behavior"] = {}
     metadata["Behavior"]["CompassDirection"] = {}
     metadata["Behavior"]["Position"] = {}
@@ -45,7 +45,7 @@ def run_conversion():
         experiment_description="TODO",
         session_id=example_session,
     )
-    nwbfile = interface.run_conversion(nwbfile, metadata, example_session)
+    nwbfile = interface.run_conversion(nwbfile, metadata)
     return nwbfile
 
 
