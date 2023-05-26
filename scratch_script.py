@@ -12,12 +12,15 @@ def run_conversion():
     interface = markowitz_gillis_nature_2023behaviorinterface.MarkowitzGillisNature2023BehaviorInterface(filename)
     example_session = "2891f649-4fbd-4119-a807-b8ef507edfab"
     metadata = interface.get_metadata(example_session)
-    metadata["reference_frame"] = "???"  # TODO: add reference frame to metadata
-    print(f"metadata: {metadata}")
+    metadata["Behavior"] = {}
+    metadata["Behavior"]["CompassDirection"] = {}
+    metadata["Behavior"]["Position"] = {}
+    metadata["Behavior"]["CompassDirection"]["reference_frame"] = "???"  # TODO: add reference frame to metadata
+    metadata["Behavior"]["Position"]["reference_frame"] = "???"
     nwbfile = NWBFile(
-        session_description=metadata["session_name"],
-        identifier=metadata["uuid"],
-        session_start_time=metadata["date"],
+        session_description=metadata["NWBFile"]["session_name"],
+        identifier=example_session,
+        session_start_time=metadata["NWBFile"]["date"],
         experimenter=[
             "Jeffrey E. Markowitz",
             "Winthrop F. Gillis",
@@ -40,7 +43,7 @@ def run_conversion():
         lab="Datta Lab",
         institution="Harvard Medical School",
         experiment_description="TODO",
-        session_id=metadata["uuid"],
+        session_id=example_session,
     )
     nwbfile = interface.run_conversion(nwbfile, metadata, example_session)
     return nwbfile
@@ -52,9 +55,13 @@ def reproduce_fig1d(nwbfile):
     position = pd.DataFrame(
         nwbfile.processing["behavior"]["Position"]["SpatialSeries"].data, columns=["x", "y", "height"]
     )
-    angle = pd.DataFrame(nwbfile.processing["behavior"]["CompassDirection"]["SpatialSeries"].data, columns=["angle"])
+    angle = pd.DataFrame(
+        nwbfile.processing["behavior"]["CompassDirection"]["OrientationEllipse"].data,
+        columns=["angle"]
+    )
     syllables = pd.DataFrame(
-        nwbfile.processing["behavior"]["SyllableTimeSeries"].time_series["syllable"].data, columns=["syllable"]
+        nwbfile.processing["behavior"]["SyllableTimeSeries"].time_series["BehavioralSyllable"].data,
+        columns=["syllable"]
     )
     vel_height = (
         position["height"].interpolate(limit_direction="both").diff(2).iloc[start : start + n_frames].to_numpy()
