@@ -16,7 +16,7 @@ from neuroconv.tools import nwb_helpers
 class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
     """Behavior interface for markowitz_gillis_nature_2023 conversion"""
 
-    def __init__(self, file_path: FilePath, session_uuid : str):
+    def __init__(self, file_path: FilePath, session_uuid: str):
         # This should load the data lazily and prepare variables you need
         columns = (
             "predicted_syllable (offline)",
@@ -36,10 +36,7 @@ class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
             "mouse_id",
         )
         super().__init__(
-            file_path=file_path,
-            session_uuid=session_uuid,
-            columns=columns,
-            metadata_columns=metadata_columns
+            file_path=file_path, session_uuid=session_uuid, columns=columns, metadata_columns=metadata_columns
         )
 
     def get_metadata(self) -> dict:

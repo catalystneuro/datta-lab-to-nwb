@@ -10,7 +10,9 @@ import colorcet as cc
 def run_conversion():
     file_path = "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/dlight_photometry_processed_full.parquet"
     example_session = "2891f649-4fbd-4119-a807-b8ef507edfab"
-    interface = markowitz_gillis_nature_2023behaviorinterface.MarkowitzGillisNature2023BehaviorInterface(file_path, example_session)
+    interface = markowitz_gillis_nature_2023behaviorinterface.MarkowitzGillisNature2023BehaviorInterface(
+        file_path, example_session
+    )
     metadata = interface.get_metadata()
     metadata["Behavior"] = {}
     metadata["Behavior"]["CompassDirection"] = {}
