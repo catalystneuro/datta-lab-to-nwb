@@ -12,10 +12,12 @@ from datta_lab_to_nwb.markowitz_gillis_nature_2023.reproduce_figures import repr
 from datta_lab_to_nwb.markowitz_gillis_nature_2023 import MarkowitzGillisNature2023NWBConverter
 
 
-def session_to_nwb(data_path: Union[str, Path],
-                   metadata_path : Union[str, Path],
-                   output_dir_path: Union[str, Path],
-                   stub_test: bool = False):
+def session_to_nwb(
+    data_path: Union[str, Path],
+    metadata_path: Union[str, Path],
+    output_dir_path: Union[str, Path],
+    stub_test: bool = False,
+):
     data_path = Path(data_path)
     output_dir_path = Path(output_dir_path)
     if stub_test:
