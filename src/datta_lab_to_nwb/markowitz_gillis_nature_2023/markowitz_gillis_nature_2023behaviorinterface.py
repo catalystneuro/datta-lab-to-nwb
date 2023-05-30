@@ -17,7 +17,7 @@ from neuroconv.tools import nwb_helpers
 class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
     """Behavior interface for markowitz_gillis_nature_2023 conversion"""
 
-    def __init__(self, file_path: str, session_uuid: str):
+    def __init__(self, file_path: str, session_uuid: str, metadata_path : str):
         # This should load the data lazily and prepare variables you need
         columns = (
             "uuid",
@@ -28,17 +28,16 @@ class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
             "angle_unwrapped",
             "timestamp",
         )
-        session_metadata_path = "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/session_metadata.yaml"
         super().__init__(
             file_path=file_path,
             session_uuid=session_uuid,
             columns=columns,
-            session_metadata_path=session_metadata_path,
+            metadata_path=metadata_path,
         )
 
     def get_metadata(self) -> dict:
         metadata = super().get_metadata()
-        with open(self.source_data["session_metadata_path"]) as f:
+        with open(self.source_data["metadata_path"]) as f:
             session_metadata = yaml.safe_load(f)
             session_metadata = session_metadata[self.source_data["session_uuid"]]
         metadata["NWBFile"]["session_description"] = session_metadata["session_description"]
