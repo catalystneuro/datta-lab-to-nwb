@@ -17,7 +17,7 @@ from neuroconv.tools import nwb_helpers
 class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
     """Behavior interface for markowitz_gillis_nature_2023 conversion"""
 
-    def __init__(self, file_path: str, session_uuid: str, metadata_path : str):
+    def __init__(self, file_path: str, session_uuid: str, metadata_path: str):
         # This should load the data lazily and prepare variables you need
         columns = (
             "uuid",
