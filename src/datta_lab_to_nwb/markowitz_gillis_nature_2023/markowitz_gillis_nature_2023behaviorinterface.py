@@ -55,7 +55,10 @@ class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
             "Sandeep Robert Datta",
         )
         super().__init__(
-            file_path=file_path, session_uuid=session_uuid, columns=columns, metadata_columns=metadata_columns,
+            file_path=file_path,
+            session_uuid=session_uuid,
+            columns=columns,
+            metadata_columns=metadata_columns,
             experimenter=experimenter,
         )
 
