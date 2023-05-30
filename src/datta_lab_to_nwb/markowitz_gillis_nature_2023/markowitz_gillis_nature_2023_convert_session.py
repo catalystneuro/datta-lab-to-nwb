@@ -2,8 +2,7 @@
 from pathlib import Path
 import shutil
 from typing import Union
-from reproduce_figures import reproduce_fig1d
-
+from datta_lab_to_nwb.markowitz_gillis_nature_2023.reproduce_figures import reproduce_fig1d
 from datta_lab_to_nwb.markowitz_gillis_nature_2023 import MarkowitzGillisNature2023NWBConverter
 
 
