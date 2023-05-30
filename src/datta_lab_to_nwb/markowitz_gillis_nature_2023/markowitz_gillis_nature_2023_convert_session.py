@@ -1,7 +1,13 @@
 """Primary script to run to convert an entire session for of data using the NWBConverter."""
+# Standard Library
 from pathlib import Path
 import shutil
 from typing import Union
+
+# Third Party
+from neuroconv.utils import dict_deep_update, load_dict_from_file
+
+# Local
 from datta_lab_to_nwb.markowitz_gillis_nature_2023.reproduce_figures import reproduce_fig1d
 from datta_lab_to_nwb.markowitz_gillis_nature_2023 import MarkowitzGillisNature2023NWBConverter
 
@@ -32,11 +38,13 @@ def session_to_nwb(data_path: Union[str, Path], output_dir_path: Union[str, Path
 
     converter = MarkowitzGillisNature2023NWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
+    print(f"From converter, metadata = {metadata}")
 
-    # # Update default metadata with the editable in the corresponding yaml file
-    # editable_metadata_path = Path(__file__).parent / "markowitz_gillis_nature_2023_metadata.yaml"
-    # editable_metadata = load_dict_from_file(editable_metadata_path)
-    # metadata = dict_deep_update(metadata, editable_metadata)
+    # Update default metadata with the editable in the corresponding yaml file
+    editable_metadata_path = Path(__file__).parent / "markowitz_gillis_nature_2023_metadata.yaml"
+    editable_metadata = load_dict_from_file(editable_metadata_path)
+    metadata = dict_deep_update(metadata, editable_metadata)
+    print(f"After .yaml update: metadata = {metadata}")
 
     # Run conversion
     converter.run_conversion(metadata=metadata, nwbfile_path=nwbfile_path, conversion_options=conversion_options)
