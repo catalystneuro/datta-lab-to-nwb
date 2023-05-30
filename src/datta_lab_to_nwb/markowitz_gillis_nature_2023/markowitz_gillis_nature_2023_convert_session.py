@@ -10,7 +10,6 @@ from datta_lab_to_nwb.markowitz_gillis_nature_2023 import MarkowitzGillisNature2
 
 
 def session_to_nwb(data_dir_path: Union[str, Path], output_dir_path: Union[str, Path], stub_test: bool = False):
-
     data_dir_path = Path(data_dir_path)
     output_dir_path = Path(output_dir_path)
     if stub_test:
@@ -57,7 +56,6 @@ def session_to_nwb(data_dir_path: Union[str, Path], output_dir_path: Union[str, 
 
 
 if __name__ == "__main__":
-
     # Parameters for conversion
     data_dir_path = Path("/Directory/With/Raw/Formats/")
     output_dir_path = Path("~/conversion_nwb/")
