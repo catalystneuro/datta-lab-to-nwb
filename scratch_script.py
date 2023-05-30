@@ -14,39 +14,7 @@ def run_conversion():
         file_path, example_session
     )
     metadata = interface.get_metadata()
-    metadata["Behavior"] = {}
-    metadata["Behavior"]["CompassDirection"] = {}
-    metadata["Behavior"]["Position"] = {}
-    metadata["Behavior"]["CompassDirection"]["reference_frame"] = "???"  # TODO: add reference frame to metadata
-    metadata["Behavior"]["Position"]["reference_frame"] = "???"
-    nwbfile = NWBFile(
-        session_description=metadata["NWBFile"]["session_name"],
-        identifier=example_session,
-        session_start_time=metadata["NWBFile"]["date"],
-        experimenter=[
-            "Jeffrey E. Markowitz",
-            "Winthrop F. Gillis",
-            "Maya Jay",
-            "Jeffrey Wood",
-            "Ryley W. Harris",
-            "Robert Cieszkowski",
-            "Rebecca Scott",
-            "David Brann",
-            "Dorothy Koveal",
-            "Tomasz Kula",
-            "Caleb Weinreb",
-            "Mohammed Abdal Monium Osman",
-            "Sandra Romero Pinto",
-            "Naoshige Uchida",
-            "Scott W. Linderman",
-            "Bernardo L. Sabatini",
-            "Sandeep Robert Datta",
-        ],
-        lab="Datta Lab",
-        institution="Harvard Medical School",
-        experiment_description="TODO",
-        session_id=example_session,
-    )
+    nwbfile = NWBFile(**metadata["NWBFile"])
     nwbfile = interface.run_conversion(nwbfile, metadata)
     return nwbfile
 
