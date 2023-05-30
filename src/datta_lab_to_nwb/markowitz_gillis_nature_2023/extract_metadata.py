@@ -3,14 +3,15 @@ import pandas as pd
 import yaml
 from tqdm import tqdm
 
-def extract_metadata(data_path : str, metadata_path : str):
+
+def extract_metadata(data_path: str, metadata_path: str):
     columns = (
         "uuid",
         "session_name",
         "SessionName",
         "date",
         "mouse_id",
-        )
+    )
     metadata_columns = (
         "date",
         "mouse_id",
@@ -35,12 +36,13 @@ def extract_metadata(data_path : str, metadata_path : str):
         assert len(session_name) <= 1, "Multiple session names found"
         try:
             metadata[uuid]["session_description"] = session_name.pop()
-        except KeyError: # No session name found
+        except KeyError:  # No session name found
             metadata[uuid]["session_description"] = ""
         metadata[uuid]["session_start_time"] = metadata[uuid].pop("date").isoformat()
         metadata[uuid]["subject_id"] = metadata[uuid].pop("mouse_id")
     with open(metadata_path, "w") as f:
         yaml.dump(metadata, f)
+
 
 if __name__ == "__main__":
     data_path = Path(
