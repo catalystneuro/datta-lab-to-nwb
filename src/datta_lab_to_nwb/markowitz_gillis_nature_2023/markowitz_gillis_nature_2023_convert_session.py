@@ -12,7 +12,10 @@ from datta_lab_to_nwb.markowitz_gillis_nature_2023.reproduce_figures import repr
 from datta_lab_to_nwb.markowitz_gillis_nature_2023 import MarkowitzGillisNature2023NWBConverter
 
 
-def session_to_nwb(data_path: Union[str, Path], output_dir_path: Union[str, Path], stub_test: bool = False):
+def session_to_nwb(data_path: Union[str, Path],
+                   metadata_path : Union[str, Path],
+                   output_dir_path: Union[str, Path],
+                   stub_test: bool = False):
     data_path = Path(data_path)
     output_dir_path = Path(output_dir_path)
     if stub_test:
@@ -30,6 +33,7 @@ def session_to_nwb(data_path: Union[str, Path], output_dir_path: Union[str, Path
         dict(
             Behavior=dict(
                 file_path=str(data_path),
+                metadata_path=str(metadata_path),
                 session_uuid=session_id,
             )
         )
@@ -55,6 +59,9 @@ if __name__ == "__main__":
     file_path = Path(
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/dlight_photometry_processed_full.parquet"
     )
+    metadata_path = Path(
+        "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/session_metadata.yaml"
+    )
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     shutil.rmtree(output_dir_path)
     stub_test = False
@@ -62,6 +69,7 @@ if __name__ == "__main__":
 
     session_to_nwb(
         data_path=file_path,
+        metadata_path=metadata_path,
         output_dir_path=output_dir_path,
         stub_test=stub_test,
     )
