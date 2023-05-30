@@ -138,9 +138,12 @@ def reproduce_fig1d(file_path):
     plt.suptitle("Figure 1d")
     plt.show()
 
+
 if __name__ == "__main__":
     # Parameters for conversion
-    file_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/dlight_photometry_processed_full.parquet")
+    file_path = Path(
+        "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/dlight_photometry_processed_full.parquet"
+    )
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     shutil.rmtree(output_dir_path)
     stub_test = False
