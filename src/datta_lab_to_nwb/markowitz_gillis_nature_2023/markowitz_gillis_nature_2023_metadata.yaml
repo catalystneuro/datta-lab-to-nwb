@@ -1,12 +1,27 @@
 NWBFile:
   related_publications:
-    https://doi.org/### or link to APA or MLA citation of the publication
+    https://doi.org/10.1038/s41586-022-05611-2
   session_description:
     A rich text description of the experiment. Can also just be the abstract of the publication.
-  institution: My Institution
+  institution: Harvard Medical School
   lab: Datta
   experimenter:
-    - Last, First Middle
-    - Last, First Middle
+    - Markowitz, Jeffrey E.
+    - Gillis, Winthrop F.
+    - Jay, Maya
+    - Wood, Jeffrey
+    - Harris, Ryley W.
+    - Cieszkowski, Robert
+    - Scott, Rebecca
+    - Brann, David
+    - Koveal, Dorothy
+    - Kula, Tomasz
+    - Weinreb, Caleb
+    - Osman, Mohammed Abdal Monium
+    - Pinto, Sandra Romero
+    - Uchida, Naoshige
+    - Linderman, Scott W.
+    - Sabatini, Bernardo L.
+    - Datta, Sandeep Robert
 Subject:
-  species: Rattus norvegicus
+  species: Mus musculus
