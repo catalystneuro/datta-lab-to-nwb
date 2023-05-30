@@ -16,7 +16,6 @@ from datta_lab_to_nwb.markowitz_gillis_nature_2023 import MarkowitzGillisNature2
 
 
 def session_to_nwb(data_path: Union[str, Path], output_dir_path: Union[str, Path], stub_test: bool = False):
-
     data_path = Path(data_path)
     output_dir_path = Path(output_dir_path)
     if stub_test:
@@ -140,7 +139,6 @@ def reproduce_fig1d(file_path):
     plt.show()
 
 if __name__ == "__main__":
-
     # Parameters for conversion
     file_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/dlight_photometry_processed_full.parquet")
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
