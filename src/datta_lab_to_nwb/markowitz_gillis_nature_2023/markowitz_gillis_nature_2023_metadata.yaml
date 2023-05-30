@@ -25,3 +25,8 @@ NWBFile:
     - Datta, Sandeep Robert
 Subject:
   species: Mus musculus
+Behavior:
+  Position:
+    reference_frame: TBD
+  CompassDirection:
+    reference_frame: TBD

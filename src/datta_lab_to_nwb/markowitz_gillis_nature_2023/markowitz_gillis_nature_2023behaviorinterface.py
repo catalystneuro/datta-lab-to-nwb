@@ -1,6 +1,7 @@
 """Primary class for converting experiment-specific behavior."""
 import numpy as np
 import pandas as pd
+import yaml
 from pydantic import FilePath
 from pynwb import NWBFile, TimeSeries
 from pynwb.behavior import (
@@ -19,80 +20,33 @@ class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
     def __init__(self, file_path: str, session_uuid: str):
         # This should load the data lazily and prepare variables you need
         columns = (
-            "predicted_syllable (offline)",
             "uuid",
-            "date",
-            "session_name",
-            "SessionName",
-            "mouse_id",
+            "predicted_syllable (offline)",
             "centroid_x_mm",
             "centroid_y_mm",
             "height_ave_mm",
             "angle_unwrapped",
             "timestamp",
         )
-        metadata_columns = (
-            "date",
-            "mouse_id",
-        )
-        experimenter = (
-            "Jeffrey E. Markowitz",
-            "Winthrop F. Gillis",
-            "Maya Jay",
-            "Jeffrey Wood",
-            "Ryley W. Harris",
-            "Robert Cieszkowski",
-            "Rebecca Scott",
-            "David Brann",
-            "Dorothy Koveal",
-            "Tomasz Kula",
-            "Caleb Weinreb",
-            "Mohammed Abdal Monium Osman",
-            "Sandra Romero Pinto",
-            "Naoshige Uchida",
-            "Scott W. Linderman",
-            "Bernardo L. Sabatini",
-            "Sandeep Robert Datta",
-        )
+        session_metadata_path = "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/session_metadata.yaml"
         super().__init__(
             file_path=file_path,
             session_uuid=session_uuid,
             columns=columns,
-            metadata_columns=metadata_columns,
-            experimenter=experimenter,
+            session_metadata_path=session_metadata_path,
         )
 
     def get_metadata(self) -> dict:
-        # TODO: store metadata in .yaml file
         metadata = super().get_metadata()
-
-        # get session metadata TODO: move session metadata to a separate file to avoid multiple reads
-        session_df = pd.read_parquet(
-            self.source_data["file_path"],
-            columns=self.source_data["columns"],
-            filters=[("uuid", "==", self.source_data["session_uuid"])],
-        )
-        for col in self.source_data["metadata_columns"]:
-            first_notnull = session_df.loc[session_df[col].notnull(), col].iloc[0]
-            metadata[col] = first_notnull
-        session_name = set(session_df.session_name[session_df.session_name.notnull()]) | set(
-            session_df.SessionName[session_df.SessionName.notnull()]
-        )
-        assert len(session_name) == 1, "Multiple session names found"
-        metadata["NWBFile"]["session_description"] = session_name.pop()
-        metadata["NWBFile"]["session_start_time"] = metadata.pop("date")
+        with open(self.source_data["session_metadata_path"]) as f:
+            session_metadata = yaml.safe_load(f)
+            session_metadata = session_metadata[self.source_data["session_uuid"]]
+        metadata["NWBFile"]["session_description"] = session_metadata["session_description"]
+        metadata["NWBFile"]["session_start_time"] = session_metadata["session_start_time"]
         metadata["Subject"] = {}
-        metadata["Subject"]["subject_id"] = metadata.pop("mouse_id")
+        metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
         metadata["NWBFile"]["identifier"] = self.source_data["session_uuid"]
         metadata["NWBFile"]["session_id"] = self.source_data["session_uuid"]
-        metadata["NWBFile"]["experimenter"] = self.source_data["experimenter"]
-        metadata["NWBFile"]["institution"] = "Harvard Medical School"
-        metadata["NWBFile"]["lab"] = "Datta Lab"
-        metadata["Behavior"] = {}
-        metadata["Behavior"]["CompassDirection"] = {}
-        metadata["Behavior"]["Position"] = {}
-        metadata["Behavior"]["CompassDirection"]["reference_frame"] = "???"  # TODO: add reference frame to metadata
-        metadata["Behavior"]["Position"]["reference_frame"] = "???"
 
         return metadata
 
