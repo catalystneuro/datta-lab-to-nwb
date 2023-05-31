@@ -42,7 +42,7 @@ def extract_metadata(data_path: str, metadata_path: str):
         metadata[uuid] = {}
         for col in metadata_columns:
             first_notnull = session_df.loc[session_df[col].notnull(), col].iloc[0]
-            if isinstance(first_notnull, np.float64): # numpy scalars aren't serializable
+            if isinstance(first_notnull, np.float64):  # numpy scalars aren't serializable
                 first_notnull = first_notnull.item()
             metadata[uuid][col] = first_notnull
         session_name = set(session_df.session_name[session_df.session_name.notnull()]) | set(
