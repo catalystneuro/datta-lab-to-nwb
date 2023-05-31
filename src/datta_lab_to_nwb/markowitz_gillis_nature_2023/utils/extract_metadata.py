@@ -2,6 +2,7 @@ from pathlib import Path
 import pandas as pd
 import yaml
 from tqdm import tqdm
+from neuroconv.utils import load_dict_from_file
 
 
 def extract_metadata(data_path: str, metadata_path: str):
@@ -52,6 +53,5 @@ if __name__ == "__main__":
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/session_metadata.yaml"
     )
     extract_metadata(data_path, metadata_path)
-    with open(metadata_path, "r") as f:
-        metadata = yaml.safe_load(f)
-        print(metadata)
+    metadata = load_dict_from_file(metadata_path)
+    print(metadata)
