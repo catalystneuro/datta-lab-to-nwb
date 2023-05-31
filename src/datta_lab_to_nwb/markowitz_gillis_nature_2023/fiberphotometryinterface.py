@@ -47,12 +47,32 @@ class FiberPhotometryInterface(BaseDataInterface):
         session_metadata = session_metadata[self.source_data["session_uuid"]]
         metadata["NWBFile"]["session_description"] = session_metadata["session_description"]
         metadata["NWBFile"]["session_start_time"] = session_metadata["session_start_time"]
-        metadata["Subject"] = {}
-        metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
         metadata["NWBFile"]["identifier"] = self.source_data["session_uuid"]
         metadata["NWBFile"]["session_id"] = self.source_data["session_uuid"]
+        metadata["Subject"] = {}
+        metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
+        metadata["FiberPhotometry"] = {}
+        metadata["FiberPhotometry"]["area"] = session_metadata["area"]
+        metadata["FiberPhotometry"]["reference_max"] = session_metadata["reference_max"]
+        metadata["FiberPhotometry"]["signal_max"] = session_metadata["signal_max"]
+        metadata["FiberPhotometry"]["signal_reference_corr"] = session_metadata["signal_reference_corr"]
+        metadata["FiberPhotometry"]["snr"] = session_metadata["snr"]
 
         return metadata
+
+    def get_metadata_schema(self) -> dict:
+        metadata_schema = super().get_metadata_schema()
+        metadata_schema["properties"]["FiberPhotometry"] = {
+            "type": "object",
+            "properties": {
+                "area": {"type": "string"},
+                "reference_max": {"type": "number"},
+                "signal_max": {"type": "number"},
+                "signal_reference_corr": {"type": "number"},
+                "snr": {"type": "number"},
+            },
+        }
+        return metadata_schema
 
     def run_conversion(self, nwbfile: NWBFile, metadata: dict):
         """Run conversion of data from the source file into the nwbfile."""
@@ -92,8 +112,7 @@ class FiberPhotometryInterface(BaseDataInterface):
 
         fluorophores_table.add_row(
             label='dlight1.1',
-            # location=metadata['area'], TODO add 'area' to metadata .yaml file
-            location='dls',
+            location=metadata["FiberPhotometry"]['area'],
             coordinates=(0.260, 2.550, -2.40),  # (AP, ML, DV)
         )
 
@@ -116,16 +135,14 @@ class FiberPhotometryInterface(BaseDataInterface):
             excitation_source=0,  # integers indicated rows of excitation sources table
             photodetector=0,
             fluorophores=[0],  # potentially multiple fluorophores, so list of indices
-            # location=metadata['area'], # TODO: add 'area' to metadata .yaml file
-            location='dls',
+            location=metadata["FiberPhotometry"]['area'],
             notes='None',
         )
         fibers_table.add_fiber(
             excitation_source=1,  # integers indicated rows of excitation sources table
             photodetector=0,
             fluorophores=[0],  # potentially multiple fluorophores, so list of indices
-            # location=metadata['area'], TODO : add 'area' to metadata .yaml file
-            location='dls',
+            location=metadata["FiberPhotometry"]['area'],
             notes='None',
         )
 
