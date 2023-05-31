@@ -1,4 +1,6 @@
 from pathlib import Path
+
+import numpy as np
 import pandas as pd
 import yaml
 from tqdm import tqdm
@@ -12,10 +14,20 @@ def extract_metadata(data_path: str, metadata_path: str):
         "SessionName",
         "date",
         "mouse_id",
+        "signal_max",
+        "reference_max",
+        "signal_reference_corr",
+        "snr",
+        "area",
     )
     metadata_columns = (
         "date",
         "mouse_id",
+        "signal_max",
+        "reference_max",
+        "signal_reference_corr",
+        "snr",
+        "area",
     )
     uuid_df = pd.read_parquet(data_path, columns=["uuid"])
     uuids = set(uuid_df.uuid[uuid_df.uuid.notnull()])
@@ -30,6 +42,8 @@ def extract_metadata(data_path: str, metadata_path: str):
         metadata[uuid] = {}
         for col in metadata_columns:
             first_notnull = session_df.loc[session_df[col].notnull(), col].iloc[0]
+            if isinstance(first_notnull, np.float64): # numpy scalars aren't serializable
+                first_notnull = first_notnull.item()
             metadata[uuid][col] = first_notnull
         session_name = set(session_df.session_name[session_df.session_name.notnull()]) | set(
             session_df.SessionName[session_df.SessionName.notnull()]
