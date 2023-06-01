@@ -13,7 +13,7 @@ from ndx_photometry import (
     DeconvolvedRoiResponseSeries,
     MultiCommandedVoltage,
     FiberPhotometry,
-    FluorophoresTable
+    FluorophoresTable,
 )
 from neuroconv.basedatainterface import BaseDataInterface
 from neuroconv.utils import load_dict_from_file
@@ -30,8 +30,8 @@ class FiberPhotometryInterface(BaseDataInterface):
             "uuid",
             "signal_dff",
             "reference_dff",
-            'uv_reference_fit',
-            'reference_dff_fit',
+            "uv_reference_fit",
+            "reference_dff_fit",
             "timestamp",
         )
         super().__init__(
@@ -99,20 +99,14 @@ class FiberPhotometryInterface(BaseDataInterface):
         photodetectors_table = PhotodetectorsTable(
             description="PhotodetectorsTable",
         )
-        photodetectors_table.add_row(
-            peak_wavelength=527.0,
-            type="PMT",
-            gain=1.0
-        )
+        photodetectors_table.add_row(peak_wavelength=527.0, type="PMT", gain=1.0)
 
         # Fluorophores Table
-        fluorophores_table = FluorophoresTable(
-            description='fluorophores'
-        )
+        fluorophores_table = FluorophoresTable(description="fluorophores")
 
         fluorophores_table.add_row(
-            label='dlight1.1',
-            location=metadata["FiberPhotometry"]['area'],
+            label="dlight1.1",
+            location=metadata["FiberPhotometry"]["area"],
             coordinates=(0.260, 2.550, -2.40),  # (AP, ML, DV)
         )
 
@@ -125,7 +119,7 @@ class FiberPhotometryInterface(BaseDataInterface):
                 fibers=fibers_table,
                 excitation_sources=excitation_sources_table,
                 photodetectors=photodetectors_table,
-                fluorophores=fluorophores_table
+                fluorophores=fluorophores_table,
             )
         )
 
@@ -135,31 +129,28 @@ class FiberPhotometryInterface(BaseDataInterface):
             excitation_source=0,  # integers indicated rows of excitation sources table
             photodetector=0,
             fluorophores=[0],  # potentially multiple fluorophores, so list of indices
-            location=metadata["FiberPhotometry"]['area'],
-            notes='None',
+            location=metadata["FiberPhotometry"]["area"],
+            notes="None",
         )
         fibers_table.add_fiber(
             excitation_source=1,  # integers indicated rows of excitation sources table
             photodetector=0,
             fluorophores=[0],  # potentially multiple fluorophores, so list of indices
-            location=metadata["FiberPhotometry"]['area'],
-            notes='None',
+            location=metadata["FiberPhotometry"]["area"],
+            notes="None",
         )
 
         # ROI Response Series
         # Here we set up a list of fibers that our recording came from
         fibers_ref = DynamicTableRegion(
-            name="rois",
-            data=[0, 1],  # potentially multiple fibers
-            description="source fibers",
-            table=fibers_table
+            name="rois", data=[0, 1], description="source fibers", table=fibers_table  # potentially multiple fibers
         )
 
         signal_series = RoiResponseSeries(
             name="signal_dff",
             description="signal dF over F",
             data=session_df.signal_dff.to_numpy(),
-            unit='dF/F',
+            unit="dF/F",
             timestamps=session_df.timestamp.to_numpy(),
             rois=fibers_ref,
         )
@@ -167,7 +158,7 @@ class FiberPhotometryInterface(BaseDataInterface):
             name="reference_dff",
             description="reference dF over F",
             data=session_df.reference_dff.to_numpy(),
-            unit='dF/F',
+            unit="dF/F",
             timestamps=signal_series.timestamps,
             rois=fibers_ref,
         )
@@ -175,7 +166,7 @@ class FiberPhotometryInterface(BaseDataInterface):
             name="reference_dff_fit",
             description="reference fit dF over F",
             data=session_df.reference_dff_fit.to_numpy(),
-            unit='dF/F',
+            unit="dF/F",
             timestamps=signal_series.timestamps,
             rois=fibers_ref,
         )
@@ -183,15 +174,13 @@ class FiberPhotometryInterface(BaseDataInterface):
             name="uv_reference_fit",
             description="uv reference F",
             data=session_df.uv_reference_fit.to_numpy(),
-            unit='F',
+            unit="F",
             timestamps=signal_series.timestamps,
             rois=fibers_ref,
         )
 
         # Aggregate into OPhys Module
-        ophys_module = nwbfile.create_processing_module(
-            name="ophys", description="fiber photometry"
-        )
+        ophys_module = nwbfile.create_processing_module(name="ophys", description="fiber photometry")
         ophys_module.add(signal_series)
         ophys_module.add(reference_series)
         ophys_module.add(reference_fit_series)
