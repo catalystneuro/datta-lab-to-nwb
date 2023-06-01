@@ -44,13 +44,11 @@ def session_to_nwb(
 
     converter = MarkowitzGillisNature2023NWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
-    print(f"From converter, metadata = {metadata}")
 
     # Update default metadata with the editable in the corresponding yaml file
     editable_metadata_path = Path(__file__).parent / "markowitz_gillis_nature_2023_metadata.yaml"
     editable_metadata = load_dict_from_file(editable_metadata_path)
     metadata = dict_deep_update(metadata, editable_metadata)
-    print(f"After .yaml update: metadata = {metadata}")
 
     # Run conversion
     converter.run_conversion(metadata=metadata, nwbfile_path=nwbfile_path, conversion_options=conversion_options)
