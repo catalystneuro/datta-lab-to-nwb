@@ -1,13 +1,17 @@
+# Scientific libraries
 from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import yaml
 from tqdm import tqdm
+import pytz
+
+# NWB Ecosystem
 from neuroconv.utils import load_dict_from_file
 
 
 def extract_metadata(data_path: str, metadata_path: str):
+    timezone = pytz.timezone("America/New_York")
     columns = (
         "uuid",
         "session_name",
@@ -53,7 +57,8 @@ def extract_metadata(data_path: str, metadata_path: str):
             metadata[uuid]["session_description"] = session_name.pop()
         except KeyError:  # No session name found
             metadata[uuid]["session_description"] = ""
-        metadata[uuid]["session_start_time"] = metadata[uuid].pop("date").isoformat()
+        date = timezone.localize(metadata[uuid].pop("date"))
+        metadata[uuid]["session_start_time"] = date.isoformat()
         metadata[uuid]["subject_id"] = metadata[uuid].pop("mouse_id")
     with open(metadata_path, "w") as f:
         yaml.dump(metadata, f)
