@@ -166,7 +166,7 @@ class FiberPhotometryInterface(BaseDataInterface):
             rois=fibers_ref,
         )
         reference_fit_series = RoiResponseSeries(
-            name="reference_dff_fit",
+            name="ReferenceDfOverFSmoothed",
             description=(
                 "Fluorescence (dF/F) from the isosbestic UV excitation (400nm) that has been smoothed (See Methods: Photometry Active Referencing)."
             ),
@@ -176,7 +176,7 @@ class FiberPhotometryInterface(BaseDataInterface):
             rois=fibers_ref,
         )
         uv_reference_fit_series = RoiResponseSeries(
-            name="uv_reference_fit",
+            name="UVReferenceFSmoothed",
             description=(
                 "Raw Fluorescence (F) from the isosbestic UV excitation (400nm) that has been smoothed (See Methods: Photometry Active Referencing)."
             ),
