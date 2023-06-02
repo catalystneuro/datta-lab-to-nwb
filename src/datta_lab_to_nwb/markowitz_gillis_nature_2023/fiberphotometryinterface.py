@@ -147,7 +147,7 @@ class FiberPhotometryInterface(BaseDataInterface):
         )
 
         signal_series = RoiResponseSeries(
-            name="signal_dff",
+            name="SignalDfOverF",
             description="signal dF over F",
             data=session_df.signal_dff.to_numpy(),
             unit="dF/F",
