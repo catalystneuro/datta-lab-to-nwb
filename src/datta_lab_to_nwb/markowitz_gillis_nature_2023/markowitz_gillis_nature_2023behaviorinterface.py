@@ -67,10 +67,10 @@ class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
                         "reference_frame": {"type": "string"},
                     },
                 },
-                "Syllable" : {
+                "Syllable": {
                     "type": "object",
                     "properties": {
-                        "syllable_id2name" : {"type": "object"},
+                        "syllable_id2name": {"type": "object"},
                     },
                 },
             },
