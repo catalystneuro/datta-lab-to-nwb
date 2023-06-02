@@ -150,7 +150,7 @@ class FiberPhotometryInterface(BaseDataInterface):
             name="SignalDfOverF",
             description="signal dF over F",
             data=session_df.signal_dff.to_numpy(),
-            unit="dF/F",
+            unit="a.u.",
             timestamps=session_df.timestamp.to_numpy(),
             rois=fibers_ref,
         )
