@@ -10,8 +10,8 @@ def reproduce_fig1d(file_path):
     start = 3520
     with NWBHDF5IO(file_path, mode="r") as io:
         nwbfile = io.read()
-        signal_dff = nwbfile.processing["ophys"]["signal_dff"].data[start : start + n_frames]
-        reference_dff = nwbfile.processing["ophys"]["reference_dff"].data[start : start + n_frames]
+        signal_dff = nwbfile.processing["ophys"]["SignalDfOverF"].data[start : start + n_frames]
+        reference_dff = nwbfile.processing["ophys"]["ReferenceDfOverF"].data[start : start + n_frames]
 
     time = np.arange(n_frames) / 30
     fig, ax = plt.subplots(6, 1)
