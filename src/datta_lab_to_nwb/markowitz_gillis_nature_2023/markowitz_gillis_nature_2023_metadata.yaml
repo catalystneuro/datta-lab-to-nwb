@@ -30,3 +30,42 @@ Behavior:
     reference_frame: TBD
   CompassDirection:
     reference_frame: TBD
+  Syllable:
+    syllable_id2name: # Mapping from syllable ID (unique) --> syllable name (not unique) [See Extended Data Fig. 2c]
+      4: Pause
+      10: Reared sniff
+      33: Pause, turn left
+      24: Turn left
+      20: Orient left
+      8: Turn left
+      22: High sniff
+      7: High sniff
+      13: Reared sniff
+      15: Short run
+      12: Rear/jump
+      17: Short dart
+      16: Run
+      19: Forward run
+      11: High run
+      26: Walk Forward
+      21: Run
+      31: Leftward rear down
+      18: Wall rear
+      25: Rear up, turn left
+      23: Rear
+      37: Rear
+      30: Pause
+      2: Pause
+      34: Groom/paw lick
+      5: Scrunch
+      29: Dive down
+      28: Rightward rear down
+      1: Paw lick/scrunch
+      32: Groom
+      3: Pause, low rear
+      36: Scrunch right
+      35: Orient right
+      6: Paused low rear
+      9: Reared sniff
+      27: Pause
+      14: Body lick

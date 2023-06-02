@@ -12,6 +12,7 @@ from pynwb.behavior import (
 )
 from neuroconv.basedatainterface import BaseDataInterface
 from neuroconv.tools import nwb_helpers
+from hdmf.backends.hdf5.h5_utils import H5DataIO
 
 
 class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
@@ -66,6 +67,12 @@ class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
                         "reference_frame": {"type": "string"},
                     },
                 },
+                "Syllable" : {
+                    "type": "object",
+                    "properties": {
+                        "syllable_id2name" : {"type": "object"},
+                    },
+                },
             },
         }
         return metadata_schema
@@ -83,8 +90,8 @@ class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
         position_spatial_series = SpatialSeries(
             name="SpatialSeries",
             description="Position (x, y, height) in an open field.",
-            data=position_data,
-            timestamps=session_df.timestamp.to_numpy(),
+            data=H5DataIO(position_data, compression=True),
+            timestamps=H5DataIO(session_df.timestamp.to_numpy(), compression=True),
             reference_frame=metadata["Behavior"]["Position"]["reference_frame"],
             unit="mm",
         )
@@ -94,7 +101,7 @@ class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
         direction_spatial_series = SpatialSeries(
             name="OrientationEllipse",
             description="Mouse orientation in radians estimated using an ellipse fit.",
-            data=session_df.angle_unwrapped.to_numpy(),
+            data=H5DataIO(session_df.angle_unwrapped.to_numpy(), compression=True),
             timestamps=position_spatial_series.timestamps,
             reference_frame=metadata["Behavior"]["CompassDirection"]["reference_frame"],
             unit="radians",
@@ -104,7 +111,7 @@ class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
         # Add Syllable Data
         syllable_time_series = TimeSeries(
             name="BehavioralSyllable",
-            data=session_df["predicted_syllable (offline)"].to_numpy(),
+            data=H5DataIO(session_df["predicted_syllable (offline)"].to_numpy(), compression=True),
             timestamps=position_spatial_series.timestamps,
             description="Behavioral Syllable identified by Motion Sequencing (MoSeq).",
             unit="n.a.",
