@@ -145,26 +145,31 @@ class FiberPhotometryInterface(BaseDataInterface):
         fibers_ref = DynamicTableRegion(
             name="rois", data=[0, 1], description="source fibers", table=fibers_table  # potentially multiple fibers
         )
-
         signal_series = RoiResponseSeries(
             name="SignalDfOverF",
-            description="signal dF over F",
+            description=(
+                "Fluorescence (dF/F) from the blue light excitation (480nm) corresponding to the dopamine signal."
+            ),
             data=session_df.signal_dff.to_numpy(),
             unit="a.u.",
             timestamps=session_df.timestamp.to_numpy(),
             rois=fibers_ref,
         )
         reference_series = RoiResponseSeries(
-            name="reference_dff",
-            description="reference dF over F",
+            name="ReferenceDfOverF",
+            description=(
+                "Fluorescence (dF/F) from the isosbestic UV excitation (400nm) corresponding to the reference signal."
+            ),
             data=session_df.reference_dff.to_numpy(),
-            unit="dF/F",
+            unit="a.u.",
             timestamps=signal_series.timestamps,
             rois=fibers_ref,
         )
         reference_fit_series = RoiResponseSeries(
             name="reference_dff_fit",
-            description="reference fit dF over F",
+            description=(
+                "Fluorescence (dF/F) from the isosbestic UV excitation (400nm) that has been smoothed (See Methods: Photometry Active Referencing)."
+            ),
             data=session_df.reference_dff_fit.to_numpy(),
             unit="dF/F",
             timestamps=signal_series.timestamps,
@@ -172,7 +177,9 @@ class FiberPhotometryInterface(BaseDataInterface):
         )
         uv_reference_fit_series = RoiResponseSeries(
             name="uv_reference_fit",
-            description="uv reference F",
+            description=(
+                "Raw Fluorescence (F) from the isosbestic UV excitation (400nm) that has been smoothed (See Methods: Photometry Active Referencing)."
+            ),
             data=session_df.uv_reference_fit.to_numpy(),
             unit="F",
             timestamps=signal_series.timestamps,
