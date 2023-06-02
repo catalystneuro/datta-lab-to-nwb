@@ -1,8 +1,6 @@
 """Primary class for converting experiment-specific behavior."""
 import numpy as np
 import pandas as pd
-import yaml
-from pydantic import FilePath
 from pynwb import NWBFile, TimeSeries
 from pynwb.behavior import (
     BehavioralTimeSeries,
@@ -12,6 +10,7 @@ from pynwb.behavior import (
 )
 from neuroconv.basedatainterface import BaseDataInterface
 from neuroconv.tools import nwb_helpers
+from neuroconv.utils import load_dict_from_file
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
 
@@ -38,9 +37,8 @@ class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
 
     def get_metadata(self) -> dict:
         metadata = super().get_metadata()
-        with open(self.source_data["metadata_path"]) as f:
-            session_metadata = yaml.safe_load(f)
-            session_metadata = session_metadata[self.source_data["session_uuid"]]
+        session_metadata = load_dict_from_file(self.source_data["metadata_path"])
+        session_metadata = session_metadata[self.source_data["session_uuid"]]
         metadata["NWBFile"]["session_description"] = session_metadata["session_description"]
         metadata["NWBFile"]["session_start_time"] = session_metadata["session_start_time"]
         metadata["Subject"] = {}
