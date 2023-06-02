@@ -17,6 +17,7 @@ from ndx_photometry import (
 )
 from neuroconv.basedatainterface import BaseDataInterface
 from neuroconv.utils import load_dict_from_file
+from neuroconv.tools import nwb_helpers
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
 # Local
@@ -188,7 +189,7 @@ class FiberPhotometryInterface(BaseDataInterface):
         )
 
         # Aggregate into OPhys Module
-        ophys_module = nwbfile.create_processing_module(name="ophys", description="fiber photometry")
+        ophys_module = nwb_helpers.get_module(nwbfile, name="ophys", description="Fiber photometry data")
         ophys_module.add(signal_series)
         ophys_module.add(reference_series)
         ophys_module.add(reference_fit_series)
