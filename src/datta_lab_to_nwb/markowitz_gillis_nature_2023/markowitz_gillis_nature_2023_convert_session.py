@@ -30,7 +30,6 @@ def session_to_nwb(
     source_data = dict()
     conversion_options = dict()
 
-    # Add Fiber Photometry
     source_data.update(
         dict(
             FiberPhotometry=dict(
@@ -40,7 +39,17 @@ def session_to_nwb(
             )
         )
     )
+    source_data.update(
+        dict(
+            Behavior=dict(
+                file_path=str(data_path),
+                metadata_path=str(metadata_path),
+                session_uuid=session_id,
+            )
+        )
+    )
     conversion_options.update(dict(FiberPhotometry=dict()))
+    conversion_options.update(dict(Behavior=dict()))
 
     converter = MarkowitzGillisNature2023NWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
