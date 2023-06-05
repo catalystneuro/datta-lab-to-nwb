@@ -51,9 +51,8 @@ class FiberPhotometryInterface(BaseDataInterface):
         metadata["NWBFile"]["session_start_time"] = session_metadata["session_start_time"]
         metadata["NWBFile"]["identifier"] = self.source_data["session_uuid"]
         metadata["NWBFile"]["session_id"] = self.source_data["session_uuid"]
-        metadata["Subject"] = {}
         metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
-        metadata["FiberPhotometry"] = {}
+        metadata["Subject"]["sex"] = "U"
         metadata["FiberPhotometry"]["area"] = session_metadata["area"]
         metadata["FiberPhotometry"]["reference_max"] = session_metadata["reference_max"]
         metadata["FiberPhotometry"]["signal_max"] = session_metadata["signal_max"]
