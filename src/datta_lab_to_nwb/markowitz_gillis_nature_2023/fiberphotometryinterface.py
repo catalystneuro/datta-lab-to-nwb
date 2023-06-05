@@ -171,9 +171,7 @@ class FiberPhotometryInterface(BaseDataInterface):
 
         # ROI Response Series
         # Here we set up a list of fibers that our recording came from
-        fibers_ref = DynamicTableRegion(
-            name="rois", data=[0, 1], description="source fibers", table=fibers_table
-        )
+        fibers_ref = DynamicTableRegion(name="rois", data=[0, 1], description="source fibers", table=fibers_table)
         signal_series = RoiResponseSeries(
             name="SignalDfOverF",
             description="The ΔF/F from the blue light excitation (480nm) corresponding to the dopamine signal.",
