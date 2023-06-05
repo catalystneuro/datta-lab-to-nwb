@@ -86,25 +86,49 @@ class FiberPhotometryInterface(BaseDataInterface):
 
         # Excitation Sources Table
         excitation_sources_table = ExcitationSourcesTable(
-            description="ExcitationSourcesTable",
+            description=(
+                "A 470nm (blue) LED and a 405nM (UV) LED (Mightex) were sinusoidally modulated at "
+                "161Hz and 381Hz, respectively (these frequencies were chosen to avoid harmonic cross-talk). "
+                "Modulated excitation light was passed through a three-colour fluorescence mini-cube "
+                "(Doric Lenses FMC7_E1(400-410)_F1(420-450)_E2(460-490)_F2(500-540)_E3(550-575)_F3(600-680)_S), "
+                "then through a pigtailed rotary joint "
+                "(Doric Lenses B300-0089, FRJ_1x1_PT_200/220/LWMJ-0.37_1.0m_FCM_0.08m_FCM) and finally into a "
+                "low-autofluorescence fibre-optic patch cord "
+                "(Doric Lenses MFP_200/230/900-0.37_0.75m_FCM-MF1.25_LAF or MFP_200/230/900-0.57_0.75m_FCM-MF1.25_LAF) "
+                "connected to the optical implant in the freely moving mouse."
+            )
         )
         excitation_sources_table.add_row(
-            peak_wavelength=480.0,
+            peak_wavelength=470.0,
             source_type="laser",
         )
         excitation_sources_table.add_row(
-            peak_wavelength=400.0,
+            peak_wavelength=405.0,
             source_type="laser",
         )
 
         # Photodetectors Table
         photodetectors_table = PhotodetectorsTable(
-            description="PhotodetectorsTable",
+            description=(
+                "Emission light was collected through the same patch cord, then passed back through the mini-cube. "
+                "Light on the F2 port was bandpass filtered for green emission (500–540nm) and sent to a silicon "
+                "photomultiplier with an integrated transimpedance amplifier (SensL MiniSM-30035-X08). Voltages from "
+                "the SensL unit were collected through the TDT Active X interface using 24-bit analogue-to-digital "
+                "convertors at >6kHz, and voltage signals driving the UV and blue LEDs were also stored for "
+                "offline analysis."
+            ),
         )
         photodetectors_table.add_row(peak_wavelength=527.0, type="PMT", gain=1.0)
 
         # Fluorophores Table
-        fluorophores_table = FluorophoresTable(description="fluorophores")
+        fluorophores_table = FluorophoresTable(
+            description=(
+                "dLight1.1 was selected to visualize dopamine release dynamics in the DLS owing to its rapid rise and "
+                "decay times, comparatively lower dopamine affinity (so as to not saturate binding), as well as its "
+                "responsiveness over much of the physiological range of known DA concentrations in freely moving "
+                "rodents."
+            ),
+        )
 
         fluorophores_table.add_row(
             label="dlight1.1",
@@ -114,7 +138,10 @@ class FiberPhotometryInterface(BaseDataInterface):
 
         # Fibers Table
         fibers_table = FibersTable(
-            description="FibersTable",
+            description=(
+                "Fiber photometry data with 2 excitation sources (470nm and 405nm), 1 PMT photodetector with "
+                "a peak wavelength of 527nm, and 1 fluorophore (dLight1.1)."
+            )
         )
         nwbfile.add_lab_meta_data(
             FiberPhotometry(
@@ -145,13 +172,11 @@ class FiberPhotometryInterface(BaseDataInterface):
         # ROI Response Series
         # Here we set up a list of fibers that our recording came from
         fibers_ref = DynamicTableRegion(
-            name="rois", data=[0, 1], description="source fibers", table=fibers_table  # potentially multiple fibers
+            name="rois", data=[0, 1], description="source fibers", table=fibers_table
         )
         signal_series = RoiResponseSeries(
             name="SignalDfOverF",
-            description=(
-                "Fluorescence (dF/F) from the blue light excitation (480nm) corresponding to the dopamine signal."
-            ),
+            description="The ΔF/F from the blue light excitation (480nm) corresponding to the dopamine signal.",
             data=H5DataIO(session_df.signal_dff.to_numpy(), compression=True),
             unit="a.u.",
             timestamps=H5DataIO(session_df.timestamp.to_numpy(), compression=True),
@@ -159,9 +184,7 @@ class FiberPhotometryInterface(BaseDataInterface):
         )
         reference_series = RoiResponseSeries(
             name="ReferenceDfOverF",
-            description=(
-                "Fluorescence (dF/F) from the isosbestic UV excitation (400nm) corresponding to the reference signal."
-            ),
+            description="The ∆F/F from the isosbestic UV excitation (400nm) corresponding to the reference signal.",
             data=H5DataIO(session_df.reference_dff.to_numpy(), compression=True),
             unit="a.u.",
             timestamps=signal_series.timestamps,
@@ -170,7 +193,8 @@ class FiberPhotometryInterface(BaseDataInterface):
         reference_fit_series = RoiResponseSeries(
             name="ReferenceDfOverFSmoothed",
             description=(
-                "Fluorescence (dF/F) from the isosbestic UV excitation (400nm) that has been smoothed (See Methods: Photometry Active Referencing)."
+                "The ∆F/F from the isosbestic UV excitation (400nm) that has been smoothed "
+                "(See Methods: Photometry Active Referencing)."
             ),
             data=H5DataIO(session_df.reference_dff_fit.to_numpy(), compression=True),
             unit="dF/F",
@@ -180,7 +204,8 @@ class FiberPhotometryInterface(BaseDataInterface):
         uv_reference_fit_series = RoiResponseSeries(
             name="UVReferenceFSmoothed",
             description=(
-                "Raw Fluorescence (F) from the isosbestic UV excitation (400nm) that has been smoothed (See Methods: Photometry Active Referencing)."
+                "Raw F from the isosbestic UV excitation (400nm) that has been smoothed "
+                "(See Methods: Photometry Active Referencing)."
             ),
             data=H5DataIO(session_df.uv_reference_fit.to_numpy(), compression=True),
             unit="F",
