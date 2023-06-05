@@ -1,8 +1,6 @@
 NWBFile:
   related_publications:
     - https://doi.org/10.1038/s41586-022-05611-2
-  session_description:
-    A rich text description of the experiment. Can also just be the abstract of the publication.
   institution: Harvard Medical School
   lab: Datta
   experimenter:
