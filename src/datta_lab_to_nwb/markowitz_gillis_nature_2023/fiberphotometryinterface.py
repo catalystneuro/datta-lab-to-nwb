@@ -194,7 +194,7 @@ class FiberPhotometryInterface(BaseDataInterface):
                 "(See Methods: Photometry Active Referencing)."
             ),
             data=H5DataIO(session_df.reference_dff_fit.to_numpy(), compression=True),
-            unit="dF/F",
+            unit="a.u.",
             timestamps=signal_series.timestamps,
             rois=fibers_ref,
         )
