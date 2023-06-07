@@ -201,7 +201,7 @@ class FiberPhotometryInterface(BaseDataInterface):
         uv_reference_fit_series = RoiResponseSeries(
             name="UVReferenceFSmoothed",
             description=(
-                "Raw F from the isosbestic UV excitation (400nm) that has been smoothed "
+                "Raw fluorescence (F) from the isosbestic UV excitation (400nm) that has been smoothed "
                 "(See Methods: Photometry Active Referencing)."
             ),
             data=H5DataIO(session_df.uv_reference_fit.to_numpy(), compression=True),
