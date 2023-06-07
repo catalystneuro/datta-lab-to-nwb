@@ -10,6 +10,10 @@ def reproduce_fig1d(file_path):
     start = 3520
     with NWBHDF5IO(file_path, mode="r") as io:
         nwbfile = io.read()
+
+        signal_dff = nwbfile.processing["ophys"]["SignalDfOverF"].data[start : start + n_frames]
+        reference_dff = nwbfile.processing["ophys"]["ReferenceDfOverF"].data[start : start + n_frames]
+
         position = pd.DataFrame(
             nwbfile.processing["behavior"]["Position"]["SpatialSeries"].data, columns=["x", "y", "height"]
         )
@@ -87,6 +91,17 @@ def reproduce_fig1d(file_path):
     ax[4].set_xticks([])
     ax[4].set_yticks([])
     ax[4].text(0, 1.1, "Syllable", transform=ax[4].transAxes)
+
+    ax[5].plot(time, reference_dff, color="#afafaf")
+    ax[5].plot(time, signal_dff, color="g")
+    ax[5].set_ylim(-0.02, 0.07)
+    ax[5].set_yticks([-0.02, 0.07])
+    ax[5].set_xlim(time[0], time[-1])
+    ax[5].set_xticks([time[0], time[-1]])
+    ax[5].set_ylabel("dF/F0")
+    ax[5].set_xlabel("Time (seconds)")
+    ax[5].spines["top"].set_visible(False)
+    ax[5].spines["right"].set_visible(False)
 
     plt.subplots_adjust(hspace=0.55)
     plt.suptitle("Figure 1d")
