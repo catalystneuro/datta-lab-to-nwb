@@ -9,7 +9,7 @@ from neuroconv.utils import dict_deep_update, load_dict_from_file
 
 # Local
 from datta_lab_to_nwb.markowitz_gillis_nature_2023.postconversion import reproduce_figures
-from datta_lab_to_nwb.markowitz_gillis_nature_2023 import MarkowitzGillisNature2023NWBConverter
+from datta_lab_to_nwb import markowitz_gillis_nature_2023
 
 
 def session_to_nwb(
@@ -51,7 +51,7 @@ def session_to_nwb(
     conversion_options.update(dict(FiberPhotometry=dict()))
     conversion_options.update(dict(Behavior=dict()))
 
-    converter = MarkowitzGillisNature2023NWBConverter(source_data=source_data)
+    converter = markowitz_gillis_nature_2023.NWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
 
     # Update default metadata with the editable in the corresponding yaml file
