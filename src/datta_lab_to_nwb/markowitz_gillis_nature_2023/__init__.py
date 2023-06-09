@@ -1,3 +1,3 @@
-from .markowitz_gillis_nature_2023behaviorinterface import MarkowitzGillisNature2023BehaviorInterface
+from .behaviorinterface import BehaviorInterface
 from .fiberphotometryinterface import FiberPhotometryInterface
-from .markowitz_gillis_nature_2023nwbconverter import MarkowitzGillisNature2023NWBConverter
+from .nwbconverter import NWBConverter

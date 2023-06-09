@@ -14,7 +14,7 @@ from neuroconv.utils import load_dict_from_file
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
 
-class MarkowitzGillisNature2023BehaviorInterface(BaseDataInterface):
+class BehaviorInterface(BaseDataInterface):
     """Behavior interface for markowitz_gillis_nature_2023 conversion"""
 
     def __init__(self, file_path: str, session_uuid: str, metadata_path: str):
