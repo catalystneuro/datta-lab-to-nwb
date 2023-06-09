@@ -1,3 +1,3 @@
-from datta_lab_to_nwb.markowitz_gillis_nature_2023.behaviorinterface import BehaviorInterface
-from datta_lab_to_nwb.markowitz_gillis_nature_2023.fiberphotometryinterface import FiberPhotometryInterface
-from datta_lab_to_nwb.markowitz_gillis_nature_2023.nwbconverter import NWBConverter
+from .behaviorinterface import BehaviorInterface
+from .fiberphotometryinterface import FiberPhotometryInterface
+from .nwbconverter import NWBConverter
