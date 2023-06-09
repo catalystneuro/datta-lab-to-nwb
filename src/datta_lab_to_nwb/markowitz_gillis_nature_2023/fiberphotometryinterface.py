@@ -158,14 +158,12 @@ class FiberPhotometryInterface(BaseDataInterface):
             photodetector=0,
             fluorophores=[0],  # potentially multiple fluorophores, so list of indices
             location=metadata["FiberPhotometry"]["area"],
-            notes="None",
         )
         fibers_table.add_fiber(
             excitation_source=1,  # integers indicated rows of excitation sources table
             photodetector=0,
             fluorophores=[0],  # potentially multiple fluorophores, so list of indices
             location=metadata["FiberPhotometry"]["area"],
-            notes="None",
         )
 
         # ROI Response Series
