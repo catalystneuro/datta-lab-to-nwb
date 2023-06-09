@@ -171,7 +171,7 @@ class FiberPhotometryInterface(BaseDataInterface):
         fibers_ref = DynamicTableRegion(name="rois", data=[0, 1], description="source fibers", table=fibers_table)
         signal_series = RoiResponseSeries(
             name="SignalDfOverF",
-            description="The ΔF/F from the blue light excitation (480nm) corresponding to the dopamine signal.",
+            description="The ΔF/F from the blue light excitation (470nm) corresponding to the dopamine signal.",
             data=H5DataIO(session_df.signal_dff.to_numpy(), compression=True),
             unit="a.u.",
             timestamps=H5DataIO(session_df.timestamp.to_numpy(), compression=True),
@@ -179,7 +179,7 @@ class FiberPhotometryInterface(BaseDataInterface):
         )
         reference_series = RoiResponseSeries(
             name="ReferenceDfOverF",
-            description="The ∆F/F from the isosbestic UV excitation (400nm) corresponding to the reference signal.",
+            description="The ∆F/F from the isosbestic UV excitation (405nm) corresponding to the reference signal.",
             data=H5DataIO(session_df.reference_dff.to_numpy(), compression=True),
             unit="a.u.",
             timestamps=signal_series.timestamps,
@@ -188,7 +188,7 @@ class FiberPhotometryInterface(BaseDataInterface):
         reference_fit_series = RoiResponseSeries(
             name="ReferenceDfOverFSmoothed",
             description=(
-                "The ∆F/F from the isosbestic UV excitation (400nm) that has been smoothed "
+                "The ∆F/F from the isosbestic UV excitation (405nm) that has been smoothed "
                 "(See Methods: Photometry Active Referencing)."
             ),
             data=H5DataIO(session_df.reference_dff_fit.to_numpy(), compression=True),
@@ -199,7 +199,7 @@ class FiberPhotometryInterface(BaseDataInterface):
         uv_reference_fit_series = RoiResponseSeries(
             name="UVReferenceFSmoothed",
             description=(
-                "Raw fluorescence (F) from the isosbestic UV excitation (400nm) that has been smoothed "
+                "Raw fluorescence (F) from the isosbestic UV excitation (405nm) that has been smoothed "
                 "(See Methods: Photometry Active Referencing)."
             ),
             data=H5DataIO(session_df.uv_reference_fit.to_numpy(), compression=True),
