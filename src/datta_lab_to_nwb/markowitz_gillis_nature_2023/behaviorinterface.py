@@ -109,47 +109,27 @@ class BehaviorInterface(BaseDataInterface):
         direction = CompassDirection(spatial_series=direction_spatial_series, name="CompassDirection")
 
         # Add Syllable Data
-        pseudo_index2name = metadata["Behavior"]["Syllable"]["syllable_index2name"]
-        index2name_df = pd.DataFrame([[k, v] for k, v in pseudo_index2name.items()], columns=["index", "name"])
-        index2name_df.sort_values(by="index", inplace=True)
-        syllable_index2name = list(index2name_df["name"])
-        syllable_to_sorted_idx = toml.load(
-            "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/optoda_intermediate_results/syllable_stats_offline.toml"
-        )["syllable_to_sorted_idx"]
-        syllable_ids = session_df["predicted_syllable (offline)"].astype(np.str)
-        syllable_indices = syllable_ids.map(syllable_to_sorted_idx).to_numpy()
-        print(f"{syllable_indices = }")
-        for _ in range(len(syllable_to_sorted_idx) - len(syllable_index2name)):
-            syllable_index2name.append("Uncommon Syllable (frequency < 1%)")
-
+        sorted_pseudoindex2name = metadata["Behavior"]["Syllable"]["sorted_pseudoindex2name"]
+        id2sorted_index = metadata["Behavior"]["Syllable"]["id2sorted_index"]
+        syllable_names = np.fromiter(sorted_pseudoindex2name.values(), dtype="O")
+        syllable_pseudoindices = np.fromiter(sorted_pseudoindex2name.keys(), dtype=np.int64)
+        index2name = syllable_names[np.argsort(syllable_pseudoindices)].tolist()
+        for _ in range(len(id2sorted_index) - len(index2name)):
+            index2name.append("Uncommon Syllable (frequency < 1%)")
+        syllable_ids = session_df["predicted_syllable (offline)"]
+        syllable_indices = syllable_ids.map(id2sorted_index).to_numpy()
         events = LabeledEvents(
             name="BehavioralSyllable",
-            description=(
-                "Behavioral Syllable identified by Motion Sequencing (MoSeq)."
-                "Timestamps indicate the start of the syllable, which continue until the next timestamp."
-            ),
+            description="Behavioral Syllable identified by Motion Sequencing (MoSeq).",
             timestamps=position_spatial_series.timestamps,
             data=H5DataIO(syllable_indices, compression=True),
-            labels=H5DataIO(syllable_index2name, compression=True),
+            labels=H5DataIO(index2name, compression=True),
         )
         nwbfile.add_acquisition(events)
-
-        # syllable_time_series = TimeSeries(
-        #     name="BehavioralSyllable",
-        #     data=H5DataIO(session_df["predicted_syllable (offline)"].to_numpy(), compression=True),
-        #     timestamps=position_spatial_series.timestamps,
-        #     description="Behavioral Syllable identified by Motion Sequencing (MoSeq).",
-        #     unit="n.a.",
-        # )
-        # behavioral_time_series = BehavioralTimeSeries(
-        #     time_series=syllable_time_series,
-        #     name="SyllableTimeSeries",
-        # )
 
         # Combine all data into a behavioral processing module
         behavior_module = nwb_helpers.get_module(nwbfile, name="behavior", description="Processed behavioral data")
         behavior_module.add(position)
         behavior_module.add(direction)
-        # behavior_module.add(behavioral_time_series)
 
         return nwbfile
