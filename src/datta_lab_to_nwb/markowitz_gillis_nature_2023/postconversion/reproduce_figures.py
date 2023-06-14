@@ -18,7 +18,7 @@ def reproduce_fig1d(file_path):
             nwbfile.processing["behavior"]["Position"]["SpatialSeries"].data, columns=["x", "y", "height"]
         )
         angle = pd.DataFrame(
-            nwbfile.processing["behavior"]["CompassDirection"]["OrientationEllipse"].data, columns=["angle"]
+            nwbfile.processing["behavior"]["CompassDirection"]["HeadOrientation"].data, columns=["angle"]
         )
         syllables = pd.DataFrame(
             nwbfile.processing["behavior"]["SyllableTimeSeries"].time_series["BehavioralSyllable"].data,
