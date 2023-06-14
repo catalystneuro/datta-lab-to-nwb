@@ -71,11 +71,11 @@ Each conversion is organized in a directory of its own in the `src` directory:
         ├── datta_lab_to_nwb
         │   ├── conversion_directory_1
         │   └── markowitz_gillis_nature_2023
-        │       ├── markowitz_gillis_nature_2023behaviorinterface.py
-        │       ├── markowitz_gillis_nature_2023_convert_session.py
+        │       ├── behaviorinterface.py
+        │       ├── convert_session.py
         │       ├── markowitz_gillis_nature_2023_metadata.yml
-        │       ├── markowitz_gillis_nature_2023nwbconverter.py
-        │       ├── markowitz_gillis_nature_2023_requirements.txt
+        │       ├── nwbconverter.py
+        │       ├── requirements.txt
         │       ├── markowitz_gillis_nature_2023_notes.md
 
         │       └── __init__.py
@@ -85,11 +85,11 @@ Each conversion is organized in a directory of its own in the `src` directory:
 
  For example, for the conversion `markowitz_gillis_nature_2023` you can find a directory located in `src/datta-lab-to-nwb/markowitz_gillis_nature_2023`. Inside each conversion directory you can find the following files:
 
-* `markowitz_gillis_nature_2023_convert_sesion.py`: this script defines the function to convert one full session of the conversion.
-* `markowitz_gillis_nature_2023_requirements.txt`: dependencies specific to this conversion.
+* `convert_sesion.py`: this script defines the function to convert one full session of the conversion.
+* `requirements.txt`: dependencies specific to this conversion.
 * `markowitz_gillis_nature_2023_metadata.yml`: metadata in yaml format for this specific conversion.
-* `markowitz_gillis_nature_2023behaviorinterface.py`: the behavior interface. Usually ad-hoc for each conversion.
-* `markowitz_gillis_nature_2023nwbconverter.py`: the place where the `NWBConverter` class is defined.
+* `behaviorinterface.py`: the behavior interface. Usually ad-hoc for each conversion.
+* `nwbconverter.py`: the place where the `NWBConverter` class is defined.
 * `markowitz_gillis_nature_2023_notes.md`: notes and comments concerning this specific conversion.
 
 The directory might contain other files that are necessary for the conversion but those are the central ones.
