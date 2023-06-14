@@ -20,7 +20,7 @@ def reproduce_fig1d(file_path, metadata_path):
         position = pd.DataFrame(
             nwbfile.processing["behavior"]["Position"]["SpatialSeries"].data, columns=["x", "y", "height"]
         )
-        angle = pd.Series(nwbfile.processing["behavior"]["CompassDirection"]["OrientationEllipse"].data)
+        angle = pd.Series(nwbfile.processing["behavior"]["CompassDirection"]["HeadOrientation"].data)
         syllables = pd.Series(nwbfile.acquisition["BehavioralSyllable"].data).map(sorted_index2id)
     vel_height = (
         position["height"].interpolate(limit_direction="both").diff(2).iloc[start : start + n_frames].to_numpy()
