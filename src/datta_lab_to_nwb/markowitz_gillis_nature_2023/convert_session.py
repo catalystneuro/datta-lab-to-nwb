@@ -14,6 +14,7 @@ from datta_lab_to_nwb import markowitz_gillis_nature_2023
 
 def session_to_nwb(
     data_path: Union[str, Path],
+    optoda_path: Union[str, Path],
     metadata_path: Union[str, Path],
     output_dir_path: Union[str, Path],
     stub_test: bool = False,
@@ -48,8 +49,18 @@ def session_to_nwb(
             )
         )
     )
+    source_data.update(
+        dict(
+            Optogenetic=dict(
+                file_path=str(optoda_path),
+                metadata_path=str(metadata_path),
+                session_uuid=session_id,
+            )
+        )
+    )
     conversion_options.update(dict(FiberPhotometry=dict()))
     conversion_options.update(dict(Behavior=dict()))
+    conversion_options.update(dict(Optogenetic=dict()))
 
     converter = markowitz_gillis_nature_2023.NWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
@@ -71,6 +82,9 @@ if __name__ == "__main__":
     metadata_path = Path(
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/session_metadata.yaml"
     )
+    optoda_path = Path(
+        "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/optoda_raw_data/closed_loop_behavior.parquet"
+    )
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     shutil.rmtree(output_dir_path)
     stub_test = False
@@ -78,6 +92,7 @@ if __name__ == "__main__":
 
     session_to_nwb(
         data_path=file_path,
+        optoda_path=optoda_path,
         metadata_path=metadata_path,
         output_dir_path=output_dir_path,
         stub_test=stub_test,

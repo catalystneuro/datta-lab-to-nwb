@@ -1,3 +1,4 @@
 from .behaviorinterface import BehaviorInterface
 from .fiberphotometryinterface import FiberPhotometryInterface
+from .optogeneticinterface import OptogeneticInterface
 from .nwbconverter import NWBConverter

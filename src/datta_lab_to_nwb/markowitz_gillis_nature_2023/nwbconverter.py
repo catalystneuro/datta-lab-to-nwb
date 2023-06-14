@@ -2,6 +2,7 @@
 from neuroconv import NWBConverter
 from .behaviorinterface import BehaviorInterface
 from .fiberphotometryinterface import FiberPhotometryInterface
+from .optogeneticinterface import OptogeneticInterface
 
 
 class NWBConverter(NWBConverter):
@@ -10,4 +11,5 @@ class NWBConverter(NWBConverter):
     data_interface_classes = dict(
         Behavior=BehaviorInterface,
         FiberPhotometry=FiberPhotometryInterface,
+        Optogenetic=OptogeneticInterface,
     )
