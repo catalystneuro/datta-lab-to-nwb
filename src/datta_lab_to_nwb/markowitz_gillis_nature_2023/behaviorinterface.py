@@ -99,8 +99,12 @@ class BehaviorInterface(BaseDataInterface):
 
         # Add Compass Direction Data
         direction_spatial_series = SpatialSeries(
-            name="OrientationEllipse",
-            description="Mouse orientation in radians estimated using an ellipse fit.",
+            name="HeadOrientation",
+            description=(
+                "The location of the mouse was identified by finding the centroid of the contour with the largest area "
+                "using the OpenCV findcontours function. An 80×80 pixel bounding box was drawn around the "
+                "identified centroid, and the orientation was estimated using an ellipse fit."
+            ),
             data=H5DataIO(session_df.angle_unwrapped.to_numpy(), compression=True),
             timestamps=position_spatial_series.timestamps,
             reference_frame=metadata["Behavior"]["CompassDirection"]["reference_frame"],
