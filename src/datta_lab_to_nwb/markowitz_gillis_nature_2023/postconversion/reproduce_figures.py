@@ -3,6 +3,7 @@ import numpy as np
 from pynwb import NWBHDF5IO
 import matplotlib.pyplot as plt
 import colorcet as cc
+import toml
 
 
 def reproduce_fig1d(file_path):
@@ -20,10 +21,11 @@ def reproduce_fig1d(file_path):
         angle = pd.DataFrame(
             nwbfile.processing["behavior"]["CompassDirection"]["OrientationEllipse"].data, columns=["angle"]
         )
-        syllables = pd.DataFrame(
-            nwbfile.processing["behavior"]["SyllableTimeSeries"].time_series["BehavioralSyllable"].data,
-            columns=["syllable"],
-        )
+        # Reconstruct syllable time series
+        sorted_idx_to_syllable = toml.load(
+            "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/optoda_intermediate_results/syllable_stats_offline.toml"
+        )["sorted_idx_to_syllable"]
+        syllables = pd.Series(nwbfile.acquisition["BehavioralSyllable"].data).astype(np.str).map(sorted_idx_to_syllable)
     vel_height = (
         position["height"].interpolate(limit_direction="both").diff(2).iloc[start : start + n_frames].to_numpy()
         / 2
