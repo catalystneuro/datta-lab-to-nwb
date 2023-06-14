@@ -83,4 +83,5 @@ if __name__ == "__main__":
         stub_test=stub_test,
     )
     nwbfile_path = output_dir_path / f"{example_session}.nwb"
+    editable_metadata_path = Path(__file__).parent / "markowitz_gillis_nature_2023_metadata.yaml"
     reproduce_figures.reproduce_fig1d(nwbfile_path)

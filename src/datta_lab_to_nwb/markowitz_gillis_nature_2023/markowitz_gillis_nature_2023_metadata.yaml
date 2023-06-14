@@ -29,7 +29,7 @@ Behavior:
   CompassDirection:
     reference_frame: TBD
   Syllable:
-    syllable_id2name: # Mapping from syllable ID (unique) --> syllable name (not unique) [See Extended Data Fig. 2c]
+    syllable_index2name: # Mapping from syllable pseudo-index (sorted by usage, starting at 1) --> syllable name (not unique) [See Extended Data Fig. 2c]
       4: Pause
       10: Reared sniff
       33: Pause, turn left
