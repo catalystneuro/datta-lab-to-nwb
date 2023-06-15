@@ -23,8 +23,7 @@ NWBFile:
     - Datta, Sandeep Robert
 Subject:
   species: Mus musculus
-  age: P6W/ # TODO: find DOBs for each animal
-  date_of_birth: 2000-01-01T00:00:00+00:00 # Dummy dob for dandi
+  age: P6W/ # TODO: find DOBs and/or age for each animal
 Behavior:
   Position:
     reference_frame: TBD
