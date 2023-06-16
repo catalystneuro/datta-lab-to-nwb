@@ -12,6 +12,25 @@ from neuroconv.utils import dict_deep_update
 def extract_photometry_metadata(
     data_path: str, example_uuid: str = None, num_sessions: int = None, reinforcement_photometry: bool = False
 ) -> dict:
+    """Extract metadata from photometry data.
+
+    Parameters
+    ----------
+    data_path : str
+        Path to data.
+    example_uuid : str, optional
+        UUID of example session to extract metadata from.
+    num_sessions : int, optional
+        Number of sessions to extract metadata from.
+    reinforcement_photometry : bool, optional
+        If True, extract metadata from reinforcement photometry sessions. If False, extract metadata from
+        non-reinforcement photometry sessions.
+
+    Returns
+    -------
+    metadata : dict
+        Dictionary of metadata.
+    """
     photometry_data_path = Path(data_path) / "dlight_raw_data/dlight_photometry_processed_full.parquet"
     columns = (
         "uuid",
@@ -73,6 +92,25 @@ def extract_photometry_metadata(
 def extract_reinforcement_metadata(
     data_path: str, example_uuid: str = None, num_sessions: int = None, reinforcement_photometry: bool = False
 ) -> dict:
+    """Extract metadata from reinforcement data.
+
+    Parameters
+    ----------
+    data_path : str
+        Path to data.
+    example_uuid : str, optional
+        UUID of example session to extract metadata from.
+    num_sessions : int, optional
+        Number of sessions to extract metadata from.
+    reinforcement_photometry : bool, optional
+        If True, extract metadata from reinforcement photometry sessions. If False, extract metadata from
+        non-photometry reinforcement sessions.
+
+    Returns
+    -------
+    metadata : dict
+        Dictionary of metadata.
+    """
     reinforcement_data_path = Path(data_path) / "optoda_raw_data/closed_loop_behavior.parquet"
     columns = (
         "uuid",
@@ -134,6 +172,22 @@ def extract_reinforcement_metadata(
 def extract_reinforcement_photometry_metadata(
     data_path: str, example_uuid: str = None, num_sessions: int = None
 ) -> dict:
+    """Extract metadata from reinforcement photometry data.
+
+    Parameters
+    ----------
+    data_path : str
+        Path to data.
+    example_uuid : str, optional
+        UUID of example session to extract metadata from.
+    num_sessions : int, optional
+        Number of sessions to extract metadata from.
+
+    Returns
+    -------
+    metadata : dict
+        Dictionary of metadata.
+    """
     photometry_metadata = extract_photometry_metadata(
         data_path, example_uuid, num_sessions, reinforcement_photometry=True
     )
