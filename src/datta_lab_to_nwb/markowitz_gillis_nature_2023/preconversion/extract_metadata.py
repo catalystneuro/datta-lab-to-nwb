@@ -63,6 +63,61 @@ def extract_photometry_metadata(data_path: str, example_uuid: str = None, num_se
     return metadata
 
 
+def extract_reinforcement_metadata(data_path: str, example_uuid: str = None, num_sessions: int = None) -> dict:
+    reinforcement_data_path = Path(data_path) / "optoda_raw_data/closed_loop_behavior.parquet"
+    columns = (
+        "uuid",
+        "SessionName",
+        "date",
+        "opsin",
+        "genotype",
+        "area",
+        "mouse_id",
+        "sex",
+        "exclude",
+        "cohort",
+        "stim_duration",
+        "stim_frequency",
+        "pulse_width",
+        "power",
+    )
+    metadata_columns = (
+        "SessionName",
+        "date",
+        "opsin",
+        "genotype",
+        "area",
+        "mouse_id",
+        "sex",
+        "exclude",
+        "cohort",
+        "stim_duration",
+        "stim_frequency",
+        "pulse_width",
+        "power",
+    )
+    if example_uuid is None:
+        uuid_df = pd.read_parquet(
+            reinforcement_data_path,
+            columns=["uuid", "experiment_type"],
+            filters=[("experiment_type", "==", "reinforcement")],
+        )
+        uuids = set(uuid_df.uuid[uuid_df.uuid.notnull()])
+        del uuid_df
+    else:
+        uuids = {example_uuid}
+    metadata = {}
+    i = 0
+    for uuid in tqdm(uuids):
+        i += 1
+        extract_session_metadata(columns, reinforcement_data_path, metadata, metadata_columns, uuid)
+        metadata[uuid]["optogenetic_area"] = metadata[uuid].pop("area")
+        if i >= num_sessions:
+            break
+
+    return metadata
+
+
 def extract_session_metadata(columns, data_path, metadata, metadata_columns, uuid):
     """Extract metadata from a single session specified by uuid.
 
@@ -91,20 +146,30 @@ def extract_session_metadata(columns, data_path, metadata, metadata_columns, uui
             first_notnull = session_df.loc[session_df[col].notnull(), col].iloc[0]
         except IndexError:  # No non-null values found
             first_notnull = np.NaN
-        if isinstance(first_notnull, np.float64):  # numpy scalars aren't serializable
+        try:  # numpy arrays aren't serializable --> extract relevant value with .item()
             first_notnull = first_notnull.item()
+        except AttributeError:
+            pass
         metadata[uuid][col] = first_notnull
-    session_name = set(session_df.session_name[session_df.session_name.notnull()]) | set(
-        session_df.SessionName[session_df.SessionName.notnull()]
-    )
-    assert len(session_name) <= 1, "Multiple session names found"
-    try:
-        metadata[uuid]["session_description"] = session_name.pop()
-    except KeyError:  # No session name found
-        metadata[uuid]["session_description"] = ""
+    if "session_name" in columns and "SessionName" in columns:  # session name is duplicated (photometry data)
+        metadata[uuid]["session_description"] = get_session_name(session_df)
+    else:
+        metadata[uuid]["session_description"] = metadata[uuid].pop("SessionName")
     date = timezone.localize(metadata[uuid].pop("date"))
     metadata[uuid]["session_start_time"] = date.isoformat()
     metadata[uuid]["subject_id"] = metadata[uuid].pop("mouse_id")
+
+
+def get_session_name(session_df):
+    session_names = set(session_df.session_name[session_df.session_name.notnull()]) | set(
+        session_df.SessionName[session_df.SessionName.notnull()]
+    )
+    assert len(session_names) <= 1, "Multiple session names found"
+    try:
+        session_name = session_names.pop()
+    except KeyError:  # No session name found
+        session_name = ""
+    return session_name
 
 
 if __name__ == "__main__":
@@ -112,10 +177,19 @@ if __name__ == "__main__":
     photometry_metadata_path = Path(
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/metadata/photometry_metadata.yaml"
     )
+    reinforcement_metadata_path = Path(
+        "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/metadata/reinforcement_metadata.yaml"
+    )
     example_uuid = "2891f649-4fbd-4119-a807-b8ef507edfab"
-    metadata = extract_photometry_metadata(data_path, num_sessions=10)
+    reinforcement_metadata = extract_reinforcement_metadata(data_path, num_sessions=3)
+    photometry_metadata = extract_photometry_metadata(data_path, num_sessions=3)
     with open(photometry_metadata_path, "w") as f:
-        yaml.dump(metadata, f)
+        yaml.dump(photometry_metadata, f)
+    with open(reinforcement_metadata_path, "w") as f:
+        yaml.dump(reinforcement_metadata, f)
 
     # Test
-    metadata = load_dict_from_file(photometry_metadata_path)
+    photometry_metadata_loaded = load_dict_from_file(photometry_metadata_path)
+    reinforcement_metadata_loaded = load_dict_from_file(reinforcement_metadata_path)
+    assert photometry_metadata_loaded == photometry_metadata
+    assert reinforcement_metadata_loaded == reinforcement_metadata
