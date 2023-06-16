@@ -69,7 +69,7 @@ if __name__ == "__main__":
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/dlight_photometry_processed_full.parquet"
     )
     metadata_path = Path(
-        "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/session_metadata.yaml"
+        "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/metadata/reinforcement_photometry_metadata.yaml"
     )
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     shutil.rmtree(output_dir_path)
