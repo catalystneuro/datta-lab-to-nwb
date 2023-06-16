@@ -163,6 +163,12 @@ def extract_reinforcement_metadata(
     for i, uuid in enumerate(tqdm(uuids)):
         extract_session_metadata(columns, reinforcement_data_path, metadata, metadata_columns, uuid)
         metadata[uuid]["optogenetic_area"] = metadata[uuid].pop("area")
+        if metadata[uuid]["sex"] == "male":
+            metadata[uuid]["sex"] = "M"
+        elif metadata[uuid]["sex"] == "female":
+            metadata[uuid]["sex"] = "F"
+        else:
+            metadata[uuid]["sex"] = "U"
         if i >= num_sessions:
             break
 
