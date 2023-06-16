@@ -10,7 +10,7 @@ import pytz
 from neuroconv.utils import load_dict_from_file
 
 
-def extract_metadata(data_path: str, metadata_path: str):
+def extract_metadata(data_path: str, metadata_path: str, example_uuid: str = None):
     timezone = pytz.timezone("America/New_York")
     columns = (
         "uuid",
@@ -33,9 +33,12 @@ def extract_metadata(data_path: str, metadata_path: str):
         "snr",
         "area",
     )
-    uuid_df = pd.read_parquet(data_path, columns=["uuid"])
-    uuids = set(uuid_df.uuid[uuid_df.uuid.notnull()])
-    del uuid_df
+    if example_uuid is None:
+        uuid_df = pd.read_parquet(data_path, columns=["uuid"])
+        uuids = set(uuid_df.uuid[uuid_df.uuid.notnull()])
+        del uuid_df
+    else:
+        uuids = {example_uuid}
     metadata = {}
     for uuid in tqdm(uuids):
         session_df = pd.read_parquet(
@@ -71,6 +74,5 @@ if __name__ == "__main__":
     metadata_path = Path(
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/session_metadata.yaml"
     )
-    extract_metadata(data_path, metadata_path)
-    metadata = load_dict_from_file(metadata_path)
-    print(metadata)
+    example_uuid = "2891f649-4fbd-4119-a807-b8ef507edfab"
+    extract_metadata(data_path, metadata_path, example_uuid)
