@@ -8,7 +8,9 @@ import pytz
 from neuroconv.utils import load_dict_from_file
 
 
-def extract_photometry_metadata(data_path: str, example_uuid: str = None, num_sessions: int = None) -> dict:
+def extract_photometry_metadata(
+    data_path: str, example_uuid: str = None, num_sessions: int = None, exclude_reinforcement_photometry: bool = True
+) -> dict:
     photometry_data_path = Path(data_path) / "dlight_raw_data/dlight_photometry_processed_full.parquet"
     columns = (
         "uuid",
@@ -41,11 +43,15 @@ def extract_photometry_metadata(data_path: str, example_uuid: str = None, num_se
         "dlight-chrimson-8",
         "dlight-chrimson-9",
     }
+    if exclude_reinforcement_photometry:
+        filters = [("mouse_id", "not in", photometry_reinforcement_mouse_ids)]
+    else:
+        filters = None
     if example_uuid is None:
         uuid_df = pd.read_parquet(
             photometry_data_path,
             columns=["uuid", "mouse_id"],
-            filters=[("mouse_id", "not in", photometry_reinforcement_mouse_ids)],
+            filters=filters,
         )
         uuids = set(uuid_df.uuid[uuid_df.uuid.notnull()])
         del uuid_df
@@ -63,7 +69,9 @@ def extract_photometry_metadata(data_path: str, example_uuid: str = None, num_se
     return metadata
 
 
-def extract_reinforcement_metadata(data_path: str, example_uuid: str = None, num_sessions: int = None) -> dict:
+def extract_reinforcement_metadata(
+    data_path: str, example_uuid: str = None, num_sessions: int = None, exclude_reinforcement_photometry: bool = True
+) -> dict:
     reinforcement_data_path = Path(data_path) / "optoda_raw_data/closed_loop_behavior.parquet"
     columns = (
         "uuid",
@@ -96,11 +104,15 @@ def extract_reinforcement_metadata(data_path: str, example_uuid: str = None, num
         "pulse_width",
         "power",
     )
+    if exclude_reinforcement_photometry:
+        filters = [("experiment_type", "==", "reinforcement")]
+    else:
+        filters = None
     if example_uuid is None:
         uuid_df = pd.read_parquet(
             reinforcement_data_path,
             columns=["uuid", "experiment_type"],
-            filters=[("experiment_type", "==", "reinforcement")],
+            filters=filters,
         )
         uuids = set(uuid_df.uuid[uuid_df.uuid.notnull()])
         del uuid_df
@@ -187,9 +199,3 @@ if __name__ == "__main__":
         yaml.dump(photometry_metadata, f)
     with open(reinforcement_metadata_path, "w") as f:
         yaml.dump(reinforcement_metadata, f)
-
-    # Test
-    photometry_metadata_loaded = load_dict_from_file(photometry_metadata_path)
-    reinforcement_metadata_loaded = load_dict_from_file(reinforcement_metadata_path)
-    assert photometry_metadata_loaded == photometry_metadata
-    assert reinforcement_metadata_loaded == reinforcement_metadata
