@@ -6,10 +6,11 @@ import yaml
 from tqdm import tqdm
 import pytz
 from neuroconv.utils import load_dict_from_file
+from neuroconv.utils import dict_deep_update
 
 
 def extract_photometry_metadata(
-    data_path: str, example_uuid: str = None, num_sessions: int = None, exclude_reinforcement_photometry: bool = True
+    data_path: str, example_uuid: str = None, num_sessions: int = None, reinforcement_photometry: bool = False
 ) -> dict:
     photometry_data_path = Path(data_path) / "dlight_raw_data/dlight_photometry_processed_full.parquet"
     columns = (
@@ -43,10 +44,10 @@ def extract_photometry_metadata(
         "dlight-chrimson-8",
         "dlight-chrimson-9",
     }
-    if exclude_reinforcement_photometry:
-        filters = [("mouse_id", "not in", photometry_reinforcement_mouse_ids)]
+    if reinforcement_photometry:
+        filters = [("mouse_id", "in", photometry_reinforcement_mouse_ids)]
     else:
-        filters = None
+        filters = [("mouse_id", "not in", photometry_reinforcement_mouse_ids)]
     if example_uuid is None:
         uuid_df = pd.read_parquet(
             photometry_data_path,
@@ -57,10 +58,10 @@ def extract_photometry_metadata(
         del uuid_df
     else:
         uuids = {example_uuid}
+    if num_sessions is None:
+        num_sessions = len(uuids)
     metadata = {}
-    i = 0
-    for uuid in tqdm(uuids):
-        i += 1
+    for i, uuid in enumerate(tqdm(uuids)):
         extract_session_metadata(columns, photometry_data_path, metadata, metadata_columns, uuid)
         metadata[uuid]["photometry_area"] = metadata[uuid].pop("area")
         if i >= num_sessions:
@@ -70,7 +71,7 @@ def extract_photometry_metadata(
 
 
 def extract_reinforcement_metadata(
-    data_path: str, example_uuid: str = None, num_sessions: int = None, exclude_reinforcement_photometry: bool = True
+    data_path: str, example_uuid: str = None, num_sessions: int = None, reinforcement_photometry: bool = False
 ) -> dict:
     reinforcement_data_path = Path(data_path) / "optoda_raw_data/closed_loop_behavior.parquet"
     columns = (
@@ -104,10 +105,10 @@ def extract_reinforcement_metadata(
         "pulse_width",
         "power",
     )
-    if exclude_reinforcement_photometry:
-        filters = [("experiment_type", "==", "reinforcement")]
+    if reinforcement_photometry:
+        filters = [("experiment_type", "==", "reinforcement_photometry")]
     else:
-        filters = None
+        filters = [("experiment_type", "==", "reinforcement")]
     if example_uuid is None:
         uuid_df = pd.read_parquet(
             reinforcement_data_path,
@@ -119,14 +120,55 @@ def extract_reinforcement_metadata(
     else:
         uuids = {example_uuid}
     metadata = {}
-    i = 0
-    for uuid in tqdm(uuids):
-        i += 1
+    if num_sessions is None:
+        num_sessions = len(uuids)
+    for i, uuid in enumerate(tqdm(uuids)):
         extract_session_metadata(columns, reinforcement_data_path, metadata, metadata_columns, uuid)
         metadata[uuid]["optogenetic_area"] = metadata[uuid].pop("area")
         if i >= num_sessions:
             break
 
+    return metadata
+
+
+def extract_reinforcement_photometry_metadata(
+    data_path: str, example_uuid: str = None, num_sessions: int = None
+) -> dict:
+    photometry_metadata = extract_photometry_metadata(
+        data_path, example_uuid, num_sessions, reinforcement_photometry=True
+    )
+    reinforcement_metadata = extract_reinforcement_metadata(
+        data_path, example_uuid, num_sessions, reinforcement_photometry=True
+    )
+    photometry_uuids = set(photometry_metadata.keys())
+    reinforcement_uuids = set(reinforcement_metadata.keys())
+    metadata = {}
+    for uuid in photometry_uuids:
+        for photometry_key in photometry_metadata[uuid].keys():
+            try:
+                assert (
+                    photometry_metadata[uuid][photometry_key] == reinforcement_metadata[uuid][photometry_key]
+                ), f"photometry metadata and reinforcement metadata don't match (photometry[{uuid}][{photometry_key}]: {photometry_metadata[uuid][photometry_key]}, reinforcement[{uuid}][{photometry_key}]: {reinforcement_metadata[uuid][photometry_key]})"
+            except KeyError:  # reinforcement metadata doesn't have this uuid and/or metadata field
+                pass
+            try:
+                metadata[uuid][photometry_key] = photometry_metadata[uuid][photometry_key]
+            except KeyError:  # New uuid
+                metadata[uuid] = {}
+                metadata[uuid][photometry_key] = photometry_metadata[uuid][photometry_key]
+    for uuid in reinforcement_uuids:
+        for reinforcement_key in reinforcement_metadata[uuid].keys():
+            try:
+                assert (
+                    photometry_metadata[uuid][reinforcement_key] == reinforcement_metadata[uuid][reinforcement_key]
+                ), f"photometry metadata and reinforcement metadata don't match (photometry[{uuid}][{reinforcement_key}]: {photometry_metadata[uuid][reinforcement_key]}, reinforcement[{uuid}][{reinforcement_key}]: {reinforcement_metadata[uuid][reinforcement_key]})"
+            except KeyError:
+                pass
+            try:
+                metadata[uuid][reinforcement_key] = reinforcement_metadata[uuid][reinforcement_key]
+            except KeyError:
+                metadata[uuid] = {}
+                metadata[uuid][reinforcement_key] = reinforcement_metadata[uuid][reinforcement_key]
     return metadata
 
 
@@ -173,6 +215,18 @@ def extract_session_metadata(columns, data_path, metadata, metadata_columns, uui
 
 
 def get_session_name(session_df):
+    """Get the session name from a dataframe containing both "session_name" and "SessionName" columns.
+
+    Parameters
+    ----------
+    session_df : pandas.DataFrame
+        Dataframe containing both "session_name" and "SessionName" columns.
+
+    Returns
+    -------
+    session_name : str
+        Session name.
+    """
     session_names = set(session_df.session_name[session_df.session_name.notnull()]) | set(
         session_df.SessionName[session_df.SessionName.notnull()]
     )
@@ -192,10 +246,16 @@ if __name__ == "__main__":
     reinforcement_metadata_path = Path(
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/metadata/reinforcement_metadata.yaml"
     )
+    reinforcement_photometry_metadata_path = Path(
+        "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/metadata/reinforcement_photometry_metadata.yaml"
+    )
     example_uuid = "2891f649-4fbd-4119-a807-b8ef507edfab"
     reinforcement_metadata = extract_reinforcement_metadata(data_path, num_sessions=3)
     photometry_metadata = extract_photometry_metadata(data_path, num_sessions=3)
+    reinforcement_photometry_metadata = extract_reinforcement_photometry_metadata(data_path, example_uuid=example_uuid)
     with open(photometry_metadata_path, "w") as f:
         yaml.dump(photometry_metadata, f)
     with open(reinforcement_metadata_path, "w") as f:
         yaml.dump(reinforcement_metadata, f)
+    with open(reinforcement_photometry_metadata_path, "w") as f:
+        yaml.dump(reinforcement_photometry_metadata, f)
