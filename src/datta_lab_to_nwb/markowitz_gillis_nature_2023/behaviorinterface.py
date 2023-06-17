@@ -65,12 +65,6 @@ class BehaviorInterface(BaseDataInterface):
                         "reference_frame": {"type": "string"},
                     },
                 },
-                "Syllable": {
-                    "type": "object",
-                    "properties": {
-                        "syllable_id2name": {"type": "object"},
-                    },
-                },
             },
         }
         return metadata_schema

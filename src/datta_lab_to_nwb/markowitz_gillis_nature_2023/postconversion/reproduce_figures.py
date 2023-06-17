@@ -8,7 +8,7 @@ import colorcet as cc
 
 def reproduce_fig1d(file_path, metadata_path):
     metadata = load_dict_from_file(metadata_path)
-    sorted_index2id = metadata["Behavior"]["Syllable"]["sorted_index2id"]
+    sorted_index2id = metadata["BehavioralSyllable"]["sorted_index2id"]
     n_frames = 361
     start = 3520
     with NWBHDF5IO(file_path, mode="r") as io:
