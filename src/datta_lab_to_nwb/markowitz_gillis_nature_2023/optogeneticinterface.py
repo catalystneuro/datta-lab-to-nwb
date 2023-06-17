@@ -43,9 +43,10 @@ class OptogeneticInterface(BaseDataInterface):
         session_metadata = session_metadata[self.source_data["session_uuid"]]
         metadata["Subject"]["sex"] = session_metadata["sex"]
         metadata["Optogenetics"]["area"] = session_metadata["optogenetic_area"]
-        metadata["Optogenetics"]["stim_frequency"] = session_metadata["stim_frequency"]
-        metadata["Optogenetics"]["stim_duration"] = session_metadata["stim_duration"]
-        metadata["Optogenetics"]["power"] = session_metadata["power"]
+        metadata["Optogenetics"]["stim_frequency_Hz"] = session_metadata["stim_frequency_Hz"]
+        metadata["Optogenetics"]["pulse_width_s"] = session_metadata["pulse_width_s"]
+        metadata["Optogenetics"]["stim_duration_s"] = session_metadata["stim_duration_s"]
+        metadata["Optogenetics"]["power_watts"] = session_metadata["power_watts"]
 
         return metadata
 
@@ -55,9 +56,9 @@ class OptogeneticInterface(BaseDataInterface):
             "type": "object",
             "properties": {
                 "area": {"type": "string"},
-                "stim_frequency": {"type": "number"},
-                "stim_duration": {"type": "number"},
-                "power": {"type": "number"},
+                "stim_frequency_Hz": {"type": "number"},
+                "stim_duration_s": {"type": "number"},
+                "power_watts": {"type": "number"},
             },
         }
         return metadata_schema
@@ -83,8 +84,8 @@ class OptogeneticInterface(BaseDataInterface):
             location=metadata["Optogenetics"]["area"],
         )
         # Reconstruct optogenetic series from feedback status
-        stim_duration_index = int(metadata["Optogenetics"]["stim_duration"] / 30)
-        power_W = metadata["Optogenetics"]["power"] / 1000
+        stim_duration_index = int(metadata["Optogenetics"]["stim_duration_s"] / 30)
+        power_W = metadata["Optogenetics"]["power_watts"]
         feedback_status_cts = session_df.feedback_status.to_numpy()
         feedback_is_on_index = np.where(feedback_status_cts == 1)[0]
         for index in feedback_is_on_index:
