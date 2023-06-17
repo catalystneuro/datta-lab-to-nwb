@@ -84,18 +84,19 @@ class OptogeneticInterface(BaseDataInterface):
             location=metadata["Optogenetics"]["area"],
         )
         # Reconstruct optogenetic series from feedback status
-        stim_duration_index = int(metadata["Optogenetics"]["stim_duration_s"] / 30)
-        power_W = metadata["Optogenetics"]["power_watts"]
-        feedback_status_cts = session_df.feedback_status.to_numpy()
-        feedback_is_on_index = np.where(feedback_status_cts == 1)[0]
-        for index in feedback_is_on_index:
-            feedback_status_cts[index : index + stim_duration_index] = 1
-        feedback_status_cts[feedback_status_cts == -1] = 0
+        stim_duration_s = metadata["Optogenetics"]["stim_duration_s"]
+        power_watts = metadata["Optogenetics"]["power_watts"]
+        feedback_is_on_index = np.where(session_df.feedback_status == 1)[0]
+        data, timestamps = np.zeros(len(feedback_is_on_index) * 3), np.zeros(len(feedback_is_on_index) * 3)
+        for i, index in enumerate(feedback_is_on_index):
+            t = session_df.timestamp[index]
+            data[i * 3 : i * 3 + 3] = [0, power_watts, 0]
+            timestamps[i * 3 : i * 3 + 3] = [t - stim_duration_s, t, t + stim_duration_s]
         ogen_series = OptogeneticSeries(
             name="OptogeneticSeries",
             site=ogen_site,
-            data=H5DataIO(feedback_status_cts * power_W, compression=True),
-            timestamps=H5DataIO(session_df.timestamp.to_numpy(), compression=True),
+            data=H5DataIO(data, compression=True),
+            timestamps=H5DataIO(timestamps, compression=True),
         )
         nwbfile.add_stimulus(ogen_series)
 
