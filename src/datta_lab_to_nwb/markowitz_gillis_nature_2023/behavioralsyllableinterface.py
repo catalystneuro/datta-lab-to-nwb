@@ -66,7 +66,7 @@ class BehavioralSyllableInterface(BaseDataInterface):
         for _ in range(len(id2sorted_index) - len(index2name)):
             index2name.append("Uncommon Syllable (frequency < 1%)")
         syllable_ids = session_df["predicted_syllable (offline)"]
-        syllable_indices = syllable_ids.map(id2sorted_index).to_numpy()
+        syllable_indices = syllable_ids.map(id2sorted_index).to_numpy(dtype=np.uint8)
         events = LabeledEvents(
             name="BehavioralSyllable",
             description="Behavioral Syllable identified by Motion Sequencing (MoSeq).",
