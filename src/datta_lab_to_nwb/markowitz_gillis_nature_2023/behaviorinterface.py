@@ -1,9 +1,8 @@
 """Primary class for converting experiment-specific behavior."""
 import numpy as np
 import pandas as pd
-from pynwb import NWBFile, TimeSeries
+from pynwb import NWBFile
 from pynwb.behavior import (
-    BehavioralTimeSeries,
     CompassDirection,
     Position,
     SpatialSeries,
@@ -12,7 +11,6 @@ from neuroconv.basedatainterface import BaseDataInterface
 from neuroconv.tools import nwb_helpers
 from neuroconv.utils import load_dict_from_file
 from hdmf.backends.hdf5.h5_utils import H5DataIO
-from ndx_events import LabeledEvents, AnnotatedEventsTable
 
 
 class BehaviorInterface(BaseDataInterface):
