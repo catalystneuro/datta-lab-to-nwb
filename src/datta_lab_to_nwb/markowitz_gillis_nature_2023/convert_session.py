@@ -48,6 +48,15 @@ def session_to_nwb(
             )
         )
     )
+    source_data.update(
+        dict(
+            BehavioralSyllable=dict(
+                file_path=str(data_path),
+                metadata_path=str(metadata_path),
+                session_uuid=session_id,
+            )
+        )
+    )
     conversion_options.update(dict(FiberPhotometry=dict()))
     conversion_options.update(dict(Behavior=dict()))
 

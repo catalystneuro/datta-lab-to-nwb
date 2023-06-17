@@ -1,31 +1,21 @@
 """Primary class for converting experiment-specific behavior."""
 import numpy as np
 import pandas as pd
-from pynwb import NWBFile, TimeSeries
-from pynwb.behavior import (
-    BehavioralTimeSeries,
-    CompassDirection,
-    Position,
-    SpatialSeries,
-)
+from pynwb import NWBFile
 from neuroconv.basedatainterface import BaseDataInterface
-from neuroconv.tools import nwb_helpers
 from neuroconv.utils import load_dict_from_file
 from hdmf.backends.hdf5.h5_utils import H5DataIO
-from ndx_events import LabeledEvents, AnnotatedEventsTable
+from ndx_events import LabeledEvents
 
 
-class BehaviorInterface(BaseDataInterface):
-    """Behavior interface for markowitz_gillis_nature_2023 conversion"""
+class BehavioralSyllableInterface(BaseDataInterface):
+    """Behavioral Syllable Interface for markowitz_gillis_nature_2023 conversion"""
 
     def __init__(self, file_path: str, session_uuid: str, metadata_path: str):
         # This should load the data lazily and prepare variables you need
         columns = (
             "uuid",
-            "centroid_x_mm",
-            "centroid_y_mm",
-            "height_ave_mm",
-            "angle_unwrapped",
+            "predicted_syllable (offline)",
             "timestamp",
         )
         super().__init__(
@@ -82,37 +72,23 @@ class BehaviorInterface(BaseDataInterface):
             columns=self.source_data["columns"],
             filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
-
-        # Add Position Data
-        position_data = np.vstack((session_df.centroid_x_mm, session_df.centroid_y_mm, session_df.height_ave_mm)).T
-        position_spatial_series = SpatialSeries(
-            name="SpatialSeries",
-            description="Position (x, y, height) in an open field.",
-            data=H5DataIO(position_data, compression=True),
-            timestamps=H5DataIO(session_df.timestamp.to_numpy(), compression=True),
-            reference_frame=metadata["Behavior"]["Position"]["reference_frame"],
-            unit="mm",
+        # Add Syllable Data
+        sorted_pseudoindex2name = metadata["Behavior"]["Syllable"]["sorted_pseudoindex2name"]
+        id2sorted_index = metadata["Behavior"]["Syllable"]["id2sorted_index"]
+        syllable_names = np.fromiter(sorted_pseudoindex2name.values(), dtype="O")
+        syllable_pseudoindices = np.fromiter(sorted_pseudoindex2name.keys(), dtype=np.int64)
+        index2name = syllable_names[np.argsort(syllable_pseudoindices)].tolist()
+        for _ in range(len(id2sorted_index) - len(index2name)):
+            index2name.append("Uncommon Syllable (frequency < 1%)")
+        syllable_ids = session_df["predicted_syllable (offline)"]
+        syllable_indices = syllable_ids.map(id2sorted_index).to_numpy()
+        events = LabeledEvents(
+            name="BehavioralSyllable",
+            description="Behavioral Syllable identified by Motion Sequencing (MoSeq).",
+            timestamps=H5DataIO(session_df["timestamp"].to_numpy(), compression=True),
+            data=H5DataIO(syllable_indices, compression=True),
+            labels=H5DataIO(index2name, compression=True),
         )
-        position = Position(spatial_series=position_spatial_series)
-
-        # Add Compass Direction Data
-        direction_spatial_series = SpatialSeries(
-            name="HeadOrientation",
-            description=(
-                "The location of the mouse was identified by finding the centroid of the contour with the largest area "
-                "using the OpenCV findcontours function. An 80×80 pixel bounding box was drawn around the "
-                "identified centroid, and the orientation was estimated using an ellipse fit."
-            ),
-            data=H5DataIO(session_df.angle_unwrapped.to_numpy(), compression=True),
-            timestamps=position_spatial_series.timestamps,
-            reference_frame=metadata["Behavior"]["CompassDirection"]["reference_frame"],
-            unit="radians",
-        )
-        direction = CompassDirection(spatial_series=direction_spatial_series, name="CompassDirection")
-
-        # Combine all data into a behavioral processing module
-        behavior_module = nwb_helpers.get_module(nwbfile, name="behavior", description="Processed behavioral data")
-        behavior_module.add(position)
-        behavior_module.add(direction)
+        nwbfile.add_acquisition(events)
 
         return nwbfile
