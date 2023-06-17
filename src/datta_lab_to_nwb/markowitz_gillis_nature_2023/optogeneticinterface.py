@@ -39,10 +39,27 @@ class OptogeneticInterface(BaseDataInterface):
 
     def get_metadata(self) -> dict:
         metadata = super().get_metadata()
+        session_metadata = load_dict_from_file(self.source_data["metadata_path"])
+        session_metadata = session_metadata[self.source_data["session_uuid"]]
+        metadata["Subject"]["sex"] = session_metadata["sex"]
+        metadata["Optogenetics"]["area"] = session_metadata["optogenetic_area"]
+        metadata["Optogenetics"]["stim_frequency"] = session_metadata["stim_frequency"]
+        metadata["Optogenetics"]["stim_duration"] = session_metadata["stim_duration"]
+        metadata["Optogenetics"]["power"] = session_metadata["power"]
+
         return metadata
 
     def get_metadata_schema(self) -> dict:
         metadata_schema = super().get_metadata_schema()
+        metadata_schema["properties"]["Optogenetics"] = {
+            "type": "object",
+            "properties": {
+                "area": {"type": "string"},
+                "stim_frequency": {"type": "number"},
+                "stim_duration": {"type": "number"},
+                "power": {"type": "number"},
+            },
+        }
         return metadata_schema
 
     def run_conversion(self, nwbfile: NWBFile, metadata: dict):
@@ -52,12 +69,6 @@ class OptogeneticInterface(BaseDataInterface):
             columns=self.source_data["columns"],
             filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
-        location = session_df["area"].unique()[0]
-        stim_duration = session_df["stim_duration"].unique()[0]
-        fs = 30.0
-        stim_duration_index = int(stim_duration * fs)
-        power_mW = session_df["power"].unique()[0]
-        power_W = power_mW / 1000.0
 
         device = nwbfile.create_device(
             name="Opto Engine MRL-III-635",
@@ -69,9 +80,11 @@ class OptogeneticInterface(BaseDataInterface):
             device=device,
             description="Optogenetic stimulus site",
             excitation_lambda=635.0,
-            location=location,
+            location=metadata["Optogenetics"]["area"],
         )
         # Reconstruct optogenetic series from feedback status
+        stim_duration_index = int(metadata["Optogenetics"]["stim_duration"] / 30)
+        power_W = metadata["Optogenetics"]["power"] / 1000
         feedback_status_cts = session_df.feedback_status.to_numpy()
         feedback_is_on_index = np.where(feedback_status_cts == 1)[0]
         for index in feedback_is_on_index:
