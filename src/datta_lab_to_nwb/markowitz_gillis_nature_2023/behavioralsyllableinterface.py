@@ -40,27 +40,12 @@ class BehavioralSyllableInterface(BaseDataInterface):
 
     def get_metadata_schema(self) -> dict:
         metadata_schema = super().get_metadata_schema()
-        metadata_schema["properties"]["Behavior"] = {
+        metadata_schema["properties"]["BehavioralSyllable"] = {
             "type": "object",
             "properties": {
-                "CompassDirection": {
-                    "type": "object",
-                    "properties": {
-                        "reference_frame": {"type": "string"},
-                    },
-                },
-                "Position": {
-                    "type": "object",
-                    "properties": {
-                        "reference_frame": {"type": "string"},
-                    },
-                },
-                "Syllable": {
-                    "type": "object",
-                    "properties": {
-                        "syllable_id2name": {"type": "object"},
-                    },
-                },
+                "sorted_pseudoindex2name": {"type": "object"},
+                "id2sorted_index": {"type": "object"},
+                "sorted_index2id": {"type": "object"},
             },
         }
         return metadata_schema
@@ -73,8 +58,8 @@ class BehavioralSyllableInterface(BaseDataInterface):
             filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
         # Add Syllable Data
-        sorted_pseudoindex2name = metadata["Behavior"]["Syllable"]["sorted_pseudoindex2name"]
-        id2sorted_index = metadata["Behavior"]["Syllable"]["id2sorted_index"]
+        sorted_pseudoindex2name = metadata["BehavioralSyllable"]["sorted_pseudoindex2name"]
+        id2sorted_index = metadata["BehavioralSyllable"]["id2sorted_index"]
         syllable_names = np.fromiter(sorted_pseudoindex2name.values(), dtype="O")
         syllable_pseudoindices = np.fromiter(sorted_pseudoindex2name.keys(), dtype=np.int64)
         index2name = syllable_names[np.argsort(syllable_pseudoindices)].tolist()
