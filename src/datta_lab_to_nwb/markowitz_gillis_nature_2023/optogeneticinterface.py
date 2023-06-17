@@ -89,7 +89,7 @@ class OptogeneticInterface(BaseDataInterface):
         feedback_is_on_index = np.where(session_df.feedback_status == 1)[0]
         data, timestamps = np.zeros(len(feedback_is_on_index) * 3), np.zeros(len(feedback_is_on_index) * 3)
         for i, index in enumerate(feedback_is_on_index):
-            t = session_df.timestamp[index]
+            t = session_df.timestamp.iloc[index]
             data[i * 3 : i * 3 + 3] = [0, power_watts, 0]
             timestamps[i * 3 : i * 3 + 3] = [t - stim_duration_s, t, t + stim_duration_s]
         ogen_series = OptogeneticSeries(

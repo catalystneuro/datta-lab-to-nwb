@@ -13,6 +13,7 @@ from datta_lab_to_nwb import markowitz_gillis_nature_2023
 
 
 def session_to_nwb(
+    session_id: str,
     data_path: Union[str, Path],
     optoda_path: Union[str, Path],
     metadata_path: Union[str, Path],
@@ -25,7 +26,6 @@ def session_to_nwb(
         output_dir_path = output_dir_path / "nwb_stub"
     output_dir_path.mkdir(parents=True, exist_ok=True)
 
-    session_id = "2891f649-4fbd-4119-a807-b8ef507edfab"
     nwbfile_path = output_dir_path / f"{session_id}.nwb"
 
     source_data = dict()
@@ -88,9 +88,10 @@ if __name__ == "__main__":
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     shutil.rmtree(output_dir_path)
     stub_test = False
-    example_session = "2891f649-4fbd-4119-a807-b8ef507edfab"
+    example_session = "f549a587-fbca-40a7-b4f8-6a5d83f849de"
 
     session_to_nwb(
+        session_id=example_session,
         data_path=file_path,
         optoda_path=optoda_path,
         metadata_path=metadata_path,
