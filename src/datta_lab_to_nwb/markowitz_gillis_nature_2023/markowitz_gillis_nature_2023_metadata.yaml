@@ -29,7 +29,7 @@ NWBFile:
 Subject:
   species: Mus musculus
   age: P6W/P15W
-  description: Eight- to fifteen-week-old DAT-IRES-cre::Ai32 mice resulting from the cross of DAT-IRES-cre mice (The Jackson Laboratory, 006660) and Ai32 mice (The Jackson Lab, 012569) of either sex were used.
+  description: This study utilized wild-type DAT-IRES-Cre (The Jackson Laboratory 006660) and Ai32 (The Jackson Laboratory 012569) mice, both male and female, between 6-15 weeks of age.
 Behavior:
   Position:
     reference_frame: TBD
