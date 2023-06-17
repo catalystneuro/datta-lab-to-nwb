@@ -169,6 +169,11 @@ def extract_reinforcement_metadata(
             metadata[uuid]["sex"] = "F"
         else:
             metadata[uuid]["sex"] = "U"
+        # add si units to names
+        metadata[uuid]["stim_duration_s"] = metadata[uuid].pop("stim_duration")
+        metadata[uuid]["stim_frequency_Hz"] = metadata[uuid].pop("stim_frequency")
+        metadata[uuid]["pulse_width_s"] = metadata[uuid].pop("pulse_width")
+        metadata[uuid]["power_watts"] = metadata[uuid].pop("power") / 1000
         if i >= num_sessions:
             break
 
