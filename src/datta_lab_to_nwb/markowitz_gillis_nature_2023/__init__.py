@@ -1,3 +1,4 @@
 from .behaviorinterface import BehaviorInterface
+from .behavioralsyllableinterface import BehavioralSyllableInterface
 from .fiberphotometryinterface import FiberPhotometryInterface
 from .nwbconverter import NWBConverter
