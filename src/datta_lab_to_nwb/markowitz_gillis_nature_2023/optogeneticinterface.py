@@ -87,11 +87,12 @@ class OptogeneticInterface(BaseDataInterface):
         stim_duration_s = metadata["Optogenetics"]["stim_duration_s"]
         power_watts = metadata["Optogenetics"]["power_watts"]
         feedback_is_on_index = np.where(session_df.feedback_status == 1)[0]
-        data, timestamps = np.zeros(len(feedback_is_on_index) * 3), np.zeros(len(feedback_is_on_index) * 3)
+        data, timestamps = np.zeros(len(feedback_is_on_index) * 2 + 2), np.zeros(len(feedback_is_on_index) * 2 + 2)
+        timestamps[0], timestamps[-1] = session_df.timestamp.iloc[0], session_df.timestamp.iloc[-1]
         for i, index in enumerate(feedback_is_on_index):
             t = session_df.timestamp.iloc[index]
-            data[i * 3 : i * 3 + 3] = [0, power_watts, 0]
-            timestamps[i * 3 : i * 3 + 3] = [t - stim_duration_s, t, t + stim_duration_s]
+            data[i * 2 + 1 : i * 2 + 3] = [power_watts, 0]
+            timestamps[i * 2 + 1 : i * 2 + 3] = [t, t + stim_duration_s]
         ogen_series = OptogeneticSeries(
             name="OptogeneticSeries",
             site=ogen_site,
