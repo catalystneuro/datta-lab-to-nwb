@@ -81,7 +81,8 @@ if __name__ == "__main__":
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/dlight_raw_data/session_metadata.yaml"
     )
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
-    shutil.rmtree(output_dir_path)
+    if output_dir_path.exists():
+        shutil.rmtree(output_dir_path)
     stub_test = False
     example_session = "2891f649-4fbd-4119-a807-b8ef507edfab"
 
