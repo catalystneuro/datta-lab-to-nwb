@@ -1,11 +1,14 @@
 import pandas as pd
 import numpy as np
 from pynwb import NWBHDF5IO
+from neuroconv.utils import load_dict_from_file
 import matplotlib.pyplot as plt
 import colorcet as cc
 
 
-def reproduce_fig1d(file_path):
+def reproduce_fig1d(file_path, metadata_path):
+    metadata = load_dict_from_file(metadata_path)
+    sorted_index2id = metadata["BehavioralSyllable"]["sorted_index2id"]
     n_frames = 361
     start = 3520
     with NWBHDF5IO(file_path, mode="r") as io:
@@ -17,13 +20,8 @@ def reproduce_fig1d(file_path):
         position = pd.DataFrame(
             nwbfile.processing["behavior"]["Position"]["SpatialSeries"].data, columns=["x", "y", "height"]
         )
-        angle = pd.DataFrame(
-            nwbfile.processing["behavior"]["CompassDirection"]["HeadOrientation"].data, columns=["angle"]
-        )
-        syllables = pd.DataFrame(
-            nwbfile.processing["behavior"]["SyllableTimeSeries"].time_series["BehavioralSyllable"].data,
-            columns=["syllable"],
-        )
+        angle = pd.Series(nwbfile.processing["behavior"]["CompassDirection"]["HeadOrientation"].data)
+        syllables = pd.Series(nwbfile.acquisition["BehavioralSyllable"].data).map(sorted_index2id)
     vel_height = (
         position["height"].interpolate(limit_direction="both").diff(2).iloc[start : start + n_frames].to_numpy()
         / 2

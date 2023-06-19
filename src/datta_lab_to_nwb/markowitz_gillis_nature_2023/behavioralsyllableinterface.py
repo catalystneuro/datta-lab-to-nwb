@@ -1,0 +1,79 @@
+"""Primary class for converting experiment-specific behavior."""
+import numpy as np
+import pandas as pd
+from pynwb import NWBFile
+from neuroconv.basedatainterface import BaseDataInterface
+from neuroconv.utils import load_dict_from_file
+from hdmf.backends.hdf5.h5_utils import H5DataIO
+from ndx_events import LabeledEvents
+
+
+class BehavioralSyllableInterface(BaseDataInterface):
+    """Behavioral Syllable Interface for markowitz_gillis_nature_2023 conversion"""
+
+    def __init__(self, file_path: str, session_uuid: str, metadata_path: str):
+        # This should load the data lazily and prepare variables you need
+        columns = (
+            "uuid",
+            "predicted_syllable (offline)",
+            "timestamp",
+        )
+        super().__init__(
+            file_path=file_path,
+            session_uuid=session_uuid,
+            columns=columns,
+            metadata_path=metadata_path,
+        )
+
+    def get_metadata(self) -> dict:
+        metadata = super().get_metadata()
+        session_metadata = load_dict_from_file(self.source_data["metadata_path"])
+        session_metadata = session_metadata[self.source_data["session_uuid"]]
+        metadata["NWBFile"]["session_description"] = session_metadata["session_description"]
+        metadata["NWBFile"]["session_start_time"] = session_metadata["session_start_time"]
+        metadata["Subject"] = {}
+        metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
+        metadata["NWBFile"]["identifier"] = self.source_data["session_uuid"]
+        metadata["NWBFile"]["session_id"] = self.source_data["session_uuid"]
+
+        return metadata
+
+    def get_metadata_schema(self) -> dict:
+        metadata_schema = super().get_metadata_schema()
+        metadata_schema["properties"]["BehavioralSyllable"] = {
+            "type": "object",
+            "properties": {
+                "sorted_pseudoindex2name": {"type": "object"},
+                "id2sorted_index": {"type": "object"},
+                "sorted_index2id": {"type": "object"},
+            },
+        }
+        return metadata_schema
+
+    def run_conversion(self, nwbfile: NWBFile, metadata: dict) -> NWBFile:
+        """Run conversion of data from the source file into the nwbfile."""
+        session_df = pd.read_parquet(
+            self.source_data["file_path"],
+            columns=self.source_data["columns"],
+            filters=[("uuid", "==", self.source_data["session_uuid"])],
+        )
+        # Add Syllable Data
+        sorted_pseudoindex2name = metadata["BehavioralSyllable"]["sorted_pseudoindex2name"]
+        id2sorted_index = metadata["BehavioralSyllable"]["id2sorted_index"]
+        syllable_names = np.fromiter(sorted_pseudoindex2name.values(), dtype="O")
+        syllable_pseudoindices = np.fromiter(sorted_pseudoindex2name.keys(), dtype=np.int64)
+        index2name = syllable_names[np.argsort(syllable_pseudoindices)].tolist()
+        for _ in range(len(id2sorted_index) - len(index2name)):
+            index2name.append("Uncommon Syllable (frequency < 1%)")
+        syllable_ids = session_df["predicted_syllable (offline)"]
+        syllable_indices = syllable_ids.map(id2sorted_index).to_numpy(dtype=np.uint8)
+        events = LabeledEvents(
+            name="BehavioralSyllable",
+            description="Behavioral Syllable identified by Motion Sequencing (MoSeq).",
+            timestamps=H5DataIO(session_df["timestamp"].to_numpy(), compression=True),
+            data=H5DataIO(syllable_indices, compression=True),
+            labels=H5DataIO(index2name, compression=True),
+        )
+        nwbfile.add_acquisition(events)
+
+        return nwbfile

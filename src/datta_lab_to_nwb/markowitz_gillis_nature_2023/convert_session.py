@@ -48,6 +48,15 @@ def session_to_nwb(
             )
         )
     )
+    source_data.update(
+        dict(
+            BehavioralSyllable=dict(
+                file_path=str(data_path),
+                metadata_path=str(metadata_path),
+                session_uuid=session_id,
+            )
+        )
+    )
     conversion_options.update(dict(FiberPhotometry=dict()))
     conversion_options.update(dict(Behavior=dict()))
 
@@ -72,7 +81,8 @@ if __name__ == "__main__":
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/metadata/reinforcement_photometry_metadata.yaml"
     )
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
-    shutil.rmtree(output_dir_path)
+    if output_dir_path.exists():
+        shutil.rmtree(output_dir_path)
     stub_test = False
     example_session = "2891f649-4fbd-4119-a807-b8ef507edfab"
 
@@ -83,4 +93,5 @@ if __name__ == "__main__":
         stub_test=stub_test,
     )
     nwbfile_path = output_dir_path / f"{example_session}.nwb"
-    reproduce_figures.reproduce_fig1d(nwbfile_path)
+    editable_metadata_path = Path(__file__).parent / "markowitz_gillis_nature_2023_metadata.yaml"
+    reproduce_figures.reproduce_fig1d(nwbfile_path, editable_metadata_path)
