@@ -55,6 +55,11 @@ def session_to_nwb(
                 file_path=str(optoda_path),
                 metadata_path=str(metadata_path),
                 session_uuid=session_id,
+            ),
+            BehavioralSyllable=dict(
+                file_path=str(data_path),
+                metadata_path=str(metadata_path),
+                session_uuid=session_id,
             )
         )
     )
@@ -99,4 +104,5 @@ if __name__ == "__main__":
         stub_test=stub_test,
     )
     nwbfile_path = output_dir_path / f"{example_session}.nwb"
-    reproduce_figures.reproduce_fig1d(nwbfile_path)
+    editable_metadata_path = Path(__file__).parent / "markowitz_gillis_nature_2023_metadata.yaml"
+    reproduce_figures.reproduce_fig1d(nwbfile_path, editable_metadata_path)
