@@ -13,7 +13,9 @@ from datta_lab_to_nwb import markowitz_gillis_nature_2023
 
 
 def session_to_nwb(
+    session_id: str,
     data_path: Union[str, Path],
+    optoda_path: Union[str, Path],
     metadata_path: Union[str, Path],
     output_dir_path: Union[str, Path],
     stub_test: bool = False,
@@ -24,7 +26,6 @@ def session_to_nwb(
         output_dir_path = output_dir_path / "nwb_stub"
     output_dir_path.mkdir(parents=True, exist_ok=True)
 
-    session_id = "2891f649-4fbd-4119-a807-b8ef507edfab"
     nwbfile_path = output_dir_path / f"{session_id}.nwb"
 
     source_data = dict()
@@ -50,15 +51,21 @@ def session_to_nwb(
     )
     source_data.update(
         dict(
+            Optogenetic=dict(
+                file_path=str(optoda_path),
+                metadata_path=str(metadata_path),
+                session_uuid=session_id,
+            ),
             BehavioralSyllable=dict(
                 file_path=str(data_path),
                 metadata_path=str(metadata_path),
                 session_uuid=session_id,
-            )
+            ),
         )
     )
     conversion_options.update(dict(FiberPhotometry=dict()))
     conversion_options.update(dict(Behavior=dict()))
+    conversion_options.update(dict(Optogenetic=dict()))
 
     converter = markowitz_gillis_nature_2023.NWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
@@ -80,14 +87,18 @@ if __name__ == "__main__":
     metadata_path = Path(
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/metadata/reinforcement_photometry_metadata.yaml"
     )
+    optoda_path = Path(
+        "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/optoda_raw_data/closed_loop_behavior.parquet"
+    )
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
-    if output_dir_path.exists():
-        shutil.rmtree(output_dir_path)
+    shutil.rmtree(output_dir_path)
     stub_test = False
-    example_session = "2891f649-4fbd-4119-a807-b8ef507edfab"
+    example_session = "f549a587-fbca-40a7-b4f8-6a5d83f849de"
 
     session_to_nwb(
+        session_id=example_session,
         data_path=file_path,
+        optoda_path=optoda_path,
         metadata_path=metadata_path,
         output_dir_path=output_dir_path,
         stub_test=stub_test,
