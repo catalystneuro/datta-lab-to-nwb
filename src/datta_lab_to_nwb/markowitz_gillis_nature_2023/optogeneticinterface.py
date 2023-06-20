@@ -72,7 +72,7 @@ class OptogeneticInterface(BaseDataInterface):
         )
 
         device = nwbfile.create_device(
-            name="Opto Engine MRL-III-635",
+            name="OptoEngineMRL",
             description="Optogenetic stimulator (Opto Engine MRL-III-635; SKU: RD-635-00500-CWM-SD-03-LED-0)",
             manufacturer="Opto Engine LLC",
         )
