@@ -81,7 +81,7 @@ def extract_photometry_metadata(
         num_sessions = len(uuids)
     metadata = {}
     for i, uuid in enumerate(tqdm(uuids)):
-        extract_session_metadata(columns, photometry_data_path, metadata, metadata_columns, uuid)
+        extract_session_metadata(columns, photometry_data_path, metadata, uuid)
         metadata[uuid]["photometry_area"] = metadata[uuid].pop("area")
         if i >= num_sessions:
             break
@@ -128,21 +128,6 @@ def extract_reinforcement_metadata(
         "pulse_width",
         "power",
     )
-    metadata_columns = (
-        "SessionName",
-        "date",
-        "opsin",
-        "genotype",
-        "area",
-        "mouse_id",
-        "sex",
-        "exclude",
-        "cohort",
-        "stim_duration",
-        "stim_frequency",
-        "pulse_width",
-        "power",
-    )
     if reinforcement_photometry:
         filters = [("experiment_type", "==", "reinforcement_photometry")]
     else:
@@ -161,7 +146,7 @@ def extract_reinforcement_metadata(
     if num_sessions is None:
         num_sessions = len(uuids)
     for i, uuid in enumerate(tqdm(uuids)):
-        extract_session_metadata(columns, reinforcement_data_path, metadata, metadata_columns, uuid)
+        extract_session_metadata(columns, reinforcement_data_path, metadata, uuid)
         metadata[uuid]["optogenetic_area"] = metadata[uuid].pop("area")
         if metadata[uuid]["sex"] == "male":
             metadata[uuid]["sex"] = "M"
@@ -237,7 +222,7 @@ def extract_reinforcement_photometry_metadata(
     return metadata
 
 
-def extract_session_metadata(columns, data_path, metadata, metadata_columns, uuid):
+def extract_session_metadata(columns, data_path, metadata, uuid):
     """Extract metadata from a single session specified by uuid.
 
     Parameters
@@ -248,8 +233,6 @@ def extract_session_metadata(columns, data_path, metadata, metadata_columns, uui
         Path to the parquet file.
     metadata : dict
         Dictionary to store the metadata in (edited in-place).
-    metadata_columns : tuple
-        Columns to extract metadata from.
     uuid : str
         UUID of the session to extract metadata from.
     """
@@ -260,7 +243,9 @@ def extract_session_metadata(columns, data_path, metadata, metadata_columns, uui
         filters=[("uuid", "==", uuid)],
     )
     metadata[uuid] = {}
-    for col in metadata_columns:
+    for col in columns:
+        if col in {"uuid", "session_name", "SessionName"}:
+            continue
         try:
             first_notnull = session_df.loc[session_df[col].notnull(), col].iloc[0]
         except IndexError:  # No non-null values found
@@ -270,17 +255,15 @@ def extract_session_metadata(columns, data_path, metadata, metadata_columns, uui
         except AttributeError:
             pass
         metadata[uuid][col] = first_notnull
-    if "session_name" in columns and "SessionName" in columns:  # session name is duplicated (photometry data)
+    if "session_name" in columns or "SessionName" in columns:
         metadata[uuid]["session_description"] = get_session_name(session_df)
-    else:
-        metadata[uuid]["session_description"] = metadata[uuid].pop("SessionName")
     date = timezone.localize(metadata[uuid].pop("date"))
     metadata[uuid]["session_start_time"] = date.isoformat()
     metadata[uuid]["subject_id"] = metadata[uuid].pop("mouse_id")
 
 
 def get_session_name(session_df):
-    """Get the session name from a dataframe containing both "session_name" and "SessionName" columns.
+    """Get the session name from a dataframe potentially containing both "session_name" and "SessionName" columns.
 
     Parameters
     ----------
@@ -292,9 +275,11 @@ def get_session_name(session_df):
     session_name : str
         Session name.
     """
-    session_names = set(session_df.session_name[session_df.session_name.notnull()]) | set(
-        session_df.SessionName[session_df.SessionName.notnull()]
-    )
+    session_names = set(session_df.SessionName[session_df.SessionName.notnull()])
+    try:
+        session_names = session_names.union(set(session_df.session_name[session_df.session_name.notnull()]))
+    except AttributeError:  # No session name column
+        pass
     assert len(session_names) <= 1, "Multiple session names found"
     try:
         session_name = session_names.pop()
