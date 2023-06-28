@@ -6,6 +6,7 @@ from typing import Union
 
 # Third Party
 from neuroconv.utils import dict_deep_update, load_dict_from_file
+from pynwb import NWBHDF5IO
 
 # Local
 from datta_lab_to_nwb.markowitz_gillis_nature_2023.postconversion import reproduce_figures
@@ -93,7 +94,7 @@ if __name__ == "__main__":
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     shutil.rmtree(output_dir_path)
     stub_test = False
-    example_session = "f549a587-fbca-40a7-b4f8-6a5d83f849de"
+    example_session = "2891f649-4fbd-4119-a807-b8ef507edfab"
 
     session_to_nwb(
         session_id=example_session,

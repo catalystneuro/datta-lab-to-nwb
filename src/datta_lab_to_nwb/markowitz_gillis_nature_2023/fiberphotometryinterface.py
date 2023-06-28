@@ -154,13 +154,7 @@ class FiberPhotometryInterface(BaseDataInterface):
         # Important: we add the fibers to the fibers table _after_ adding the metadata
         # This ensures that we can find this data in their tables of origin
         fibers_table.add_fiber(
-            excitation_source=0,  # integers indicated rows of excitation sources table
-            photodetector=0,
-            fluorophores=[0],  # potentially multiple fluorophores, so list of indices
-            location=metadata["FiberPhotometry"]["area"],
-        )
-        fibers_table.add_fiber(
-            excitation_source=1,  # integers indicated rows of excitation sources table
+            excitation_sources=[0, 1],  # integers indicated rows of excitation sources table
             photodetector=0,
             fluorophores=[0],  # potentially multiple fluorophores, so list of indices
             location=metadata["FiberPhotometry"]["area"],
@@ -168,7 +162,7 @@ class FiberPhotometryInterface(BaseDataInterface):
 
         # ROI Response Series
         # Here we set up a list of fibers that our recording came from
-        fibers_ref = DynamicTableRegion(name="rois", data=[0, 1], description="source fibers", table=fibers_table)
+        fibers_ref = DynamicTableRegion(name="rois", data=[0], description="source fibers", table=fibers_table)
         signal_series = RoiResponseSeries(
             name="SignalDfOverF",
             description="The ΔF/F from the blue light excitation (470nm) corresponding to the dopamine signal.",
