@@ -216,42 +216,6 @@ def extract_reinforcement_photometry_metadata(
 
 
 def resolve_duplicates(photometry_metadata, photometry_ids, reinforcement_metadata, reinforcement_ids):
-<<<<<<< HEAD
-    metadata = {}
-    for photometry_id in photometry_ids:
-        for photometry_key in photometry_metadata[photometry_id].keys():
-            if photometry_key != "sex":
-                try:
-                    assert (
-                        photometry_metadata[photometry_id][photometry_key]
-                        == reinforcement_metadata[photometry_id][photometry_key]
-                    ), f"photometry metadata and reinforcement metadata don't match (photometry[{photometry_id}][{photometry_key}]: {photometry_metadata[photometry_id][photometry_key]}, reinforcement[{photometry_id}][{photometry_key}]: {reinforcement_metadata[photometry_id][photometry_key]})"
-                except KeyError:  # reinforcement metadata doesn't have this id and/or metadata field
-                    pass
-            try:
-                metadata[photometry_id][photometry_key] = photometry_metadata[photometry_id][photometry_key]
-            except KeyError:  # New id
-                metadata[photometry_id] = {}
-                metadata[photometry_id][photometry_key] = photometry_metadata[photometry_id][photometry_key]
-    for reinforcement_id in reinforcement_ids:
-        for reinforcement_key in reinforcement_metadata[reinforcement_id].keys():
-            if reinforcement_key != "sex":
-                try:
-                    assert (
-                        photometry_metadata[reinforcement_id][reinforcement_key]
-                        == reinforcement_metadata[reinforcement_id][reinforcement_key]
-                    ), f"photometry metadata and reinforcement metadata don't match (photometry[{reinforcement_id}][{reinforcement_key}]: {photometry_metadata[reinforcement_id][reinforcement_key]}, reinforcement[{reinforcement_id}][{reinforcement_key}]: {reinforcement_metadata[reinforcement_id][reinforcement_key]})"
-                except KeyError:
-                    pass
-            try:
-                metadata[photometry_id][reinforcement_key] = reinforcement_metadata[reinforcement_id][reinforcement_key]
-            except KeyError:
-                metadata[reinforcement_id] = {}
-                metadata[reinforcement_id][reinforcement_key] = reinforcement_metadata[reinforcement_id][
-                    reinforcement_key
-                ]
-    return metadata
-=======
     resolved_metadata = {}
     _resolve_duplicates(
         resolved_metadata, photometry_ids, photometry_metadata, reinforcement_ids, reinforcement_metadata
@@ -271,11 +235,15 @@ def _resolve_duplicates(resolved_dict, ids1, dict1, ids2, dict2):
             resolved_dict[id1] = {}
         for key1 in dict1[id1].keys():
             if key1 in dict2[id1].keys():
-                assert (
-                    dict1[id1][key1] == dict2[id1][key1]
-                ), f"dict1 and dict2 don't match (dict1[{id1}][{key1}]: {dict1[id1][key1]}, dict2[{id1}][{key1}]: {dict2[id1][key1]})"
+                try:
+                    assert (
+                        dict1[id1][key1] == dict2[id1][key1]
+                    ), f"dict1 and dict2 don't match (dict1[{id1}][{key1}]: {dict1[id1][key1]}, dict2[{id1}][{key1}]: {dict2[id1][key1]})"
+                except AssertionError:
+                    assert key1 == "sex"
+                    if dict1[id1][key1] == "U":
+                        dict1[id1][key1] = dict2[id1][key1]
             resolved_dict[id1][key1] = dict1[id1][key1]
->>>>>>> f0cc8ee (refactored resolve_duplicates to avoid excessive indentation and unnecessary try-excepts)
 
 
 def extract_session_metadata(columns, data_path, metadata, uuid):
