@@ -93,8 +93,8 @@ if __name__ == "__main__":
     stub_test = False
     experiment_type2example_session = {
         "reinforcement_photometry": "2891f649-4fbd-4119-a807-b8ef507edfab",
-        "photometry": "5057591d-b845-4190-bbd1-178a3253ead9",
-        "reinforcement": "5b54fe26-1bdf-4cc2-8e7a-767429a4fc87",
+        "photometry": "18592343-7141-413b-833a-c1d7dbeaa588",
+        "reinforcement": "5d12d1d1-6b74-4cc6-bd15-38aef1cfef1b",
     }
     for experiment_type, example_session in experiment_type2example_session.items():
         session_to_nwb(
