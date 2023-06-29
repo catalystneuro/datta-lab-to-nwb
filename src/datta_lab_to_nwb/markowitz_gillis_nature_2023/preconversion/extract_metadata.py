@@ -264,7 +264,8 @@ def extract_session_metadata(columns, data_path, metadata, uuid):
         UUID of the session to extract metadata from.
     """
     timezone = pytz.timezone("America/New_York")
-    extract_metadata(columns, data_path, metadata, uuid, "uuid")
+    session_df = extract_metadata(columns, data_path, metadata, uuid, "uuid")
+    metadata[uuid]["session_description"] = get_session_name(session_df)
     date = timezone.localize(metadata[uuid].pop("date"))
     metadata[uuid]["session_start_time"] = date.isoformat()
     metadata[uuid]["subject_id"] = metadata[uuid].pop("mouse_id")
@@ -306,8 +307,7 @@ def extract_metadata(columns, data_path, metadata, key, key_name):
         except AttributeError:
             pass
         metadata[key][col] = first_notnull
-    if "session_name" in columns or "SessionName" in columns:
-        metadata[key]["session_description"] = get_session_name(df)
+    return df
 
 
 def get_session_name(session_df):
@@ -323,15 +323,13 @@ def get_session_name(session_df):
     session_name : str
         Session name.
     """
-    session_names = set(session_df.SessionName[session_df.SessionName.notnull()])
-    try:
+    session_names = set(session_df.SessionName[session_df.SessionName.notnull()])  # SessionName is always present
+    if "session_name" in session_df.columns:
         session_names = session_names.union(set(session_df.session_name[session_df.session_name.notnull()]))
-    except AttributeError:  # No session name column
-        pass
     assert len(session_names) <= 1, "Multiple session names found"
     try:
         session_name = session_names.pop()
-    except KeyError:  # No session name found
+    except KeyError:  # No session name found (rare)
         session_name = ""
     return session_name
 
