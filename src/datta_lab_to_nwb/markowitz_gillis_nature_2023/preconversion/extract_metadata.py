@@ -89,6 +89,7 @@ def extract_photometry_metadata(
     for mouse_id in tqdm(subject_ids, desc="Extracting photometry subject metadata"):
         extract_subject_metadata(subject_columns, photometry_data_path, subject_metadata, mouse_id)
         subject_metadata[mouse_id]["photometry_area"] = subject_metadata[mouse_id].pop("area")
+        subject_metadata[mouse_id]["sex"] = "U"
 
     return session_metadata, subject_metadata
 
@@ -218,13 +219,14 @@ def resolve_duplicates(photometry_metadata, photometry_ids, reinforcement_metada
     metadata = {}
     for photometry_id in photometry_ids:
         for photometry_key in photometry_metadata[photometry_id].keys():
-            try:
-                assert (
-                    photometry_metadata[photometry_id][photometry_key]
-                    == reinforcement_metadata[photometry_id][photometry_key]
-                ), f"photometry metadata and reinforcement metadata don't match (photometry[{photometry_id}][{photometry_key}]: {photometry_metadata[photometry_id][photometry_key]}, reinforcement[{photometry_id}][{photometry_key}]: {reinforcement_metadata[photometry_id][photometry_key]})"
-            except KeyError:  # reinforcement metadata doesn't have this id and/or metadata field
-                pass
+            if photometry_key != "sex":
+                try:
+                    assert (
+                        photometry_metadata[photometry_id][photometry_key]
+                        == reinforcement_metadata[photometry_id][photometry_key]
+                    ), f"photometry metadata and reinforcement metadata don't match (photometry[{photometry_id}][{photometry_key}]: {photometry_metadata[photometry_id][photometry_key]}, reinforcement[{photometry_id}][{photometry_key}]: {reinforcement_metadata[photometry_id][photometry_key]})"
+                except KeyError:  # reinforcement metadata doesn't have this id and/or metadata field
+                    pass
             try:
                 metadata[photometry_id][photometry_key] = photometry_metadata[photometry_id][photometry_key]
             except KeyError:  # New id
@@ -232,13 +234,14 @@ def resolve_duplicates(photometry_metadata, photometry_ids, reinforcement_metada
                 metadata[photometry_id][photometry_key] = photometry_metadata[photometry_id][photometry_key]
     for reinforcement_id in reinforcement_ids:
         for reinforcement_key in reinforcement_metadata[reinforcement_id].keys():
-            try:
-                assert (
-                    photometry_metadata[reinforcement_id][reinforcement_key]
-                    == reinforcement_metadata[reinforcement_id][reinforcement_key]
-                ), f"photometry metadata and reinforcement metadata don't match (photometry[{reinforcement_id}][{reinforcement_key}]: {photometry_metadata[reinforcement_id][reinforcement_key]}, reinforcement[{reinforcement_id}][{reinforcement_key}]: {reinforcement_metadata[reinforcement_id][reinforcement_key]})"
-            except KeyError:
-                pass
+            if reinforcement_key != "sex":
+                try:
+                    assert (
+                        photometry_metadata[reinforcement_id][reinforcement_key]
+                        == reinforcement_metadata[reinforcement_id][reinforcement_key]
+                    ), f"photometry metadata and reinforcement metadata don't match (photometry[{reinforcement_id}][{reinforcement_key}]: {photometry_metadata[reinforcement_id][reinforcement_key]}, reinforcement[{reinforcement_id}][{reinforcement_key}]: {reinforcement_metadata[reinforcement_id][reinforcement_key]})"
+                except KeyError:
+                    pass
             try:
                 metadata[photometry_id][reinforcement_key] = reinforcement_metadata[reinforcement_id][reinforcement_key]
             except KeyError:

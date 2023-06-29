@@ -30,47 +30,48 @@ def session_to_nwb(
     metadata_path = data_path / "metadata"
     session_metadata_path = metadata_path / f"{experiment_type}_session_metadata.yaml"
     subject_metadata_path = metadata_path / f"{experiment_type}_subject_metadata.yaml"
+    session_metadata = load_dict_from_file(session_metadata_path)
+    session_metadata = session_metadata[session_id]
 
-    source_data = dict()
-    conversion_options = dict()
-
-    source_data.update(
-        dict(
-            FiberPhotometry=dict(
-                file_path=str(photometry_path),
-                session_metadata_path=str(session_metadata_path),
-                subject_metadata_path=str(subject_metadata_path),
-                session_uuid=session_id,
-            )
+    source_data, conversion_options = {}, {}
+    if "reinforcement" in session_metadata.keys():
+        source_data["Optogenetic"] = dict(
+            file_path=str(optoda_path),
+            session_metadata_path=str(session_metadata_path),
+            subject_metadata_path=str(subject_metadata_path),
+            session_uuid=session_id,
         )
-    )
+        conversion_options["Optogenetic"] = {}
+        behavior_path = optoda_path
+    if "photometry" in session_metadata.keys():
+        source_data["FiberPhotometry"] = dict(
+            file_path=str(photometry_path),
+            session_metadata_path=str(session_metadata_path),
+            subject_metadata_path=str(subject_metadata_path),
+            session_uuid=session_id,
+        )
+        conversion_options["FiberPhotometry"] = {}
+        behavior_path = photometry_path  # Note: if photometry and optogenetics are both present, photometry is used for behavioral data bc it is quicker to load
     source_data.update(
         dict(
             Behavior=dict(
-                file_path=str(photometry_path),
+                file_path=str(behavior_path),
                 session_metadata_path=str(session_metadata_path),
-                session_uuid=session_id,
-            )
-        )
-    )
-    source_data.update(
-        dict(
-            Optogenetic=dict(
-                file_path=str(optoda_path),
-                session_metadata_path=str(session_metadata_path),
-                subject_metadata_path=str(subject_metadata_path),
                 session_uuid=session_id,
             ),
             BehavioralSyllable=dict(
-                file_path=str(photometry_path),
+                file_path=str(behavior_path),
                 session_metadata_path=str(session_metadata_path),
                 session_uuid=session_id,
             ),
         )
     )
-    conversion_options.update(dict(FiberPhotometry=dict()))
-    conversion_options.update(dict(Behavior=dict()))
-    conversion_options.update(dict(Optogenetic=dict()))
+    conversion_options.update(
+        dict(
+            Behavior={},
+            BehavioralSyllable={},
+        )
+    )
 
     converter = markowitz_gillis_nature_2023.NWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
@@ -90,15 +91,19 @@ if __name__ == "__main__":
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     shutil.rmtree(output_dir_path)
     stub_test = False
-    example_session = "2891f649-4fbd-4119-a807-b8ef507edfab"
-
-    session_to_nwb(
-        session_id=example_session,
-        data_path=data_path,
-        output_dir_path=output_dir_path,
-        experiment_type="reinforcement_photometry",
-        stub_test=stub_test,
-    )
-    nwbfile_path = output_dir_path / f"{example_session}.nwb"
+    experiment_type2example_session = {
+        "reinforcement_photometry": "2891f649-4fbd-4119-a807-b8ef507edfab",
+        "photometry": "5057591d-b845-4190-bbd1-178a3253ead9",
+        "reinforcement": "5b54fe26-1bdf-4cc2-8e7a-767429a4fc87",
+    }
+    for experiment_type, example_session in experiment_type2example_session.items():
+        session_to_nwb(
+            session_id=example_session,
+            data_path=data_path,
+            output_dir_path=output_dir_path,
+            experiment_type=experiment_type,
+            stub_test=stub_test,
+        )
+    nwbfile_path = output_dir_path / f"{experiment_type2example_session['reinforcement_photometry']}.nwb"
     paper_metadata_path = Path(__file__).parent / "markowitz_gillis_nature_2023_metadata.yaml"
     reproduce_figures.reproduce_fig1d(nwbfile_path, paper_metadata_path)
