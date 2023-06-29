@@ -216,6 +216,7 @@ def extract_reinforcement_photometry_metadata(
 
 
 def resolve_duplicates(photometry_metadata, photometry_ids, reinforcement_metadata, reinforcement_ids):
+<<<<<<< HEAD
     metadata = {}
     for photometry_id in photometry_ids:
         for photometry_key in photometry_metadata[photometry_id].keys():
@@ -250,6 +251,31 @@ def resolve_duplicates(photometry_metadata, photometry_ids, reinforcement_metada
                     reinforcement_key
                 ]
     return metadata
+=======
+    resolved_metadata = {}
+    _resolve_duplicates(
+        resolved_metadata, photometry_ids, photometry_metadata, reinforcement_ids, reinforcement_metadata
+    )
+    _resolve_duplicates(
+        resolved_metadata, reinforcement_ids, reinforcement_metadata, photometry_ids, photometry_metadata
+    )
+    return resolved_metadata
+
+
+def _resolve_duplicates(resolved_dict, ids1, dict1, ids2, dict2):
+    for id1 in ids1:
+        if id1 not in ids2:
+            resolved_dict[id1] = dict1[id1]
+            continue
+        if id1 not in resolved_dict:
+            resolved_dict[id1] = {}
+        for key1 in dict1[id1].keys():
+            if key1 in dict2[id1].keys():
+                assert (
+                    dict1[id1][key1] == dict2[id1][key1]
+                ), f"dict1 and dict2 don't match (dict1[{id1}][{key1}]: {dict1[id1][key1]}, dict2[{id1}][{key1}]: {dict2[id1][key1]})"
+            resolved_dict[id1][key1] = dict1[id1][key1]
+>>>>>>> f0cc8ee (refactored resolve_duplicates to avoid excessive indentation and unnecessary try-excepts)
 
 
 def extract_session_metadata(columns, data_path, metadata, uuid):
@@ -365,6 +391,6 @@ if __name__ == "__main__":
         reinforcement_photometry_subject_metadata_path: reinforcement_photometry_subject_metadata,
     }
 
-    for path, metadata in path2metadata.items():
+    for path, resolved_dict in path2metadata.items():
         with open(path, "w") as f:
-            yaml.dump(metadata, f)
+            yaml.dump(resolved_dict, f)
