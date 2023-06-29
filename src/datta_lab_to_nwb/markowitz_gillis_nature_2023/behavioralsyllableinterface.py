@@ -25,19 +25,6 @@ class BehavioralSyllableInterface(BaseDataInterface):
             session_metadata_path=session_metadata_path,
         )
 
-    def get_metadata(self) -> dict:
-        metadata = super().get_metadata()
-        session_metadata = load_dict_from_file(self.source_data["session_metadata_path"])
-        session_metadata = session_metadata[self.source_data["session_uuid"]]
-        metadata["NWBFile"]["session_description"] = session_metadata["session_description"]
-        metadata["NWBFile"]["session_start_time"] = session_metadata["session_start_time"]
-        metadata["Subject"] = {}
-        metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
-        metadata["NWBFile"]["identifier"] = self.source_data["session_uuid"]
-        metadata["NWBFile"]["session_id"] = self.source_data["session_uuid"]
-
-        return metadata
-
     def get_metadata_schema(self) -> dict:
         metadata_schema = super().get_metadata_schema()
         metadata_schema["properties"]["BehavioralSyllable"] = {

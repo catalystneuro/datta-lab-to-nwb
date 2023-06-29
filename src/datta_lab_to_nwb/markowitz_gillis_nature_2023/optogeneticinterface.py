@@ -45,14 +45,10 @@ class OptogeneticInterface(BaseDataInterface):
         subject_metadata = load_dict_from_file(self.source_data["subject_metadata_path"])
         subject_metadata = subject_metadata[session_metadata["subject_id"]]
 
-        # Session metadata
         metadata["Optogenetics"]["stim_frequency_Hz"] = session_metadata["stim_frequency_Hz"]
         metadata["Optogenetics"]["pulse_width_s"] = session_metadata["pulse_width_s"]
         metadata["Optogenetics"]["stim_duration_s"] = session_metadata["stim_duration_s"]
         metadata["Optogenetics"]["power_watts"] = session_metadata["power_watts"]
-
-        # Subject metadata
-        metadata["Subject"]["sex"] = subject_metadata["sex"]
         metadata["Optogenetics"]["area"] = subject_metadata["optogenetic_area"]
 
         return metadata

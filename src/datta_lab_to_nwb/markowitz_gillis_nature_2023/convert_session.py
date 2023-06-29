@@ -54,6 +54,11 @@ def session_to_nwb(
         behavior_path = photometry_path  # Note: if photometry and optogenetics are both present, photometry is used for behavioral data bc it is quicker to load
     source_data.update(
         dict(
+            Metadata=dict(
+                session_metadata_path=str(session_metadata_path),
+                subject_metadata_path=str(subject_metadata_path),
+                session_uuid=session_id,
+            ),
             Behavior=dict(
                 file_path=str(behavior_path),
                 session_metadata_path=str(session_metadata_path),
