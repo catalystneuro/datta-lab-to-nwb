@@ -26,7 +26,7 @@ from hdmf.backends.hdf5.h5_utils import H5DataIO
 class FiberPhotometryInterface(BaseDataInterface):
     """Fiber Photometry  interface for markowitz_gillis_nature_2023 conversion"""
 
-    def __init__(self, file_path: str, session_uuid: str, metadata_path: str):
+    def __init__(self, file_path: str, session_uuid: str, session_metadata_path: str, subject_metadata_path: str):
         # This should load the data lazily and prepare variables you need
         columns = (
             "uuid",
@@ -40,24 +40,31 @@ class FiberPhotometryInterface(BaseDataInterface):
             file_path=file_path,
             session_uuid=session_uuid,
             columns=columns,
-            metadata_path=metadata_path,
+            session_metadata_path=session_metadata_path,
+            subject_metadata_path=subject_metadata_path,
         )
 
     def get_metadata(self) -> dict:
         metadata = super().get_metadata()
-        session_metadata = load_dict_from_file(self.source_data["metadata_path"])
+        session_metadata = load_dict_from_file(self.source_data["session_metadata_path"])
+        subject_metadata = load_dict_from_file(self.source_data["subject_metadata_path"])
         session_metadata = session_metadata[self.source_data["session_uuid"]]
+        subject_metadata = subject_metadata[session_metadata["subject_id"]]
+
+        # Session metadata
         metadata["NWBFile"]["session_description"] = session_metadata["session_description"]
         metadata["NWBFile"]["session_start_time"] = session_metadata["session_start_time"]
         metadata["NWBFile"]["identifier"] = self.source_data["session_uuid"]
         metadata["NWBFile"]["session_id"] = self.source_data["session_uuid"]
-        metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
-        metadata["Subject"]["sex"] = session_metadata["sex"]
-        metadata["FiberPhotometry"]["area"] = session_metadata["photometry_area"]
         metadata["FiberPhotometry"]["reference_max"] = session_metadata["reference_max"]
         metadata["FiberPhotometry"]["signal_max"] = session_metadata["signal_max"]
         metadata["FiberPhotometry"]["signal_reference_corr"] = session_metadata["signal_reference_corr"]
         metadata["FiberPhotometry"]["snr"] = session_metadata["snr"]
+
+        # Subject metadata
+        metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
+        metadata["Subject"]["sex"] = subject_metadata["sex"]
+        metadata["FiberPhotometry"]["area"] = subject_metadata["photometry_area"]
 
         return metadata
 
