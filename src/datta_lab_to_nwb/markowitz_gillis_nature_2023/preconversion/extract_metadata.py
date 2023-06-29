@@ -81,6 +81,7 @@ def extract_photometry_metadata(
     session_metadata = {}
     for i, uuid in enumerate(tqdm(uuids, desc="Extracting photometry session metadata")):
         extract_session_metadata(session_columns, photometry_data_path, session_metadata, uuid)
+        session_metadata[uuid]["photometry"] = True
         if i + 1 >= num_sessions:
             break
     subject_ids = set(session_metadata[uuid]["subject_id"] for uuid in session_metadata)
@@ -158,6 +159,7 @@ def extract_reinforcement_metadata(
         session_metadata[uuid]["stim_frequency_Hz"] = session_metadata[uuid].pop("stim_frequency")
         session_metadata[uuid]["pulse_width_s"] = session_metadata[uuid].pop("pulse_width")
         session_metadata[uuid]["power_watts"] = session_metadata[uuid].pop("power") / 1000
+        session_metadata[uuid]["reinforcement"] = True
         if i + 1 >= num_sessions:
             break
     subject_ids = set(session_metadata[uuid]["subject_id"] for uuid in session_metadata)
