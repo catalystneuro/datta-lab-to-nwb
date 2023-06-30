@@ -87,15 +87,10 @@ class OptogeneticInterface(BaseDataInterface):
             location=metadata["Optogenetics"]["area"],
         )
         # Reconstruct optogenetic series from feedback status
-        stim_duration_s = metadata["Optogenetics"]["stim_duration_s"]
-        power_watts = metadata["Optogenetics"]["power_watts"]
-        feedback_is_on_index = np.where(session_df.feedback_status == 1)[0]
-        data, timestamps = np.zeros(len(feedback_is_on_index) * 2 + 2), np.zeros(len(feedback_is_on_index) * 2 + 2)
-        timestamps[0], timestamps[-1] = session_df.timestamp.iloc[0], session_df.timestamp.iloc[-1]
-        for i, index in enumerate(feedback_is_on_index):
-            t = session_df.timestamp.iloc[index]
-            data[i * 2 + 1 : i * 2 + 3] = [power_watts, 0]
-            timestamps[i * 2 + 1 : i * 2 + 3] = [t, t + stim_duration_s]
+        if pd.isnull(metadata["Optogenetics"]["stim_frequency_Hz"]):
+            data, timestamps = self.reconstruct_cts_stim(metadata, session_df)
+        else:
+            data, timestamps = self.reconstruct_pulsed_stim(metadata, session_df)
         ogen_series = OptogeneticSeries(
             name="OptogeneticSeries",
             site=ogen_site,
@@ -105,3 +100,40 @@ class OptogeneticInterface(BaseDataInterface):
         nwbfile.add_stimulus(ogen_series)
 
         return nwbfile
+
+    def reconstruct_cts_stim(self, metadata, session_df):
+        stim_duration_s = metadata["Optogenetics"]["stim_duration_s"]
+        power_watts = metadata["Optogenetics"]["power_watts"]
+        feedback_is_on_index = np.where(session_df.feedback_status == 1)[0]
+        data_len = len(feedback_is_on_index) * 2 + 2
+        data, timestamps = np.zeros(data_len), np.zeros(data_len)
+        timestamps[0], timestamps[-1] = session_df.timestamp.iloc[0], session_df.timestamp.iloc[-1]
+        for i, index in enumerate(feedback_is_on_index):
+            t = session_df.timestamp.iloc[index]
+            data[i * 2 + 1 : i * 2 + 3] = [power_watts, 0]
+            timestamps[i * 2 + 1 : i * 2 + 3] = [t, t + stim_duration_s]
+        sorting_index = np.argsort(timestamps)
+        data, timestamps = data[sorting_index], timestamps[sorting_index]
+        return data, timestamps
+
+    def reconstruct_pulsed_stim(self, metadata, session_df):
+        stim_duration_s = metadata["Optogenetics"]["stim_duration_s"]
+        power_watts = metadata["Optogenetics"]["power_watts"]
+        stim_frequency_Hz = metadata["Optogenetics"]["stim_frequency_Hz"]
+        pulse_width_s = metadata["Optogenetics"]["pulse_width_s"]
+        feedback_is_on_index = np.where(session_df.feedback_status == 1)[0]
+        pulses_per_stim = int(stim_duration_s * stim_frequency_Hz)
+        data_len = len(feedback_is_on_index) * 2 * pulses_per_stim + 2
+        data, timestamps = np.zeros(data_len), np.zeros(data_len)
+        timestamps[0], timestamps[-1] = session_df.timestamp.iloc[0], session_df.timestamp.iloc[-1]
+        for i, index in enumerate(feedback_is_on_index):
+            t0 = session_df.timestamp.iloc[index]
+            for pulse in range(pulses_per_stim):
+                t_on = t0 + pulse * 1 / stim_frequency_Hz
+                t_off = t_on + pulse_width_s
+                data_index = i * 2 * pulses_per_stim + 2 * pulse + 1
+                data[data_index : data_index + 2] = [power_watts, 0]
+                timestamps[data_index : data_index + 2] = [t_on, t_off]
+        sorting_index = np.argsort(timestamps)
+        data, timestamps = data[sorting_index], timestamps[sorting_index]
+        return data, timestamps
