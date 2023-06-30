@@ -137,9 +137,15 @@ def extract_reinforcement_metadata(
         "cohort",
     )
     if reinforcement_photometry:
-        filters = [("experiment_type", "==", "reinforcement_photometry")]
+        filters = [
+            (
+                "experiment_type",
+                "in",
+                {"reinforcement_photometry", "excitation_photometry", "excitation_pulsed_photometry"},
+            )
+        ]
     else:
-        filters = [("experiment_type", "==", "reinforcement")]
+        filters = [("experiment_type", "in", {"reinforcement", "excitation", "excitation_pulsed"})]
     if example_uuid is None:
         df = pd.read_parquet(
             reinforcement_data_path,
