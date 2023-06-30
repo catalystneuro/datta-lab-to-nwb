@@ -94,21 +94,36 @@ if __name__ == "__main__":
     # Parameters for conversion
     data_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior")
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
-    shutil.rmtree(output_dir_path)
+    if output_dir_path.exists():
+        shutil.rmtree(output_dir_path)
     stub_test = False
-    experiment_type2example_session = {
-        "reinforcement_photometry": "2891f649-4fbd-4119-a807-b8ef507edfab",
-        "photometry": "18592343-7141-413b-833a-c1d7dbeaa588",
-        "reinforcement": "5d12d1d1-6b74-4cc6-bd15-38aef1cfef1b",
+
+    # Example UUIDs
+    dls_dlight_1_example = "18dc5ad5-13f0-4297-8b21-75d434770e57"
+    photometry_examples = [dls_dlight_1_example]
+    reinforcement_example = "dcf0767a-b75d-4c79-a242-84dd5b5cdd00"
+    excitation_example = "380d4711-85a6-4672-ad48-76e91607c41f"
+    excitation_pulsed_example = "be01945e-c6d0-4bca-bd56-4d4466d9d832"
+    reinforcement_examples = [reinforcement_example, excitation_example, excitation_pulsed_example]
+    figure1d_example = "2891f649-4fbd-4119-a807-b8ef507edfab"
+    pulsed_photometry_example = "b8360fcd-acfd-4414-9e67-ba0dc5c979a8"
+    excitation_photometry_example = "95bec433-2242-4276-b8a5-6d069afa3910"
+    reinforcement_photometry_examples = [figure1d_example, pulsed_photometry_example, excitation_photometry_example]
+
+    experiment_type2example_sessions = {
+        "reinforcement_photometry": reinforcement_photometry_examples,
+        "photometry": photometry_examples,
+        "reinforcement": reinforcement_examples,
     }
-    for experiment_type, example_session in experiment_type2example_session.items():
-        session_to_nwb(
-            session_id=example_session,
-            data_path=data_path,
-            output_dir_path=output_dir_path,
-            experiment_type=experiment_type,
-            stub_test=stub_test,
-        )
-    nwbfile_path = output_dir_path / f"{experiment_type2example_session['reinforcement_photometry']}.nwb"
+    for experiment_type, example_sessions in experiment_type2example_sessions.items():
+        for example_session in example_sessions:
+            session_to_nwb(
+                session_id=example_session,
+                data_path=data_path,
+                output_dir_path=output_dir_path,
+                experiment_type=experiment_type,
+                stub_test=stub_test,
+            )
+    nwbfile_path = output_dir_path / f"{figure1d_example}.nwb"
     paper_metadata_path = Path(__file__).parent / "markowitz_gillis_nature_2023_metadata.yaml"
     reproduce_figures.reproduce_fig1d(nwbfile_path, paper_metadata_path)
