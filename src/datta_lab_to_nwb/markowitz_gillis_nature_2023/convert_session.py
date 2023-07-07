@@ -2,7 +2,7 @@
 # Standard Library
 from pathlib import Path
 import shutil
-from typing import Union
+from typing import Union, Literal
 
 # Third Party
 from neuroconv.utils import dict_deep_update, load_dict_from_file
@@ -16,7 +16,7 @@ def session_to_nwb(
     session_id: str,
     data_path: Union[str, Path],
     output_dir_path: Union[str, Path],
-    experiment_type: str,
+    experiment_type: Literal["reinforcement", "photometry", "reinforcement_photometry"],
     stub_test: bool = False,
 ):
     data_path = Path(data_path)
@@ -98,8 +98,8 @@ if __name__ == "__main__":
     stub_test = False
     experiment_type2example_session = {
         "reinforcement_photometry": "2891f649-4fbd-4119-a807-b8ef507edfab",
-        "photometry": "18592343-7141-413b-833a-c1d7dbeaa588",
-        "reinforcement": "5d12d1d1-6b74-4cc6-bd15-38aef1cfef1b",
+        "photometry": "62e88124-9126-481d-a862-203c5e384084",
+        "reinforcement": "2b8828f4-db5d-483c-9393-ddc2bf93befe",
     }
     for experiment_type, example_session in experiment_type2example_session.items():
         session_to_nwb(
