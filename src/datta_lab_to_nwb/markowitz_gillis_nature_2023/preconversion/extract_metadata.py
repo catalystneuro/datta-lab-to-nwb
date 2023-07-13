@@ -295,14 +295,13 @@ def extract_metadata(columns, data_path, metadata, key, key_name):
     for col in columns:
         if col in {key_name, "session_name", "SessionName"}:
             continue
-        try:
+        any_notnull = len(df.loc[df[col].notnull(), col]) > 0
+        if any_notnull:
             first_notnull = df.loc[df[col].notnull(), col].iloc[0]
-        except IndexError:  # No non-null values found
+        else:
             first_notnull = np.NaN
-        try:  # numpy arrays aren't serializable --> extract relevant value with .item()
+        if isinstance(first_notnull, np.generic):  # numpy scalars aren't serializable --> extract value with .item()
             first_notnull = first_notnull.item()
-        except AttributeError:
-            pass
         metadata[key][col] = first_notnull
     return df
 
@@ -324,9 +323,10 @@ def get_session_name(session_df):
     if "session_name" in session_df.columns:
         session_names = session_names.union(set(session_df.session_name[session_df.session_name.notnull()]))
     assert len(session_names) <= 1, "Multiple session names found"
-    try:
+    any_session_names = len(session_names) > 0
+    if any_session_names:
         session_name = session_names.pop()
-    except KeyError:  # No session name found (rare)
+    else:
         session_name = ""
     return session_name
 
