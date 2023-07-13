@@ -89,6 +89,7 @@ def extract_photometry_metadata(
     for mouse_id in tqdm(subject_ids, desc="Extracting photometry subject metadata"):
         extract_subject_metadata(subject_columns, photometry_data_path, subject_metadata, mouse_id)
         subject_metadata[mouse_id]["photometry_area"] = subject_metadata[mouse_id].pop("area")
+        subject_metadata[mouse_id]["sex"] = "U"
 
     return session_metadata, subject_metadata
 
@@ -234,9 +235,14 @@ def _resolve_duplicates(resolved_dict, ids1, dict1, ids2, dict2):
             resolved_dict[id1] = {}
         for key1 in dict1[id1].keys():
             if key1 in dict2[id1].keys():
-                assert (
-                    dict1[id1][key1] == dict2[id1][key1]
-                ), f"dict1 and dict2 don't match (dict1[{id1}][{key1}]: {dict1[id1][key1]}, dict2[{id1}][{key1}]: {dict2[id1][key1]})"
+                try:
+                    assert (
+                        dict1[id1][key1] == dict2[id1][key1]
+                    ), f"dict1 and dict2 don't match (dict1[{id1}][{key1}]: {dict1[id1][key1]}, dict2[{id1}][{key1}]: {dict2[id1][key1]})"
+                except AssertionError:
+                    assert key1 == "sex"
+                    if dict1[id1][key1] == "U":
+                        dict1[id1][key1] = dict2[id1][key1]
             resolved_dict[id1][key1] = dict1[id1][key1]
 
 
@@ -356,4 +362,3 @@ if __name__ == "__main__":
     for path, resolved_dict in path2metadata.items():
         with open(path, "w") as f:
             yaml.dump(resolved_dict, f)
-        _ = load_dict_from_file(path)

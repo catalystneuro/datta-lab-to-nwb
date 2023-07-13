@@ -15,7 +15,7 @@ from ndx_photometry import (
     FiberPhotometry,
     FluorophoresTable,
 )
-from neuroconv.basedatainterface import BaseDataInterface
+from .basedattainterface import BaseDattaInterface
 from neuroconv.utils import load_dict_from_file
 from neuroconv.tools import nwb_helpers
 from hdmf.backends.hdf5.h5_utils import H5DataIO
@@ -23,7 +23,7 @@ from hdmf.backends.hdf5.h5_utils import H5DataIO
 # Local
 
 
-class FiberPhotometryInterface(BaseDataInterface):
+class FiberPhotometryInterface(BaseDattaInterface):
     """Fiber Photometry  interface for markowitz_gillis_nature_2023 conversion"""
 
     def __init__(self, file_path: str, session_uuid: str, session_metadata_path: str, subject_metadata_path: str):
@@ -51,19 +51,10 @@ class FiberPhotometryInterface(BaseDataInterface):
         session_metadata = session_metadata[self.source_data["session_uuid"]]
         subject_metadata = subject_metadata[session_metadata["subject_id"]]
 
-        # Session metadata
-        metadata["NWBFile"]["session_description"] = session_metadata["session_description"]
-        metadata["NWBFile"]["session_start_time"] = session_metadata["session_start_time"]
-        metadata["NWBFile"]["identifier"] = self.source_data["session_uuid"]
-        metadata["NWBFile"]["session_id"] = self.source_data["session_uuid"]
         metadata["FiberPhotometry"]["reference_max"] = session_metadata["reference_max"]
         metadata["FiberPhotometry"]["signal_max"] = session_metadata["signal_max"]
         metadata["FiberPhotometry"]["signal_reference_corr"] = session_metadata["signal_reference_corr"]
         metadata["FiberPhotometry"]["snr"] = session_metadata["snr"]
-
-        # Subject metadata
-        metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
-        metadata["Subject"]["sex"] = subject_metadata["sex"]
         metadata["FiberPhotometry"]["area"] = subject_metadata["photometry_area"]
 
         return metadata
