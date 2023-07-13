@@ -15,7 +15,7 @@ from ndx_photometry import (
     FiberPhotometry,
     FluorophoresTable,
 )
-from neuroconv.basedatainterface import BaseDataInterface
+from .basedattainterface import BaseDattaInterface
 from neuroconv.utils import load_dict_from_file
 from neuroconv.tools import nwb_helpers
 from hdmf.backends.hdf5.h5_utils import H5DataIO
@@ -23,7 +23,7 @@ from hdmf.backends.hdf5.h5_utils import H5DataIO
 # Local
 
 
-class FiberPhotometryInterface(BaseDataInterface):
+class FiberPhotometryInterface(BaseDattaInterface):
     """Fiber Photometry  interface for markowitz_gillis_nature_2023 conversion"""
 
     def __init__(self, file_path: str, session_uuid: str, session_metadata_path: str, subject_metadata_path: str):

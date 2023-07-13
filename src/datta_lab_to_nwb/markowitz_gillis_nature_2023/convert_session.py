@@ -2,7 +2,7 @@
 # Standard Library
 from pathlib import Path
 import shutil
-from typing import Union
+from typing import Union, Literal
 
 # Third Party
 from neuroconv.utils import dict_deep_update, load_dict_from_file
@@ -16,7 +16,7 @@ def session_to_nwb(
     session_id: str,
     data_path: Union[str, Path],
     output_dir_path: Union[str, Path],
-    experiment_type: str,
+    experiment_type: Literal["reinforcement", "photometry", "reinforcement_photometry"],
     stub_test: bool = False,
 ):
     data_path = Path(data_path)
@@ -54,19 +54,16 @@ def session_to_nwb(
         behavior_path = photometry_path  # Note: if photometry and optogenetics are both present, photometry is used for behavioral data bc it is quicker to load
     source_data.update(
         dict(
-            Metadata=dict(
-                session_metadata_path=str(session_metadata_path),
-                subject_metadata_path=str(subject_metadata_path),
-                session_uuid=session_id,
-            ),
             Behavior=dict(
                 file_path=str(behavior_path),
                 session_metadata_path=str(session_metadata_path),
+                subject_metadata_path=str(subject_metadata_path),
                 session_uuid=session_id,
             ),
             BehavioralSyllable=dict(
                 file_path=str(behavior_path),
                 session_metadata_path=str(session_metadata_path),
+                subject_metadata_path=str(subject_metadata_path),
                 session_uuid=session_id,
             ),
         )

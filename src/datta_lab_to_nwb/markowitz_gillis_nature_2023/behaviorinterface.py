@@ -7,16 +7,16 @@ from pynwb.behavior import (
     Position,
     SpatialSeries,
 )
-from neuroconv.basedatainterface import BaseDataInterface
+from .basedattainterface import BaseDattaInterface
 from neuroconv.tools import nwb_helpers
 from neuroconv.utils import load_dict_from_file
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
 
-class BehaviorInterface(BaseDataInterface):
+class BehaviorInterface(BaseDattaInterface):
     """Behavior interface for markowitz_gillis_nature_2023 conversion"""
 
-    def __init__(self, file_path: str, session_uuid: str, session_metadata_path: str):
+    def __init__(self, file_path: str, session_uuid: str, session_metadata_path: str, subject_metadata_path: str):
         # This should load the data lazily and prepare variables you need
         columns = (
             "uuid",
@@ -31,6 +31,7 @@ class BehaviorInterface(BaseDataInterface):
             session_uuid=session_uuid,
             columns=columns,
             session_metadata_path=session_metadata_path,
+            subject_metadata_path=subject_metadata_path,
         )
 
     def get_metadata_schema(self) -> dict:

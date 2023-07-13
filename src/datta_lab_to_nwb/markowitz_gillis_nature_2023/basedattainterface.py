@@ -1,18 +1,10 @@
 """Primary class for handling metadata non-specific to any other DataInterfaces."""
 from neuroconv.basedatainterface import BaseDataInterface
 from neuroconv.utils import load_dict_from_file
-from pynwb import NWBFile
 
 
-class MetadataInterface(BaseDataInterface):
-    """Metadata interface for markowitz_gillis_nature_2023 conversion"""
-
-    def __init__(self, session_uuid: str, session_metadata_path: str, subject_metadata_path: str):
-        super().__init__(
-            session_uuid=session_uuid,
-            session_metadata_path=session_metadata_path,
-            subject_metadata_path=subject_metadata_path,
-        )
+class BaseDattaInterface(BaseDataInterface):
+    """Base interface for markowitz_gillis_nature_2023 conversion w/ non-specific metadata"""
 
     def get_metadata(self) -> dict:
         metadata = super().get_metadata()
@@ -31,7 +23,3 @@ class MetadataInterface(BaseDataInterface):
         metadata["Subject"]["sex"] = subject_metadata["sex"]
 
         return metadata
-
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict) -> NWBFile:
-        """Run conversion of data from the source file into the nwbfile."""
-        return nwbfile
