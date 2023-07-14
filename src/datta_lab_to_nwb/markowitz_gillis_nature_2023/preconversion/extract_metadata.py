@@ -11,7 +11,7 @@ from neuroconv.utils import dict_deep_update
 
 def extract_photometry_metadata(
     data_path: str,
-    example_uuid: str = None,
+    example_uuids: str = None,
     num_sessions: int = None,
     reinforcement_photometry: bool = False,
 ) -> dict:
@@ -21,7 +21,7 @@ def extract_photometry_metadata(
     ----------
     data_path : str
         Path to data.
-    example_uuid : str, optional
+    example_uuids : str, optional
         UUID of example session to extract metadata from.
     num_sessions : int, optional
         Number of sessions to extract metadata from.
@@ -66,7 +66,7 @@ def extract_photometry_metadata(
         filters = [("mouse_id", "in", photometry_reinforcement_mouse_ids)]
     else:
         filters = [("mouse_id", "not in", photometry_reinforcement_mouse_ids)]
-    if example_uuid is None:
+    if example_uuids is None:
         df = pd.read_parquet(
             photometry_data_path,
             columns=["uuid", "mouse_id"],
@@ -75,7 +75,7 @@ def extract_photometry_metadata(
         uuids = set(df.uuid[df.uuid.notnull()])
         del df
     else:
-        uuids = {example_uuid}
+        uuids = set(example_uuids)
     if num_sessions is None:
         num_sessions = len(uuids)
     session_metadata = {}
@@ -95,7 +95,7 @@ def extract_photometry_metadata(
 
 
 def extract_reinforcement_metadata(
-    data_path: str, example_uuid: str = None, num_sessions: int = None, reinforcement_photometry: bool = False
+    data_path: str, example_uuids: str = None, num_sessions: int = None, reinforcement_photometry: bool = False
 ) -> dict:
     """Extract metadata from reinforcement data.
 
@@ -103,7 +103,7 @@ def extract_reinforcement_metadata(
     ----------
     data_path : str
         Path to data.
-    example_uuid : str, optional
+    example_uuids : str, optional
         UUID of example session to extract metadata from.
     num_sessions : int, optional
         Number of sessions to extract metadata from.
@@ -137,10 +137,16 @@ def extract_reinforcement_metadata(
         "cohort",
     )
     if reinforcement_photometry:
-        filters = [("experiment_type", "==", "reinforcement_photometry")]
+        filters = [
+            (
+                "experiment_type",
+                "in",
+                {"reinforcement_photometry", "excitation_photometry", "excitation_pulsed_photometry"},
+            )
+        ]
     else:
-        filters = [("experiment_type", "==", "reinforcement")]
-    if example_uuid is None:
+        filters = [("experiment_type", "in", {"reinforcement", "excitation", "excitation_pulsed"})]
+    if example_uuids is None:
         df = pd.read_parquet(
             reinforcement_data_path,
             columns=["uuid", "experiment_type", "mouse_id"],
@@ -149,7 +155,7 @@ def extract_reinforcement_metadata(
         uuids = set(df.uuid[df.uuid.notnull()])
         del df
     else:
-        uuids = {example_uuid}
+        uuids = set(example_uuids)
     session_metadata, subject_metadata = {}, {}
     if num_sessions is None:
         num_sessions = len(uuids)
@@ -178,7 +184,7 @@ def extract_reinforcement_metadata(
 
 
 def extract_reinforcement_photometry_metadata(
-    data_path: str, example_uuid: str = None, num_sessions: int = None
+    data_path: str, example_uuids: str = None, num_sessions: int = None
 ) -> dict:
     """Extract metadata from reinforcement photometry data.
 
@@ -186,7 +192,7 @@ def extract_reinforcement_photometry_metadata(
     ----------
     data_path : str
         Path to data.
-    example_uuid : str, optional
+    example_uuids : str, optional
         UUID of example session to extract metadata from.
     num_sessions : int, optional
         Number of sessions to extract metadata from.
@@ -197,10 +203,10 @@ def extract_reinforcement_photometry_metadata(
         Dictionary of metadata.
     """
     photometry_session_metadata, photometry_subject_metadata = extract_photometry_metadata(
-        data_path, example_uuid, num_sessions, reinforcement_photometry=True
+        data_path, example_uuids, num_sessions, reinforcement_photometry=True
     )
     reinforcement_session_metadata, reinforcement_subject_metadata = extract_reinforcement_metadata(
-        data_path, example_uuid, num_sessions, reinforcement_photometry=True
+        data_path, example_uuids, num_sessions, reinforcement_photometry=True
     )
     photometry_uuids = set(photometry_session_metadata.keys())
     reinforcement_uuids = set(reinforcement_session_metadata.keys())
@@ -341,15 +347,31 @@ if __name__ == "__main__":
     reinforcement_photometry_session_metadata_path = metadata_path / "reinforcement_photometry_session_metadata.yaml"
     reinforcement_photometry_subject_metadata_path = metadata_path / "reinforcement_photometry_subject_metadata.yaml"
 
-    example_uuid = "2891f649-4fbd-4119-a807-b8ef507edfab"
+    # Example UUIDs
+    dls_dlight_1_example = "18dc5ad5-13f0-4297-8b21-75d434770e57"
+    photometry_examples = [dls_dlight_1_example]
+    reinforcement_example = "dcf0767a-b75d-4c79-a242-84dd5b5cdd00"
+    excitation_example = "380d4711-85a6-4672-ad48-76e91607c41f"
+    excitation_pulsed_example = "be01945e-c6d0-4bca-bd56-4d4466d9d832"
+    reinforcement_examples = [reinforcement_example, excitation_example, excitation_pulsed_example]
+    figure1d_example = "2891f649-4fbd-4119-a807-b8ef507edfab"
+    pulsed_photometry_example = "b8360fcd-acfd-4414-9e67-ba0dc5c979a8"
+    excitation_photometry_example = "95bec433-2242-4276-b8a5-6d069afa3910"
+    reinforcement_photometry_examples = [figure1d_example, pulsed_photometry_example, excitation_photometry_example]
+
     reinforcement_session_metadata, reinforcement_subject_metadata = extract_reinforcement_metadata(
-        data_path, num_sessions=3
+        data_path,
+        example_uuids=reinforcement_examples,
     )
-    photometry_session_metadata, photometry_subject_metadata = extract_photometry_metadata(data_path, num_sessions=3)
+    photometry_session_metadata, photometry_subject_metadata = extract_photometry_metadata(
+        data_path,
+        example_uuids=photometry_examples,
+    )
     (
         reinforcement_photometry_session_metadata,
         reinforcement_photometry_subject_metadata,
-    ) = extract_reinforcement_photometry_metadata(data_path, example_uuid=example_uuid)
+    ) = extract_reinforcement_photometry_metadata(data_path, example_uuids=reinforcement_photometry_examples)
+
     path2metadata = {
         photometry_session_metadata_path: photometry_session_metadata,
         photometry_subject_metadata_path: photometry_subject_metadata,
@@ -358,7 +380,6 @@ if __name__ == "__main__":
         reinforcement_photometry_session_metadata_path: reinforcement_photometry_session_metadata,
         reinforcement_photometry_subject_metadata_path: reinforcement_photometry_subject_metadata,
     }
-
     for path, resolved_dict in path2metadata.items():
         with open(path, "w") as f:
             yaml.dump(resolved_dict, f)
