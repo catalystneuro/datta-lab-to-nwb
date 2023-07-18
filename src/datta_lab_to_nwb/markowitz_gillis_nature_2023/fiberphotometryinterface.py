@@ -155,9 +155,7 @@ class FiberPhotometryInterface(BaseDataInterface):
         # Important: we add the fibers to the fibers table _after_ adding the metadata
         # This ensures that we can find this data in their tables of origin
         fibers_table.add_fiber(
-            excitation_sources=[0, 1],  # integers indicated rows of excitation sources table
             photodetector=0,
-            fluorophores=[0],  # potentially multiple fluorophores, so list of indices
             location=metadata["FiberPhotometry"]["area"],
         )
 
