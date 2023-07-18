@@ -109,4 +109,5 @@ if __name__ == "__main__":
     reproduce_figures.reproduce_fig1d(nwbfile_path, editable_metadata_path)
     with NWBHDF5IO(nwbfile_path, "r") as io:
         nwbfile = io.read()
-        print(nwbfile.processing["ophys"].data_interfaces["ReferenceDfOverF"].excitation_source)
+        print(f'{nwbfile.processing["ophys"].data_interfaces["ReferenceDfOverF"].excitation_source = }')
+        print(f'{nwbfile.acquisition["ReferenceDfOverF"].excitation_source = }')

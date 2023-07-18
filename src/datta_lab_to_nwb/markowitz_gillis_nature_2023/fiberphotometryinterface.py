@@ -231,4 +231,7 @@ class FiberPhotometryInterface(BaseDataInterface):
         ophys_module.add(reference_fit_series)
         ophys_module.add(uv_reference_fit_series)
 
+        # DEBUG
+        nwbfile.add_acquisition(reference_series)
+
         return nwbfile
