@@ -4,6 +4,7 @@ from .behaviorinterface import BehaviorInterface
 from .fiberphotometryinterface import FiberPhotometryInterface
 from .optogeneticinterface import OptogeneticInterface
 from .behavioralsyllableinterface import BehavioralSyllableInterface
+from .hekinterface import HEKInterface
 
 
 class NWBConverter(NWBConverter):
@@ -14,4 +15,5 @@ class NWBConverter(NWBConverter):
         BehavioralSyllable=BehavioralSyllableInterface,
         FiberPhotometry=FiberPhotometryInterface,
         Optogenetic=OptogeneticInterface,
+        HEK=HEKInterface,
     )

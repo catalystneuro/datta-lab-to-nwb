@@ -8,7 +8,7 @@ from typing import Union, Literal
 from neuroconv.utils import dict_deep_update, load_dict_from_file
 
 # Local
-from datta_lab_to_nwb.markowitz_gillis_nature_2023.postconversion import reproduce_figures
+from datta_lab_to_nwb.markowitz_gillis_nature_2023.postconversion import reproduce_fig1d
 from datta_lab_to_nwb import markowitz_gillis_nature_2023
 
 
@@ -123,4 +123,4 @@ if __name__ == "__main__":
             )
     nwbfile_path = output_dir_path / f"{figure1d_example}.nwb"
     paper_metadata_path = Path(__file__).parent / "markowitz_gillis_nature_2023_metadata.yaml"
-    reproduce_figures.reproduce_fig1d(nwbfile_path, paper_metadata_path)
+    reproduce_fig1d.reproduce_fig1d(nwbfile_path, paper_metadata_path)
