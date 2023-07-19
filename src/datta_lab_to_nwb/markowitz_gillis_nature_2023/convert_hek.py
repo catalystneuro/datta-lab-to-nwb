@@ -4,6 +4,7 @@ from typing import Union
 from neuroconv.utils import dict_deep_update, load_dict_from_file
 from datta_lab_to_nwb import markowitz_gillis_nature_2023
 import shutil
+from pynwb import NWBHDF5IO
 from datta_lab_to_nwb.markowitz_gillis_nature_2023.postconversion import reproduce_figS1abcd
 
 
@@ -22,10 +23,10 @@ def session_to_nwb(
     experiment_name = file_path.name.split("_")[1]
     nwbfile_path = output_dir_path / f"HEK_{experiment_name}.nwb"
     source_data = {
-        "HEK" : dict(file_path=str(file_path), scale_path=str(scale_path)),
+        "HEK": dict(file_path=str(file_path), scale_path=str(scale_path)),
     }
     conversion_options = {
-        "HEK" : dict(),
+        "HEK": dict(),
     }
     converter = markowitz_gillis_nature_2023.NWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
@@ -50,6 +51,7 @@ if __name__ == "__main__":
     if output_dir_path.exists():
         shutil.rmtree(output_dir_path)
     stub_test = False
+    file_paths = file_paths[:1]
     for file_path in file_paths:
         session_to_nwb(
             file_path=file_path,
@@ -58,5 +60,8 @@ if __name__ == "__main__":
             stub_test=False,
         )
     nwb_files = [Path(output_dir_path) / f"HEK_{Path(file_path).name.split('_')[1]}.nwb" for file_path in file_paths]
-    reproduce_figS1abcd.reproduce_figS1abcd(file_paths, nwb_files)
+    with NWBHDF5IO(nwb_files[0], "r") as io:
+        nwbfile = io.read()
+        print(nwbfile)
 
+    # reproduce_figS1abcd.reproduce_figS1abcd(file_paths, nwb_files)
