@@ -6,6 +6,7 @@ import pytz
 from pathlib import Path
 from neuroconv.datainterfaces import TiffImagingInterface
 from pynwb import NWBHDF5IO
+
 plt.rcParams.update(plt.rcParamsDefault)
 
 from tqdm.auto import tqdm
@@ -43,9 +44,11 @@ def reproduce_figS1abcd(files, nwb_files):
     for _file, _parameters, nwbfile_path in tqdm(zip(files, parameters, nwb_files), total=len(parameters)):
         with NWBHDF5IO(nwbfile_path, "r") as io:
             nwbfile = io.read()
-            raw_dat = np.swapaxes(nwbfile.acquisition['TwoPhotonSeries'].data, 1, 2)
+            # raw_dat = np.swapaxes(nwbfile.acquisition['TwoPhotonSeries'].data, 1, 2)
+            raw_signal = np.array(nwbfile.acquisition["Signal1PSeries"].data)
+            raw_reference = np.array(nwbfile.acquisition["Reference1PSeries"].data)
         masks, flows, styles, diams = model.eval(
-            (np.max(raw_dat[1:50:2], axis=0)),
+            (np.max(raw_signal[:25], axis=0)),
             diameter=None,
             channels=channels,
             cellprob_threshold=0,
@@ -69,14 +72,13 @@ def reproduce_figS1abcd(files, nwb_files):
             _cell_mask[rr, cc] = 0
 
             _cell_trace = []
-            for _raw_dat in raw_dat:
+            for _raw_dat in raw_signal:
                 _cell_trace.append(_raw_dat[_cell_mask].mean())
-            traces_dlight.append(
-                simple_hampel(np.array(_cell_trace)[1::2], **hampel_parameters)
-            )
-            traces_isos.append(
-                simple_hampel(np.array(_cell_trace)[::2], **hampel_parameters)
-            )
+            traces_dlight.append(simple_hampel(np.array(_cell_trace), **hampel_parameters))
+            _cell_trace = []
+            for _raw_dat in raw_reference:
+                _cell_trace.append(_raw_dat[_cell_mask].mean())
+            traces_isos.append(simple_hampel(np.array(_cell_trace), **hampel_parameters))
 
         traces_dlight = np.array(traces_dlight)
         traces_isos = np.array(traces_isos)
@@ -99,20 +101,10 @@ def reproduce_figS1abcd(files, nwb_files):
         for i, _trace in tqdm(enumerate(trim_traces_dlight), total=len(trim_traces_dlight)):
             offset = _trace[0]
             try:
-                params = curve_fit(
-                    baseline_func,
-                    use_region,
-                    _trace[use_region] - offset,
-                    **baseline_kwargs
-                )
+                params = curve_fit(baseline_func, use_region, _trace[use_region] - offset, **baseline_kwargs)
                 fit_curve = baseline_func(xvec, *params[0]) + offset
             except:
-                params = curve_fit(
-                    fallback_func,
-                    use_region,
-                    _trace[use_region] - offset,
-                    **fallback_kwargs
-                )
+                params = curve_fit(fallback_func, use_region, _trace[use_region] - offset, **fallback_kwargs)
                 fit_curve = fallback_func(xvec, *params[0]) + offset
             traces_dlight_baserem[i] = (_trace - fit_curve) / fit_curve
             baseline_dlight[i] = fit_curve
@@ -123,20 +115,10 @@ def reproduce_figS1abcd(files, nwb_files):
         for i, _trace in tqdm(enumerate(trim_traces_isos), total=len(trim_traces_isos)):
             offset = _trace[0]
             try:
-                params = curve_fit(
-                    baseline_func,
-                    use_region,
-                    _trace[use_region] - offset,
-                    **baseline_kwargs
-                )
+                params = curve_fit(baseline_func, use_region, _trace[use_region] - offset, **baseline_kwargs)
                 fit_curve = baseline_func(xvec, *params[0]) + offset
             except:
-                params = curve_fit(
-                    fallback_func,
-                    use_region,
-                    _trace[use_region] - offset,
-                    **fallback_kwargs
-                )
+                params = curve_fit(fallback_func, use_region, _trace[use_region] - offset, **fallback_kwargs)
                 fit_curve = fallback_func(xvec, *params[0]) + offset
             traces_isos_baserem[i] = (_trace - fit_curve) / fit_curve
             baseline_isos[i] = fit_curve
@@ -156,28 +138,18 @@ def reproduce_figS1abcd(files, nwb_files):
     lens += diffs_onset
     max_lens = lens.max()
     diffs_len = max_lens - lens
-    padder = lambda x, y, z: np.pad(
-        x, [(0, 0), (y, z)], mode="constant", constant_values=np.nan
-    )
+    padder = lambda x, y, z: np.pad(x, [(0, 0), (y, z)], mode="constant", constant_values=np.nan)
     dlight_traces = [_["dlight"]["baseline_rem"] for _ in results.values()]
     isos_traces = [_["isos"]["baseline_rem"] for _ in results.values()]
     dlight_traces_raw = [_["dlight"]["raw"] for _ in results.values()]
     isos_traces_raw = [_["isos"]["raw"] for _ in results.values()]
-    dlight_traces = [
-        padder(_, _onset, _offset)
-        for _, _onset, _offset in zip(dlight_traces, diffs_onset, diffs_len)
-    ]
-    isos_traces = [
-        padder(_, _onset, _offset)
-        for _, _onset, _offset in zip(isos_traces, diffs_onset, diffs_len)
-    ]
+    dlight_traces = [padder(_, _onset, _offset) for _, _onset, _offset in zip(dlight_traces, diffs_onset, diffs_len)]
+    isos_traces = [padder(_, _onset, _offset) for _, _onset, _offset in zip(isos_traces, diffs_onset, diffs_len)]
     dlight_traces_raw = [
-        padder(_, _onset, _offset)
-        for _, _onset, _offset in zip(dlight_traces_raw, diffs_onset, diffs_len)
+        padder(_, _onset, _offset) for _, _onset, _offset in zip(dlight_traces_raw, diffs_onset, diffs_len)
     ]
     isos_traces_raw = [
-        padder(_, _onset, _offset)
-        for _, _onset, _offset in zip(isos_traces_raw, diffs_onset, diffs_len)
+        padder(_, _onset, _offset) for _, _onset, _offset in zip(isos_traces_raw, diffs_onset, diffs_len)
     ]
     dlight_traces = np.vstack(dlight_traces)
     isos_traces = np.vstack(isos_traces)
@@ -186,37 +158,46 @@ def reproduce_figS1abcd(files, nwb_files):
     use_onset = 100
     use_duration = 15
     use_offset = 0
-    maxvals = np.nanmax(
-        dlight_traces[:, use_onset + use_offset: use_onset + use_duration], axis=1
-    )
+    maxvals = np.nanmax(dlight_traces[:, use_onset + use_offset : use_onset + use_duration], axis=1)
     use_rois = maxvals > 0.05
     scale_path = "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/hek_raw_data/UFM-L_0.01mm_60X_bin2_20220511_093613.tif"
-    scale_dat = imread(scale_path) # TODO: replace w/ nwbfile version
+    scale_dat = imread(scale_path)  # TODO: replace w/ nwbfile version
     clean_image = lambda x: filters.median(x, morphology.disk(3))
     max_projs_dlight = []
     max_projs_isos = []
     max_projs_masks = []
-    for _file in files:
-        raw_dat = imread(_file)
-        max_projs_dlight.append(clean_image(np.max(raw_dat[1:50:2], axis=0)))
-        max_projs_isos.append(clean_image(np.max(raw_dat[0:50:2], axis=0)))
+    for _file, nwbfile_path in zip(files, nwb_files):
+        # raw_dat = imread(_file)
+        with NWBHDF5IO(nwbfile_path, "r") as io:
+            nwbfile = io.read()
+            # raw_dat = np.swapaxes(nwbfile.acquisition['TwoPhotonSeries'].data, 1, 2)
+            raw_signal = np.array(nwbfile.acquisition["Signal1PSeries"].data)
+            raw_reference = np.array(nwbfile.acquisition["Reference1PSeries"].data)
+        max_projs_dlight.append(clean_image(np.max(raw_signal[:25], axis=0)))
+        max_projs_isos.append(clean_image(np.max(raw_reference[:25], axis=0)))
         max_projs_masks.append(results[_file]["rois"] > 0)
     rng = np.random.default_rng(0)
 
     plot1c(dlight_traces, isos_traces, max_onset, use_rois)
-    plot_1d(baseline_func, baseline_kwargs, dlight_traces, isos_traces, results, use_rois, use_onset, use_offset,
-            use_duration, rng)
+    plot_1d(
+        baseline_func,
+        baseline_kwargs,
+        dlight_traces,
+        isos_traces,
+        results,
+        use_rois,
+        use_onset,
+        use_offset,
+        use_duration,
+        rng,
+    )
     plot_1a(max_projs_dlight, max_projs_isos, scale_dat)
     plot_1b(max_projs_dlight, max_projs_isos, max_projs_masks, rng)
 
 
 def plot_1b(max_projs_dlight, max_projs_isos, max_projs_masks, rng):
-    x = np.concatenate(
-        [zscore(_[_mask].ravel()) for _, _mask in zip(max_projs_dlight, max_projs_masks)]
-    )
-    y = np.concatenate(
-        [zscore(_[_mask].ravel()) for _, _mask in zip(max_projs_isos, max_projs_masks)]
-    )
+    x = np.concatenate([zscore(_[_mask].ravel()) for _, _mask in zip(max_projs_dlight, max_projs_masks)])
+    y = np.concatenate([zscore(_[_mask].ravel()) for _, _mask in zip(max_projs_isos, max_projs_masks)])
     nans = np.isnan(x) | np.isnan(y)
     x = x[~nans]
     y = y[~nans]
@@ -238,9 +219,7 @@ def plot_1b(max_projs_dlight, max_projs_isos, max_projs_masks, rng):
     plt.ylim(-3, 8)
     plt.xticks(np.arange(-3, 10, 3))
     plt.yticks(np.arange(-3, 10, 3))
-    plt.plot(
-        plt.xlim(), plt.ylim(), color=plt.rcParams["axes.edgecolor"], zorder=-100, lw=1.5
-    )
+    plt.plot(plt.xlim(), plt.ylim(), color=plt.rcParams["axes.edgecolor"], zorder=-100, lw=1.5)
     plt.xlabel("480 nm")
     plt.ylabel("400 nm")
     ax.plot(xvals, np.mean(bootvals, axis=0), color="b", zorder=-150, lw=0.5)
@@ -277,23 +256,27 @@ def plot_1a(max_projs_dlight, max_projs_isos, scale_dat):
     plt.show()
 
 
-def plot_1d(baseline_func, baseline_kwargs, dlight_traces, isos_traces, results, use_rois, use_onset, use_offset,
-            use_duration, rng):
+def plot_1d(
+    baseline_func,
+    baseline_kwargs,
+    dlight_traces,
+    isos_traces,
+    results,
+    use_rois,
+    use_onset,
+    use_offset,
+    use_duration,
+    rng,
+):
     _trace = list(results.values())[2]["dlight"]["raw"][10]
     use_region = np.concatenate([np.arange(50), np.arange(150, len(_trace))])
     xvec = np.arange(len(_trace))
     offset = _trace[0]
     baseline_kwargs["maxfev"] = int(1e6)
-    params = curve_fit(
-        baseline_func, use_region, _trace[use_region] - offset, **baseline_kwargs
-    )
+    params = curve_fit(baseline_func, use_region, _trace[use_region] - offset, **baseline_kwargs)
     fit_curve = baseline_func(xvec, *params[0]) + offset
-    x = np.nanmean(
-        dlight_traces[use_rois, use_onset + use_offset: use_onset + use_duration], axis=1
-    )
-    y = np.nanmean(
-        isos_traces[use_rois, use_onset + use_offset: use_onset + use_duration], axis=1
-    )
+    x = np.nanmean(dlight_traces[use_rois, use_onset + use_offset : use_onset + use_duration], axis=1)
+    y = np.nanmean(isos_traces[use_rois, use_onset + use_offset : use_onset + use_duration], axis=1)
     nans = np.isnan(x) | np.isnan(y)
     x = x[~nans]
     y = y[~nans]
@@ -311,10 +294,8 @@ def plot_1d(baseline_func, baseline_kwargs, dlight_traces, isos_traces, results,
     fig, ax = plt.subplots(1, figsize=(4, 4))
     duration = 30
     plt.scatter(
-        dlight_traces[use_rois, use_onset + use_offset: use_onset + duration].mean(axis=1)
-        * 100,
-        isos_traces[use_rois, use_onset + use_offset: use_onset + duration].mean(axis=1)
-        * 100,
+        dlight_traces[use_rois, use_onset + use_offset : use_onset + duration].mean(axis=1) * 100,
+        isos_traces[use_rois, use_onset + use_offset : use_onset + duration].mean(axis=1) * 100,
         20,
     )
     ax.axis("square")
@@ -333,9 +314,7 @@ def plot_1d(baseline_func, baseline_kwargs, dlight_traces, isos_traces, results,
         zorder=-100,
     )
     ax.plot(xvals, np.mean(bootvals, axis=0), color="b", zorder=-150, lw=0.5)
-    ax.fill_between(
-        xvals, bootci[1], bootci[0], color="b", alpha=0.5, zorder=-200, edgecolor=None, lw=0
-    )
+    ax.fill_between(xvals, bootci[1], bootci[0], color="b", alpha=0.5, zorder=-200, edgecolor=None, lw=0)
     ax.set_title(f"400nm={m:.3f} * 480nm +/- {mci:.3f}")
     fig.tight_layout()
     fig.suptitle("Extended Data Figure 1d", y=1.05)
@@ -372,8 +351,6 @@ def plot1c(dlight_traces, isos_traces, max_onset, use_rois):
     fig.colorbar(h, ax=ax.ravel(), label="dF/F0")
     fig.suptitle("Extended Data Figure 1c", y=1.05)
     plt.show()
-
-
 
 
 def bi_exp_decay(t, A1, K1, A2, K2, C):
