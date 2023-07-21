@@ -167,6 +167,7 @@ class HEKInterface(BaseDataInterface):
             imaging_plane=signal_imaging_plane,
             rate=self.source_data["sampling_frequency"],
             unit="normalized amplitude",
+            description="Fluorescence signal corresponding to the 480nm excitation wavelength.",
         )
         reference_1p_series = OnePhotonSeries(
             name="Reference1PSeries",
@@ -174,6 +175,7 @@ class HEKInterface(BaseDataInterface):
             imaging_plane=reference_imaging_plane,
             rate=self.source_data["sampling_frequency"],
             unit="normalized amplitude",
+            description="Fluorescence isosbestic reference corresponding to the 400nm excitation wavelength.",
         )
         nwbfile.add_acquisition(signal_1p_series)
         nwbfile.add_acquisition(reference_1p_series)
