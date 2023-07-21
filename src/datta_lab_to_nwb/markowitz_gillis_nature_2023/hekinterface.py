@@ -20,6 +20,7 @@ class HEKInterface(BaseDataInterface):
     """HEK interface for markowitz_gillis_nature_2023 conversion"""
 
     def __init__(self, file_path: str, scale_path: str):
+        grid_spacing_um = 0.43243243243243246  # Manually extracted from scale image (assuming x = y)
         sampling_frequency = 0.25
         file_name_split = Path(file_path).name.split("_")
         date = file_name_split[2]
@@ -32,6 +33,7 @@ class HEKInterface(BaseDataInterface):
         super().__init__(
             file_path=file_path,
             sampling_frequency=sampling_frequency,
+            grid_spacing_um=grid_spacing_um,
             experiment_name=experiment_name,
             session_start_time=session_start_time,
         )
@@ -129,10 +131,10 @@ class HEKInterface(BaseDataInterface):
             excitation_lambda=480.0,
             indicator="dLight1.1",
             location="n.a.",
-            grid_spacing=[0.01, 0.01],  # TODO: Extract grid spacing from scale file
-            grid_spacing_unit="meters",
-            origin_coords=[1.0, 2.0, 3.0],
-            origin_coords_unit="meters",
+            grid_spacing=[self.source_data["grid_spacing_um"], self.source_data["grid_spacing_um"]],
+            grid_spacing_unit="micrometers",
+            origin_coords=[0, 0],
+            origin_coords_unit="micrometers",
         )
         reference_imaging_plane = nwbfile.create_imaging_plane(
             name="ReferenceImagingPlane",
@@ -148,10 +150,10 @@ class HEKInterface(BaseDataInterface):
             excitation_lambda=400.0,
             indicator="dLight1.1",
             location="n.a.",
-            grid_spacing=[0.01, 0.01],  # TODO: Extract grid spacing from scale file
-            grid_spacing_unit="meters",
-            origin_coords=[1.0, 2.0, 3.0],
-            origin_coords_unit="meters",
+            grid_spacing=[self.source_data["grid_spacing_um"], self.source_data["grid_spacing_um"]],
+            grid_spacing_unit="micrometers",
+            origin_coords=[0, 0],
+            origin_coords_unit="micrometers",
         )
         signal_1p_series = OnePhotonSeries(
             name="Signal1PSeries",
