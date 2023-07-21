@@ -57,8 +57,15 @@ class HEKInterface(BaseDataInterface):
         metadata["NWBFile"]["session_id"] = self.source_data["experiment_name"]
 
         metadata["Subject"] = {}
-        metadata["Subject"]["subject_id"] = "HEK293"  # TODO: Clarify subject ID for HEK293 cells
+        metadata["Subject"]["subject_id"] = "HEK293"
+        metadata["Subject"]["species"] = "Homo sapiens"
+        metadata["Subject"]["age"] = "fetus"
         metadata["Subject"]["sex"] = "F"
+        metadata["Subject"]["description"] = (
+            "HEK 293 cells (ATCC, cells were validated by ATCC via short tandem repeat analysis and were not tested "
+            "for mycoplasma) were transfected with the dLight1.1 plasmid (Addgene 111067-AAV5) using Mirus TransIT-LT1 "
+            "(MIR 2304)."
+        )
         return metadata
 
     def get_metadata_schema(self) -> dict:
@@ -91,7 +98,6 @@ class HEKInterface(BaseDataInterface):
         return metadata_schema
 
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
-        """Run conversion of data from the source file into the nwbfile."""
         raw_data = imread(self.source_data["file_path"])
         raw_signal = raw_data[1::2, :, :]
         raw_reference = raw_data[::2, :, :]
@@ -133,7 +139,7 @@ class HEKInterface(BaseDataInterface):
             location="n.a.",
             grid_spacing=[self.source_data["grid_spacing_um"], self.source_data["grid_spacing_um"]],
             grid_spacing_unit="micrometers",
-            origin_coords=[0, 0],
+            origin_coords=[0.0, 0.0],
             origin_coords_unit="micrometers",
         )
         reference_imaging_plane = nwbfile.create_imaging_plane(
@@ -152,7 +158,7 @@ class HEKInterface(BaseDataInterface):
             location="n.a.",
             grid_spacing=[self.source_data["grid_spacing_um"], self.source_data["grid_spacing_um"]],
             grid_spacing_unit="micrometers",
-            origin_coords=[0, 0],
+            origin_coords=[0.0, 0.0],
             origin_coords_unit="micrometers",
         )
         signal_1p_series = OnePhotonSeries(
