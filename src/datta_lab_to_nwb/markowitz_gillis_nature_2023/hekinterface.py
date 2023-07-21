@@ -88,7 +88,7 @@ class HEKInterface(BaseDataInterface):
         }
         return metadata_schema
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict):
+    def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         """Run conversion of data from the source file into the nwbfile."""
         raw_data = imread(self.source_data["file_path"])
         raw_signal = raw_data[1::2, :, :]
@@ -169,5 +169,3 @@ class HEKInterface(BaseDataInterface):
         )
         nwbfile.add_acquisition(signal_1p_series)
         nwbfile.add_acquisition(reference_1p_series)
-
-        return nwbfile
