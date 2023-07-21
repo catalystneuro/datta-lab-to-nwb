@@ -56,16 +56,6 @@ class HEKInterface(BaseDataInterface):
         metadata["NWBFile"]["identifier"] = self.source_data["experiment_name"]
         metadata["NWBFile"]["session_id"] = self.source_data["experiment_name"]
 
-        metadata["Subject"] = {}
-        metadata["Subject"]["subject_id"] = "HEK293"
-        metadata["Subject"]["species"] = "Homo sapiens"
-        metadata["Subject"]["age"] = "fetus"
-        metadata["Subject"]["sex"] = "F"
-        metadata["Subject"]["description"] = (
-            "HEK 293 cells (ATCC, cells were validated by ATCC via short tandem repeat analysis and were not tested "
-            "for mycoplasma) were transfected with the dLight1.1 plasmid (Addgene 111067-AAV5) using Mirus TransIT-LT1 "
-            "(MIR 2304)."
-        )
         return metadata
 
     def get_metadata_schema(self) -> dict:
