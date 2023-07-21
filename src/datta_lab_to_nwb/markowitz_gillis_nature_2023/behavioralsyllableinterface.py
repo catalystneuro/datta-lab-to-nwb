@@ -38,8 +38,7 @@ class BehavioralSyllableInterface(BaseDattaInterface):
         }
         return metadata_schema
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict) -> NWBFile:
-        """Run conversion of data from the source file into the nwbfile."""
+    def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         session_df = pd.read_parquet(
             self.source_data["file_path"],
             columns=self.source_data["columns"],
@@ -63,5 +62,3 @@ class BehavioralSyllableInterface(BaseDattaInterface):
             labels=H5DataIO(index2name, compression=True),
         )
         nwbfile.add_acquisition(events)
-
-        return nwbfile
