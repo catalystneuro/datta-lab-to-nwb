@@ -66,8 +66,7 @@ class OptogeneticInterface(BaseDattaInterface):
         }
         return metadata_schema
 
-    def run_conversion(self, nwbfile: NWBFile, metadata: dict):
-        """Run conversion of data from the source file into the nwbfile."""
+    def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         session_df = pd.read_parquet(
             self.source_data["file_path"],
             columns=self.source_data["columns"],
