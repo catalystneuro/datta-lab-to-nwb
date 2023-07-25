@@ -1,6 +1,4 @@
 """Primary class for converting MoSeq Extraction data."""
-from typing import Literal, Optional
-import numpy as np
 from pynwb import NWBFile
 from datetime import datetime
 from pytz import timezone
@@ -215,7 +213,7 @@ class MoseqInterface(BaseDataInterface):
             unit="mm",
         )
         width = BehavioralTimeSeries(timeseries=width_series, name="Width")
-        # TODO: Add area
+        # TODO: Ask about area
 
         # Combine all data into a behavioral processing module
         behavior_module = nwb_helpers.get_module(
