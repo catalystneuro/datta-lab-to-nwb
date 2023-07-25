@@ -11,6 +11,12 @@ from neuroconv.basedatainterface import BaseDataInterface
 from pynwb.image import GrayscaleImage, ImageSeries, ImageMaskSeries
 from pynwb import TimeSeries
 from pynwb.base import Images
+from pynwb.behavior import (
+    CompassDirection,
+    Position,
+    SpatialSeries,
+)
+from neuroconv.tools import nwb_helpers
 
 
 class MoseqInterface(BaseDataInterface):
@@ -135,3 +141,37 @@ class MoseqInterface(BaseDataInterface):
         nwbfile.add_acquisition(loglikelihood_video)
         nwbfile.add_acquisition(summary_images)
         nwbfile.add_acquisition(flipped_series)
+
+        # Add Position Data
+        position_data = np.vstack(
+            (kinematic_vars["centroid_x_mm"], kinematic_vars["centroid_y_mm"], kinematic_vars["height_ave_mm"])
+        ).T
+        position_spatial_series = SpatialSeries(
+            name="SpatialSeries",
+            description="Position (x, y, height) in an open field.",
+            data=H5DataIO(position_data, compression=True),
+            timestamps=H5DataIO(timestamps, compression=True),
+            reference_frame=metadata["Behavior"]["Position"]["reference_frame"],
+            unit="mm",
+        )
+        position = Position(spatial_series=position_spatial_series)
+
+        # Add Compass Direction Data
+        direction_spatial_series = SpatialSeries(
+            name="HeadOrientation",
+            description=(
+                "The location of the mouse was identified by finding the centroid of the contour with the largest area "
+                "using the OpenCV findcontours function. An 80×80 pixel bounding box was drawn around the "
+                "identified centroid, and the orientation was estimated using an ellipse fit."
+            ),
+            data=H5DataIO(kinematic_vars["angle"], compression=True),
+            timestamps=position_spatial_series.timestamps,
+            reference_frame=metadata["Behavior"]["CompassDirection"]["reference_frame"],
+            unit="radians",
+        )
+        direction = CompassDirection(spatial_series=direction_spatial_series, name="CompassDirection")
+
+        # Combine all data into a behavioral processing module
+        behavior_module = nwb_helpers.get_module(nwbfile, name="behavior", description="Processed behavioral data")
+        behavior_module.add(position)
+        behavior_module.add(direction)
