@@ -181,7 +181,7 @@ class MoseqInterface(BaseDataInterface):
             timestamps=H5DataIO(timestamps, compression=True),
             unit="mm/frame",
         )
-        velocity_2d = BehavioralTimeSeries(timeseries=velocity_2d_series, name="Velocity2d")
+        velocity_2d = BehavioralTimeSeries(time_series=velocity_2d_series, name="Velocity2d")
         velocity_3d_series = TimeSeries(
             name="Velocity3d",
             description="3D velocity (mm / frame), note that missing frames are not accounted for",
@@ -189,7 +189,7 @@ class MoseqInterface(BaseDataInterface):
             timestamps=H5DataIO(timestamps, compression=True),
             unit="mm/frame",
         )
-        velocity_3d = BehavioralTimeSeries(timeseries=velocity_3d_series, name="Velocity3d")
+        velocity_3d = BehavioralTimeSeries(time_series=velocity_3d_series, name="Velocity3d")
         velocity_angle_series = TimeSeries(
             name="VelocityAngle",
             description="Angular component of velocity (arctan(vel_x, vel_y))",
@@ -197,7 +197,7 @@ class MoseqInterface(BaseDataInterface):
             timestamps=H5DataIO(timestamps, compression=True),
             unit="radians/frame",
         )
-        velocity_angle = BehavioralTimeSeries(timeseries=velocity_angle_series, name="VelocityAngle")
+        velocity_angle = BehavioralTimeSeries(time_series=velocity_angle_series, name="VelocityAngle")
 
         # Add length/width/area data
         length_series = TimeSeries(
@@ -207,7 +207,7 @@ class MoseqInterface(BaseDataInterface):
             timestamps=H5DataIO(timestamps, compression=True),
             unit="mm",
         )
-        length = BehavioralTimeSeries(timeseries=length_series, name="Length")
+        length = BehavioralTimeSeries(time_series=length_series, name="Length")
         width_series = TimeSeries(
             name="Width",
             description="Width of mouse (mm)",
@@ -215,7 +215,7 @@ class MoseqInterface(BaseDataInterface):
             timestamps=H5DataIO(timestamps, compression=True),
             unit="mm",
         )
-        width = BehavioralTimeSeries(timeseries=width_series, name="Width")
+        width = BehavioralTimeSeries(time_series=width_series, name="Width")
         # TODO: Ask about area
 
         # Combine all data into a behavioral processing module
