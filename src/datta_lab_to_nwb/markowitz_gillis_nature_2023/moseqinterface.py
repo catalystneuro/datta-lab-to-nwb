@@ -4,6 +4,7 @@ from datetime import datetime
 from pytz import timezone
 import h5py
 import numpy as np
+import pandas as pd
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 from neuroconv.basedatainterface import BaseDataInterface
 from pynwb.image import GrayscaleImage, ImageSeries, ImageMaskSeries
@@ -16,14 +17,16 @@ from pynwb.behavior import (
     BehavioralTimeSeries,
 )
 from neuroconv.tools import nwb_helpers
+from ndx_events import LabeledEvents
 
 
 class MoseqInterface(BaseDataInterface):
     """Moseq interface for markowitz_gillis_nature_2023 conversion"""
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, syllable_file_path: str):
         super().__init__(
             file_path=file_path,
+            syllable_file_path=syllable_file_path,
         )
 
     def get_metadata(self) -> dict:
@@ -228,3 +231,25 @@ class MoseqInterface(BaseDataInterface):
         behavior_module.add(velocity_angle)
         behavior_module.add(length)
         behavior_module.add(width)
+
+        # Add Behavioral Syllables
+        syllable_df = pd.read_csv(
+            self.source_data["syllable_file_path"], sep=" ", header=None, names=["timestamp", "syllable"]
+        )
+        sorted_pseudoindex2name = metadata["BehavioralSyllable"]["sorted_pseudoindex2name"]
+        id2sorted_index = metadata["BehavioralSyllable"]["id2sorted_index"]
+        syllable_names = np.fromiter(sorted_pseudoindex2name.values(), dtype="O")
+        syllable_pseudoindices = np.fromiter(sorted_pseudoindex2name.keys(), dtype=np.int64)
+        index2name = syllable_names[np.argsort(syllable_pseudoindices)].tolist()
+        for _ in range(len(id2sorted_index) - len(index2name)):
+            index2name.append("Uncommon Syllable (frequency < 1%)")
+        syllable_ids = syllable_df["syllable"]
+        syllable_indices = syllable_ids.map(id2sorted_index).to_numpy(dtype=np.uint8)
+        events = LabeledEvents(
+            name="BehavioralSyllable",
+            description="Behavioral Syllable identified by Motion Sequencing (MoSeq).",
+            timestamps=H5DataIO(syllable_df["timestamp"].to_numpy(), compression=True),
+            data=H5DataIO(syllable_indices, compression=True),
+            labels=H5DataIO(index2name, compression=True),
+        )
+        nwbfile.add_acquisition(events)

@@ -9,6 +9,7 @@ from pynwb import NWBHDF5IO
 
 def session_to_nwb(
     file_path: Union[str, Path],
+    syllable_file_path: Union[str, Path],
     session_id: str,
     output_dir_path: Union[str, Path],
     stub_test: bool = False,
@@ -39,6 +40,7 @@ def session_to_nwb(
 
 if __name__ == "__main__":
     file_path = "/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20190913101448-010005/proc/results_00.h5"
+    syllable_file_path = "/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20210215162554-455929/predictions.txt"
     session_id = "874e5509-f12b-4aab-9a0e-64d004007a4f"
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     if output_dir_path.exists():
@@ -46,6 +48,7 @@ if __name__ == "__main__":
     stub_test = False
     session_to_nwb(
         file_path=file_path,
+        syllable_file_path=syllable_file_path,
         session_id=session_id,
         output_dir_path=output_dir_path,
         stub_test=False,
