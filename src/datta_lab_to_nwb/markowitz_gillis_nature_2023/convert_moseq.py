@@ -21,7 +21,7 @@ def session_to_nwb(
     output_dir_path.mkdir(parents=True, exist_ok=True)
     nwbfile_path = output_dir_path / f"{session_id}.nwb"
     source_data = {
-        "Moseq": dict(file_path=str(file_path)),
+        "Moseq": dict(file_path=str(file_path), syllable_file_path=str(syllable_file_path)),
     }
     conversion_options = {
         "Moseq": dict(),
