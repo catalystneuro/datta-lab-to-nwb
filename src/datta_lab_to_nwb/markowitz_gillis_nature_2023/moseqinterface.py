@@ -96,32 +96,32 @@ class MoseqInterface(BaseDataInterface):
         kinect = nwbfile.create_device(name="kinect", manufacturer="Microsoft", description="Microsoft Kinect 2")
         moseq_video = ImageSeries(
             name="moseq_video",
-            data=moseq_video,
+            data=H5DataIO(moseq_video, compression=True),
             unit="millimeters",
             format="raw",
-            timestamps=timestamps,
+            timestamps=H5DataIO(timestamps, compression=True),
             description="3D array of depth frames (nframes x w x h, in mm)",
             comments=f"Detected true depth of arena floor in mm: {true_depth}",
             device=kinect,
         )
         loglikelihood_video = ImageMaskSeries(
             name="loglikelihood_video",
-            data=loglikelihood_video,
+            data=H5DataIO(loglikelihood_video, compression=True),
             masked_imageseries=moseq_video,
             unit="a.u.",
             format="raw",
-            timestamps=timestamps,
+            timestamps=H5DataIO(timestamps, compression=True),
             description="Log-likelihood values from the tracking model (nframes x w x h)",
             device=kinect,
         )
         background = GrayscaleImage(
             name="background",
-            data=background,
+            data=H5DataIO(background, compression=True),
             description="Computed background image",
         )
         roi = GrayscaleImage(  # TODO: Ask about ImageMask
             name="roi",
-            data=roi,
+            data=H5DataIO(roi, compression=True),
             description="Computed region of interest",
         )
         summary_images = Images(
@@ -131,9 +131,9 @@ class MoseqInterface(BaseDataInterface):
         )
         flipped_series = TimeSeries(
             name="flipped_series",
-            data=is_flipped,
+            data=H5DataIO(is_flipped, compression=True),
             unit="a.u.",
-            timestamps=timestamps,
+            timestamps=H5DataIO(timestamps, compression=True),
             description="Boolean array indicating whether the image was flipped left/right",
         )
         nwbfile.add_acquisition(moseq_video)
