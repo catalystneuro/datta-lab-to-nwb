@@ -15,6 +15,7 @@ from pynwb.behavior import (
     CompassDirection,
     Position,
     SpatialSeries,
+    BehavioralTimeSeries,
 )
 from neuroconv.tools import nwb_helpers
 
@@ -171,7 +172,61 @@ class MoseqInterface(BaseDataInterface):
         )
         direction = CompassDirection(spatial_series=direction_spatial_series, name="CompassDirection")
 
+        # Add velocity data
+        velocity_2d_series = TimeSeries(
+            name="Velocity2d",
+            description="2D velocity (mm / frame), note that missing frames are not accounted for",
+            data=H5DataIO(kinematic_vars["velocity_2d_mm"], compression=True),
+            timestamps=H5DataIO(timestamps, compression=True),
+            unit="mm/frame",
+        )
+        velocity_2d = BehavioralTimeSeries(timeseries=velocity_2d_series, name="Velocity2d")
+        velocity_3d_series = TimeSeries(
+            name="Velocity3d",
+            description="3D velocity (mm / frame), note that missing frames are not accounted for",
+            data=H5DataIO(kinematic_vars["velocity_3d_mm"], compression=True),
+            timestamps=H5DataIO(timestamps, compression=True),
+            unit="mm/frame",
+        )
+        velocity_3d = BehavioralTimeSeries(timeseries=velocity_3d_series, name="Velocity3d")
+        velocity_angle_series = TimeSeries(
+            name="VelocityAngle",
+            description="Angular component of velocity (arctan(vel_x, vel_y))",
+            data=H5DataIO(kinematic_vars["velocity_theta"], compression=True),
+            timestamps=H5DataIO(timestamps, compression=True),
+            unit="radians/frame",
+        )
+        velocity_angle = BehavioralTimeSeries(timeseries=velocity_angle_series, name="VelocityAngle")
+
+        # Add length/width/area data
+        length_series = TimeSeries(
+            name="Length",
+            description="Length of mouse (mm)",
+            data=H5DataIO(kinematic_vars["length_mm"], compression=True),
+            timestamps=H5DataIO(timestamps, compression=True),
+            unit="mm",
+        )
+        length = BehavioralTimeSeries(timeseries=length_series, name="Length")
+        width_series = TimeSeries(
+            name="Width",
+            description="Width of mouse (mm)",
+            data=H5DataIO(kinematic_vars["width_mm"], compression=True),
+            timestamps=H5DataIO(timestamps, compression=True),
+            unit="mm",
+        )
+        width = BehavioralTimeSeries(timeseries=width_series, name="Width")
+        # TODO: Add area
+
         # Combine all data into a behavioral processing module
-        behavior_module = nwb_helpers.get_module(nwbfile, name="behavior", description="Processed behavioral data")
+        behavior_module = nwb_helpers.get_module(
+            nwbfile,
+            name="behavior",
+            description="Processed behavioral data from MoSeq",
+        )
         behavior_module.add(position)
         behavior_module.add(direction)
+        behavior_module.add(velocity_2d)
+        behavior_module.add(velocity_3d)
+        behavior_module.add(velocity_angle)
+        behavior_module.add(length)
+        behavior_module.add(width)
