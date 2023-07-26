@@ -18,6 +18,7 @@ from pynwb.behavior import (
 )
 from neuroconv.tools import nwb_helpers
 from ndx_events import LabeledEvents
+from ndx_moseq import DepthImageSeries
 
 
 class MoseqInterface(BaseDataInterface):
@@ -97,14 +98,15 @@ class MoseqInterface(BaseDataInterface):
                 kinematic_vars[k] = np.array(file["scalars"][k])
 
         kinect = nwbfile.create_device(name="kinect", manufacturer="Microsoft", description="Microsoft Kinect 2")
-        moseq_video = ImageSeries(
+        moseq_video = DepthImageSeries(
             name="moseq_video",
             data=H5DataIO(moseq_video, compression=True),
             unit="millimeters",
             format="raw",
             timestamps=H5DataIO(timestamps, compression=True),
             description="3D array of depth frames (nframes x w x h, in mm)",
-            comments=f"Detected true depth of arena floor in mm: {true_depth}",
+            # comments=f"Detected true depth of arena floor in mm: {true_depth}",
+            distant_depth=true_depth,
             device=kinect,
         )
         loglikelihood_video = ImageMaskSeries(
