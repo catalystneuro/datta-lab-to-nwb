@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 from neuroconv.basedatainterface import BaseDataInterface
+from pynwb.core import DynamicTable, VectorData, VectorIndex
 from pynwb.image import GrayscaleImage, ImageSeries, ImageMaskSeries
 from pynwb import TimeSeries
 from pynwb.base import Images
@@ -94,8 +95,23 @@ class MoseqInterface(BaseDataInterface):
 
             # Kinematics
             kinematic_vars = {}
-            for k in file["scalars"].keys():
-                kinematic_vars[k] = np.array(file["scalars"][k])
+            for k, v in file["scalars"].items():
+                kinematic_vars[k] = np.array(v)
+
+            # Parameters
+            parameter_names, parameter_data, parameter_descriptions = [], [], []
+            for name, data in file["metadata"]["extraction"]["parameters"].items():
+                if name == "output_dir":
+                    continue  # skipping this bc it is Null
+                parameter_names.append(name)
+                if name == "input_file":
+                    parameter_descriptions.append("Path to input depth video file")
+                else:
+                    parameter_descriptions.append(data.attrs["description"])
+                data = np.array(data)
+                if len(data.shape) == 0:
+                    data = np.array([data.item()])
+                parameter_data.append(data)
 
         kinect = nwbfile.create_device(name="kinect", manufacturer="Microsoft", description="Microsoft Kinect 2")
         moseq_video = DepthImageSeries(
@@ -105,7 +121,6 @@ class MoseqInterface(BaseDataInterface):
             format="raw",
             timestamps=H5DataIO(timestamps, compression=True),
             description="3D array of depth frames (nframes x w x h, in mm)",
-            # comments=f"Detected true depth of arena floor in mm: {true_depth}",
             distant_depth=true_depth,
             device=kinect,
         )
@@ -255,3 +270,17 @@ class MoseqInterface(BaseDataInterface):
             labels=H5DataIO(index2name, compression=True),
         )
         nwbfile.add_acquisition(events)
+
+        parameter_set = DynamicTable(
+            name="MoseqExtractParameterSet",
+            description="Parameters used by moseq-extract.",
+            id=[0],
+        )
+        for name, description, data in zip(parameter_names, parameter_descriptions, parameter_data):
+            parameter_set.add_column(
+                name=name,
+                description=description,
+                data=data,
+                index=[data.shape[0]],
+            )
+        behavior_module.add(parameter_set)
