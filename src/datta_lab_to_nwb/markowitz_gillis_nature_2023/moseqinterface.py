@@ -84,7 +84,7 @@ class MoseqInterface(BaseDataInterface):
             version = np.array(file["metadata"]["extraction"]["extract_version"]).item().decode("ASCII")
 
             # Video
-            moseq_video = np.array(file["frames"])
+            processed_depth_video = np.array(file["frames"])
             loglikelihood_video = np.array(file["frames_mask"])
 
             # Timestamps
@@ -117,20 +117,22 @@ class MoseqInterface(BaseDataInterface):
                 parameter_data.append(data)
 
         kinect = nwbfile.create_device(name="kinect", manufacturer="Microsoft", description="Microsoft Kinect 2")
-        moseq_video = DepthImageSeries(  # TODO: add length and width px2mm conversions (length_mm / length_px, etc.)
-            name="moseq_video",
-            data=H5DataIO(moseq_video, compression=True),
-            unit="millimeters",
-            format="raw",
-            timestamps=H5DataIO(timestamps, compression=True),  # TODO: All timestamps as links
-            description="3D array of depth frames (nframes x w x h, in mm)",
-            distant_depth=true_depth,
-            device=kinect,
+        processed_depth_video = (
+            DepthImageSeries(  # TODO: add length and width px2mm conversions (length_mm / length_px, etc.)
+                name="processed_depth_video",
+                data=H5DataIO(processed_depth_video, compression=True),
+                unit="millimeters",
+                format="raw",
+                timestamps=H5DataIO(timestamps, compression=True),  # TODO: All timestamps as links
+                description="3D array of depth frames (nframes x w x h, in mm)",
+                distant_depth=true_depth,
+                device=kinect,
+            )
         )
         loglikelihood_video = ImageMaskSeries(
             name="loglikelihood_video",
             data=H5DataIO(loglikelihood_video, compression=True),
-            masked_imageseries=moseq_video,
+            masked_imageseries=processed_depth_video,
             unit="a.u.",
             format="raw",
             timestamps=H5DataIO(timestamps, compression=True),
@@ -142,15 +144,10 @@ class MoseqInterface(BaseDataInterface):
             data=H5DataIO(background, compression=True),
             description="Computed background image.",
         )
-        roi = GrayscaleImage(  # TODO: Ask about ImageMask
+        roi = GrayscaleImage(  # TODO: ImageMask
             name="roi",
             data=H5DataIO(roi, compression=True),
             description="Computed region of interest.",
-        )
-        summary_images = Images(
-            name="summary_images",
-            images=[background, roi],
-            description="Summary images from MoSeq",
         )
         flipped_series = TimeSeries(
             name="flipped_series",
@@ -159,95 +156,91 @@ class MoseqInterface(BaseDataInterface):
             timestamps=H5DataIO(timestamps, compression=True),
             description="Boolean array indicating whether the image was flipped left/right",
         )
-        nwbfile.add_acquisition(moseq_video)
-        nwbfile.add_acquisition(loglikelihood_video)
-        nwbfile.add_acquisition(summary_images)
-        # nwbfile.add_acquisition(flipped_series)
 
         # Add Position Data
         position_data = np.vstack(
             (kinematic_vars["centroid_x_mm"], kinematic_vars["centroid_y_mm"], kinematic_vars["height_ave_mm"])
         ).T
-        position_spatial_series = SpatialSeries(
-            name="SpatialSeries",
+        position_series = SpatialSeries(
+            name="position",
             description="Position (x, y, height) in an open field.",
             data=H5DataIO(position_data, compression=True),
             timestamps=H5DataIO(timestamps, compression=True),
             reference_frame=metadata["Behavior"]["Position"]["reference_frame"],
             unit="mm",
         )
-        position = Position(spatial_series=position_spatial_series)
+        position = Position(spatial_series=position_series, name="position")
 
         # Add Compass Direction Data
-        direction_spatial_series = SpatialSeries(
-            name="HeadOrientation",
+        heading_2d_series = SpatialSeries(
+            name="heading_2d",
             description=(
                 "The location of the mouse was identified by finding the centroid of the contour with the largest area "
                 "using the OpenCV findcontours function. An 80×80 pixel bounding box was drawn around the "
                 "identified centroid, and the orientation was estimated using an ellipse fit."
             ),
             data=H5DataIO(kinematic_vars["angle"], compression=True),
-            timestamps=position_spatial_series.timestamps,
+            timestamps=position_series.timestamps,
             reference_frame=metadata["Behavior"]["CompassDirection"]["reference_frame"],
             unit="radians",
         )
-        direction = CompassDirection(spatial_series=direction_spatial_series, name="CompassDirection")
+        heading_2d = CompassDirection(spatial_series=heading_2d_series, name="heading_2d")
 
-        # Add velocity data
-        velocity_2d_series = TimeSeries(
-            name="Velocity2d",
-            description="2D velocity (mm / frame), note that missing frames are not accounted for",
+        # Add speed/velocity data
+        speed_2d_series = TimeSeries(
+            name="speed_2d",
+            description="2D speed (mm / frame), note that missing frames are not accounted for",
             data=H5DataIO(kinematic_vars["velocity_2d_mm"], compression=True),
             timestamps=H5DataIO(timestamps, compression=True),
             unit="mm/frame",
         )
-        velocity_2d = BehavioralTimeSeries(time_series=velocity_2d_series, name="Velocity2d")
-        velocity_3d_series = TimeSeries(
-            name="Velocity3d",
-            description="3D velocity (mm / frame), note that missing frames are not accounted for",
+        speed_2d = BehavioralTimeSeries(time_series=speed_2d_series, name="speed_2d")
+        speed_3d_series = TimeSeries(
+            name="speed_3d",
+            description="3D speed (mm / frame), note that missing frames are not accounted for",
             data=H5DataIO(kinematic_vars["velocity_3d_mm"], compression=True),
             timestamps=H5DataIO(timestamps, compression=True),
             unit="mm/frame",
         )
-        velocity_3d = BehavioralTimeSeries(time_series=velocity_3d_series, name="Velocity3d")
-        velocity_angle_series = TimeSeries(
-            name="VelocityAngle",
+        speed_3d = BehavioralTimeSeries(time_series=speed_3d_series, name="speed_3d")
+        angular_velocity_2d_series = TimeSeries(
+            name="angular_velocity_2d",
             description="Angular component of velocity (arctan(vel_x, vel_y))",
             data=H5DataIO(kinematic_vars["velocity_theta"], compression=True),
             timestamps=H5DataIO(timestamps, compression=True),
             unit="radians/frame",
         )
-        velocity_angle = BehavioralTimeSeries(time_series=velocity_angle_series, name="VelocityAngle")
+        angular_velocity_2d = BehavioralTimeSeries(time_series=angular_velocity_2d_series, name="angular_velocity_2d")
 
         # Add length/width/area data
         length_series = TimeSeries(
-            name="Length",
+            name="length",
             description="Length of mouse (mm)",
             data=H5DataIO(kinematic_vars["length_mm"], compression=True),
             timestamps=H5DataIO(timestamps, compression=True),
             unit="mm",
         )
-        length = BehavioralTimeSeries(time_series=length_series, name="Length")
+        length = BehavioralTimeSeries(time_series=length_series, name="length")
         width_series = TimeSeries(
-            name="Width",
+            name="width",
             description="Width of mouse (mm)",
             data=H5DataIO(kinematic_vars["width_mm"], compression=True),
             timestamps=H5DataIO(timestamps, compression=True),
             unit="mm",
         )
-        width = BehavioralTimeSeries(time_series=width_series, name="Width")
+        width = BehavioralTimeSeries(time_series=width_series, name="width")
         width_px_to_mm = kinematic_vars["width_mm"] / kinematic_vars["width_px"]
         length_px_to_mm = kinematic_vars["length_mm"] / kinematic_vars["length_px"]
         area_px_to_mm2 = width_px_to_mm * length_px_to_mm
         area_mm2 = kinematic_vars["area_px"] * area_px_to_mm2
         area_series = TimeSeries(
-            name="Area",
+            name="area",
             description="Pixel-wise area of mouse (mm^2)",
             data=H5DataIO(area_mm2, compression=True),
             timestamps=H5DataIO(timestamps, compression=True),
             unit="mm^2",
         )
-        area = BehavioralTimeSeries(time_series=area_series, name="Area")
+        area = BehavioralTimeSeries(time_series=area_series, name="area")
 
         # Combine all data into a behavioral processing module
         behavior_module = nwb_helpers.get_module(
@@ -255,14 +248,6 @@ class MoseqInterface(BaseDataInterface):
             name="behavior",
             description="Processed behavioral data from MoSeq",
         )
-        behavior_module.add(position)
-        behavior_module.add(direction)
-        behavior_module.add(velocity_2d)
-        behavior_module.add(velocity_3d)
-        behavior_module.add(velocity_angle)
-        behavior_module.add(length)
-        behavior_module.add(width)
-        behavior_module.add(area)
 
         # Add Behavioral Syllables
         syllable_df = pd.read_csv(
@@ -306,16 +291,16 @@ class MoseqInterface(BaseDataInterface):
             name="moseq_extract_group",
             version=version,
             background=background,
-            processed_depth_video=moseq_video,
+            processed_depth_video=processed_depth_video,
             loglikelihood_video=loglikelihood_video,
             roi=roi,
             flipped_series=flipped_series,
             depth_camera=kinect,
             position=position,
-            heading_2d=direction,
-            speed_2d=velocity_2d,
-            speed_3d=velocity_3d,
-            angular_velocity_2d=velocity_angle,
+            heading_2d=heading_2d,
+            speed_2d=speed_2d,
+            speed_3d=speed_3d,
+            angular_velocity_2d=angular_velocity_2d,
             length=length,
             width=width,
             area=area,
