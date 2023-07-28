@@ -80,6 +80,10 @@ class MoseqInterface(BaseDataInterface):
 
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         with h5py.File(self.source_data["file_path"]) as file:
+            # Version
+            version = np.array(file["metadata"]["extraction"]["extract_version"]).item()
+            print(f"{version = }")
+
             # Video
             moseq_video = np.array(file["frames"])
             loglikelihood_video = np.array(file["frames_mask"])
