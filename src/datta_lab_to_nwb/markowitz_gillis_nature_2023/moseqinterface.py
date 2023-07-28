@@ -85,7 +85,7 @@ class MoseqInterface(BaseDataInterface):
             loglikelihood_video = np.array(file["frames_mask"])
 
             # Timestamps
-            timestamps = np.array(file["timestamps"])
+            timestamps = np.array(file["timestamps"])  # TODO: Add scaling factor
 
             # Extraction
             background = np.array(file["metadata"]["extraction"]["background"])
@@ -114,12 +114,12 @@ class MoseqInterface(BaseDataInterface):
                 parameter_data.append(data)
 
         kinect = nwbfile.create_device(name="kinect", manufacturer="Microsoft", description="Microsoft Kinect 2")
-        moseq_video = DepthImageSeries(
+        moseq_video = DepthImageSeries(  # TODO: add length and width px2mm conversions (length_mm / length_px, etc.)
             name="moseq_video",
             data=H5DataIO(moseq_video, compression=True),
             unit="millimeters",
             format="raw",
-            timestamps=H5DataIO(timestamps, compression=True),
+            timestamps=H5DataIO(timestamps, compression=True),  # TODO: All timestamps as links
             description="3D array of depth frames (nframes x w x h, in mm)",
             distant_depth=true_depth,
             device=kinect,
@@ -233,7 +233,18 @@ class MoseqInterface(BaseDataInterface):
             unit="mm",
         )
         width = BehavioralTimeSeries(time_series=width_series, name="Width")
-        # TODO: Ask about area
+        width_px_to_mm = kinematic_vars["width_mm"] / kinematic_vars["width_px"]
+        length_px_to_mm = kinematic_vars["length_mm"] / kinematic_vars["length_px"]
+        area_px_to_mm2 = width_px_to_mm * length_px_to_mm
+        area_mm2 = kinematic_vars["area_px"] * area_px_to_mm2
+        area_series = TimeSeries(
+            name="Area",
+            description="Pixel-wise area of mouse (mm^2)",
+            data=H5DataIO(area_mm2, compression=True),
+            timestamps=H5DataIO(timestamps, compression=True),
+            unit="mm^2",
+        )
+        area = BehavioralTimeSeries(time_series=area_series, name="Area")
 
         # Combine all data into a behavioral processing module
         behavior_module = nwb_helpers.get_module(
@@ -248,6 +259,7 @@ class MoseqInterface(BaseDataInterface):
         behavior_module.add(velocity_angle)
         behavior_module.add(length)
         behavior_module.add(width)
+        behavior_module.add(area)
 
         # Add Behavioral Syllables
         syllable_df = pd.read_csv(
