@@ -19,7 +19,7 @@ from pynwb.behavior import (
 )
 from neuroconv.tools import nwb_helpers
 from ndx_events import LabeledEvents
-from ndx_moseq import DepthImageSeries
+from ndx_moseq import DepthImageSeries, MoSeqExtractGroup
 
 
 class MoseqInterface(BaseDataInterface):
@@ -81,8 +81,7 @@ class MoseqInterface(BaseDataInterface):
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         with h5py.File(self.source_data["file_path"]) as file:
             # Version
-            version = np.array(file["metadata"]["extraction"]["extract_version"]).item()
-            print(f"{version = }")
+            version = np.array(file["metadata"]["extraction"]["extract_version"]).item().decode("ASCII")
 
             # Video
             moseq_video = np.array(file["frames"])
@@ -287,6 +286,7 @@ class MoseqInterface(BaseDataInterface):
         )
         nwbfile.add_acquisition(events)
 
+        # Add Parameters
         parameter_set = DynamicTable(
             name="MoseqExtractParameterSet",
             description="Parameters used by moseq-extract.",
@@ -300,3 +300,12 @@ class MoseqInterface(BaseDataInterface):
                 index=[data.shape[0]],
             )
         behavior_module.add(parameter_set)
+
+        # Add MoseqExtractGroup
+        moseq_extract_group = MoSeqExtractGroup(
+            name="moseq_extract_group",
+            version=version,
+            background=background,
+            depth_camera=kinect,
+        )
+        behavior_module.add(moseq_extract_group)
