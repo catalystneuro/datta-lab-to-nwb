@@ -140,12 +140,12 @@ class MoseqInterface(BaseDataInterface):
         background = GrayscaleImage(
             name="background",
             data=H5DataIO(background, compression=True),
-            description="Computed background image",
+            description="Computed background image.",
         )
         roi = GrayscaleImage(  # TODO: Ask about ImageMask
             name="roi",
             data=H5DataIO(roi, compression=True),
-            description="Computed region of interest",
+            description="Computed region of interest.",
         )
         summary_images = Images(
             name="summary_images",
@@ -162,7 +162,7 @@ class MoseqInterface(BaseDataInterface):
         nwbfile.add_acquisition(moseq_video)
         nwbfile.add_acquisition(loglikelihood_video)
         nwbfile.add_acquisition(summary_images)
-        nwbfile.add_acquisition(flipped_series)
+        # nwbfile.add_acquisition(flipped_series)
 
         # Add Position Data
         position_data = np.vstack(
@@ -306,6 +306,10 @@ class MoseqInterface(BaseDataInterface):
             name="moseq_extract_group",
             version=version,
             background=background,
+            processed_depth_video=moseq_video,
+            loglikelihood_video=loglikelihood_video,
+            roi=roi,
+            flipped_series=flipped_series,
             depth_camera=kinect,
         )
         behavior_module.add(moseq_extract_group)
