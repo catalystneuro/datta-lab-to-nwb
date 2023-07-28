@@ -311,5 +311,13 @@ class MoseqInterface(BaseDataInterface):
             roi=roi,
             flipped_series=flipped_series,
             depth_camera=kinect,
+            position=position,
+            heading_2d=direction,
+            speed_2d=velocity_2d,
+            speed_3d=velocity_3d,
+            angular_velocity_2d=velocity_angle,
+            length=length,
+            width=width,
+            area=area,
         )
         behavior_module.add(moseq_extract_group)
