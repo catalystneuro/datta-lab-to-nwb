@@ -103,7 +103,7 @@ class MoseqInterface(BaseDataInterface):
                 kinematic_vars[k] = np.array(v)
 
             # Parameters
-            parameter_names, parameter_data, parameter_descriptions = [], [], []
+            parameter_names, parameter_data, parameter_descriptions, parameters = [], [], [], {}
             for name, data in file["metadata"]["extraction"]["parameters"].items():
                 if name == "output_dir":
                     continue  # skipping this bc it is Null
@@ -116,6 +116,7 @@ class MoseqInterface(BaseDataInterface):
                 if len(data.shape) == 0:
                     data = np.array([data.item()])
                 parameter_data.append(data)
+                parameters[name] = data
 
         # Add Imaging Data
         # TODO: grid_spacing to images
@@ -266,31 +267,33 @@ class MoseqInterface(BaseDataInterface):
         events = LabeledEvents(
             name="BehavioralSyllable",
             description="Behavioral Syllable identified by Motion Sequencing (MoSeq).",
-            timestamps=H5DataIO(syllable_df["timestamp"].to_numpy(), compression=True),
+            timestamps=H5DataIO(
+                syllable_df["timestamp"].to_numpy() * TIMESTAMPS_TO_SECONDS, compression=True
+            ),  # TODO: Why are the timestamps different?
             data=H5DataIO(syllable_indices, compression=True),
             labels=H5DataIO(index2name, compression=True),
         )
         nwbfile.add_acquisition(events)
 
         # Add Parameters
-        parameter_set = DynamicTable(
-            name="MoseqExtractParameterSet",
+        moseq_extract_parameters = DynamicTable(
+            name="ParameterTable",
             description="Parameters used by moseq-extract.",
             id=[0],
         )
         for name, description, data in zip(parameter_names, parameter_descriptions, parameter_data):
-            parameter_set.add_column(
+            moseq_extract_parameters.add_column(
                 name=name,
                 description=description,
                 data=data,
                 index=[data.shape[0]],
             )
-        behavior_module.add(parameter_set)
 
         # Add MoseqExtractGroup
         moseq_extract_group = MoSeqExtractGroup(
             name="moseq_extract_group",
             version=version,
+            ParameterTable=moseq_extract_parameters,
             background=background,
             processed_depth_video=processed_depth_video,
             loglikelihood_video=loglikelihood_video,
