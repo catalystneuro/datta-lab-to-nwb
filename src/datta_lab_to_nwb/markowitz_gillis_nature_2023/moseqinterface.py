@@ -88,7 +88,8 @@ class MoseqInterface(BaseDataInterface):
             loglikelihood_video = np.array(file["frames_mask"])
 
             # Timestamps
-            timestamps = np.array(file["timestamps"])  # TODO: Add scaling factor
+            TIMESTAMPS_TO_SECONDS = 1.25e-4
+            timestamps = np.array(file["timestamps"]) * TIMESTAMPS_TO_SECONDS
 
             # Extraction
             background = np.array(file["metadata"]["extraction"]["background"])
