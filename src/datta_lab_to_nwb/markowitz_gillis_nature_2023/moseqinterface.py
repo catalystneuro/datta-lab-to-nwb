@@ -94,7 +94,7 @@ class MoseqInterface(BaseDataInterface):
             # Extraction
             background = np.array(file["metadata"]["extraction"]["background"])
             is_flipped = np.array(file["metadata"]["extraction"]["flips"])
-            roi = np.array(file["metadata"]["extraction"]["roi"]) * 255
+            roi = np.array(file["metadata"]["extraction"]["roi"]) * 1.0
             true_depth = np.array(file["metadata"]["extraction"]["true_depth"]).item()
 
             # Kinematics
@@ -117,18 +117,25 @@ class MoseqInterface(BaseDataInterface):
                     data = np.array([data.item()])
                 parameter_data.append(data)
 
+        # Add Imaging Data
+        # TODO: grid_spacing to images
         kinect = nwbfile.create_device(name="kinect", manufacturer="Microsoft", description="Microsoft Kinect 2")
-        processed_depth_video = (
-            DepthImageSeries(  # TODO: add length and width px2mm conversions (length_mm / length_px, etc.)
-                name="processed_depth_video",
-                data=H5DataIO(processed_depth_video, compression=True),
-                unit="millimeters",
-                format="raw",
-                timestamps=H5DataIO(timestamps, compression=True),  # TODO: All timestamps as links
-                description="3D array of depth frames (nframes x w x h, in mm)",
-                distant_depth=true_depth,
-                device=kinect,
-            )
+        flipped_series = TimeSeries(
+            name="flipped_series",
+            data=H5DataIO(is_flipped, compression=True),
+            unit="a.u.",
+            timestamps=H5DataIO(timestamps, compression=True),
+            description="Boolean array indicating whether the image was flipped left/right",
+        )
+        processed_depth_video = DepthImageSeries(
+            name="processed_depth_video",
+            data=H5DataIO(processed_depth_video, compression=True),
+            unit="millimeters",
+            format="raw",
+            timestamps=flipped_series.timestamps,
+            description="3D array of depth frames (nframes x w x h, in mm)",
+            distant_depth=true_depth,
+            device=kinect,
         )
         loglikelihood_video = ImageMaskSeries(
             name="loglikelihood_video",
@@ -136,7 +143,7 @@ class MoseqInterface(BaseDataInterface):
             masked_imageseries=processed_depth_video,
             unit="a.u.",
             format="raw",
-            timestamps=H5DataIO(timestamps, compression=True),
+            timestamps=flipped_series.timestamps,
             description="Log-likelihood values from the tracking model (nframes x w x h)",
             device=kinect,
         )
@@ -145,17 +152,10 @@ class MoseqInterface(BaseDataInterface):
             data=H5DataIO(background, compression=True),
             description="Computed background image.",
         )
-        roi = GrayscaleImage(  # TODO: ImageMask
+        roi = GrayscaleImage(
             name="roi",
             data=H5DataIO(roi, compression=True),
             description="Computed region of interest.",
-        )
-        flipped_series = TimeSeries(
-            name="flipped_series",
-            data=H5DataIO(is_flipped, compression=True),
-            unit="a.u.",
-            timestamps=H5DataIO(timestamps, compression=True),
-            description="Boolean array indicating whether the image was flipped left/right",
         )
 
         # Add Position Data
@@ -166,7 +166,7 @@ class MoseqInterface(BaseDataInterface):
             name="position",
             description="Position (x, y, height) in an open field.",
             data=H5DataIO(position_data, compression=True),
-            timestamps=H5DataIO(timestamps, compression=True),
+            timestamps=flipped_series.timestamps,
             reference_frame=metadata["Behavior"]["Position"]["reference_frame"],
             unit="mm",
         )
@@ -181,7 +181,7 @@ class MoseqInterface(BaseDataInterface):
                 "identified centroid, and the orientation was estimated using an ellipse fit."
             ),
             data=H5DataIO(kinematic_vars["angle"], compression=True),
-            timestamps=position_series.timestamps,
+            timestamps=flipped_series.timestamps,
             reference_frame=metadata["Behavior"]["CompassDirection"]["reference_frame"],
             unit="radians",
         )
@@ -192,7 +192,7 @@ class MoseqInterface(BaseDataInterface):
             name="speed_2d",
             description="2D speed (mm / frame), note that missing frames are not accounted for",
             data=H5DataIO(kinematic_vars["velocity_2d_mm"], compression=True),
-            timestamps=H5DataIO(timestamps, compression=True),
+            timestamps=flipped_series.timestamps,
             unit="mm/frame",
         )
         speed_2d = BehavioralTimeSeries(time_series=speed_2d_series, name="speed_2d")
@@ -200,7 +200,7 @@ class MoseqInterface(BaseDataInterface):
             name="speed_3d",
             description="3D speed (mm / frame), note that missing frames are not accounted for",
             data=H5DataIO(kinematic_vars["velocity_3d_mm"], compression=True),
-            timestamps=H5DataIO(timestamps, compression=True),
+            timestamps=flipped_series.timestamps,
             unit="mm/frame",
         )
         speed_3d = BehavioralTimeSeries(time_series=speed_3d_series, name="speed_3d")
@@ -208,7 +208,7 @@ class MoseqInterface(BaseDataInterface):
             name="angular_velocity_2d",
             description="Angular component of velocity (arctan(vel_x, vel_y))",
             data=H5DataIO(kinematic_vars["velocity_theta"], compression=True),
-            timestamps=H5DataIO(timestamps, compression=True),
+            timestamps=flipped_series.timestamps,
             unit="radians/frame",
         )
         angular_velocity_2d = BehavioralTimeSeries(time_series=angular_velocity_2d_series, name="angular_velocity_2d")
@@ -218,7 +218,7 @@ class MoseqInterface(BaseDataInterface):
             name="length",
             description="Length of mouse (mm)",
             data=H5DataIO(kinematic_vars["length_mm"], compression=True),
-            timestamps=H5DataIO(timestamps, compression=True),
+            timestamps=flipped_series.timestamps,
             unit="mm",
         )
         length = BehavioralTimeSeries(time_series=length_series, name="length")
@@ -226,7 +226,7 @@ class MoseqInterface(BaseDataInterface):
             name="width",
             description="Width of mouse (mm)",
             data=H5DataIO(kinematic_vars["width_mm"], compression=True),
-            timestamps=H5DataIO(timestamps, compression=True),
+            timestamps=flipped_series.timestamps,
             unit="mm",
         )
         width = BehavioralTimeSeries(time_series=width_series, name="width")
@@ -238,7 +238,7 @@ class MoseqInterface(BaseDataInterface):
             name="area",
             description="Pixel-wise area of mouse (mm^2)",
             data=H5DataIO(area_mm2, compression=True),
-            timestamps=H5DataIO(timestamps, compression=True),
+            timestamps=flipped_series.timestamps,
             unit="mm^2",
         )
         area = BehavioralTimeSeries(time_series=area_series, name="area")
