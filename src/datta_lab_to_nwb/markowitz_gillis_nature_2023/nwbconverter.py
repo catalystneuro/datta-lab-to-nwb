@@ -4,7 +4,7 @@ from .behaviorinterface import BehaviorInterface
 from .fiberphotometryinterface import FiberPhotometryInterface
 from .optogeneticinterface import OptogeneticInterface
 from .behavioralsyllableinterface import BehavioralSyllableInterface
-from .moseqinterface import MoseqInterface
+from .moseqextractinterface import MoseqExtractInterface
 
 
 class NWBConverter(NWBConverter):
@@ -15,5 +15,5 @@ class NWBConverter(NWBConverter):
         BehavioralSyllable=BehavioralSyllableInterface,
         FiberPhotometry=FiberPhotometryInterface,
         Optogenetic=OptogeneticInterface,
-        Moseq=MoseqInterface,
+        MoseqExtract=MoseqExtractInterface,
     )
