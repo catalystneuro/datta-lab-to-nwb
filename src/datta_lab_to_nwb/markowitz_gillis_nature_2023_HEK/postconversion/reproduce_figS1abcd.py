@@ -44,9 +44,10 @@ def reproduce_figS1abcd(files, nwb_files):
     for _file, _parameters, nwbfile_path in tqdm(zip(files, parameters, nwb_files), total=len(parameters)):
         with NWBHDF5IO(nwbfile_path, "r") as io:
             nwbfile = io.read()
-            # raw_dat = np.swapaxes(nwbfile.acquisition['TwoPhotonSeries'].data, 1, 2)
             raw_signal = np.array(nwbfile.acquisition["Signal1PSeries"].data)
             raw_reference = np.array(nwbfile.acquisition["Reference1PSeries"].data)
+            scale_dat = np.array(nwbfile.acquisition["Images"]["ScaleImage"].data)
+            grid_spacing_um = nwbfile.imaging_planes["ReferenceImagingPlane"].grid_spacing[0]
         masks, flows, styles, diams = model.eval(
             (np.max(raw_signal[:25], axis=0)),
             diameter=None,
@@ -160,8 +161,6 @@ def reproduce_figS1abcd(files, nwb_files):
     use_offset = 0
     maxvals = np.nanmax(dlight_traces[:, use_onset + use_offset : use_onset + use_duration], axis=1)
     use_rois = maxvals > 0.05
-    scale_path = "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/hek_raw_data/UFM-L_0.01mm_60X_bin2_20220511_093613.tif"
-    scale_dat = imread(scale_path)  # TODO: replace w/ nwbfile version
     clean_image = lambda x: filters.median(x, morphology.disk(3))
     max_projs_dlight = []
     max_projs_isos = []
@@ -191,7 +190,7 @@ def reproduce_figS1abcd(files, nwb_files):
         use_duration,
         rng,
     )
-    plot_1a(max_projs_dlight, max_projs_isos, scale_dat)
+    plot_1a(max_projs_dlight, max_projs_isos, scale_dat, grid_spacing_um)
     plot_1b(max_projs_dlight, max_projs_isos, max_projs_masks, rng)
 
 
@@ -239,12 +238,15 @@ def plot_1b(max_projs_dlight, max_projs_isos, max_projs_masks, rng):
     plt.show()
 
 
-def plot_1a(max_projs_dlight, max_projs_isos, scale_dat):
+def plot_1a(max_projs_dlight, max_projs_isos, scale_dat, grid_spacing_um):
     cmap = sns.dark_palette([0, 1, 0], as_cmap=True)
     kwargs = {"cmap": cmap}
-    max_projs_dlight[1].shape
     fig, ax = plt.subplots(3, 1, figsize=(4, 10))
-    ax[0].imshow(np.flipud(max_projs_dlight[1].T), **kwargs)
+    scale_bar_um = 20
+    scale_bar_px = int(scale_bar_um / grid_spacing_um)
+    plot_projs_dlight = max_projs_dlight[1].copy()
+    plot_projs_dlight[10 : 10 + scale_bar_px, 15:25] = np.max(plot_projs_dlight)
+    ax[0].imshow(np.flipud(plot_projs_dlight.T), **kwargs)
     ax[0].set_title("480 nm")
     ax[1].imshow(np.flipud(max_projs_isos[1].T), **kwargs)
     ax[1].set_title("400 nm")

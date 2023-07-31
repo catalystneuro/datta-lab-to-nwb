@@ -6,6 +6,7 @@ from pynwb.ophys import (
     OnePhotonSeries,
     OpticalChannel,
 )
+from pynwb.image import GrayscaleImage, Images
 from neuroconv.basedatainterface import BaseDataInterface
 from neuroconv.tools import nwb_helpers
 from neuroconv.utils import load_dict_from_file
@@ -20,7 +21,7 @@ class HEKInterface(BaseDataInterface):
     """HEK interface for markowitz_gillis_nature_2023 conversion"""
 
     def __init__(self, file_path: str, scale_path: str):
-        grid_spacing_um = 0.43243243243243246  # Manually extracted from scale image (assuming x = y)
+        grid_spacing_um = 0.43  # Manually extracted from scale image (assuming x = y -- i.e. square grid)
         sampling_frequency = 0.25
         file_name_split = Path(file_path).name.split("_")
         date = file_name_split[2]
@@ -32,6 +33,7 @@ class HEKInterface(BaseDataInterface):
         session_start_time = datetime.combine(date, time.time(), tzinfo=timezone)
         super().__init__(
             file_path=file_path,
+            scale_path=scale_path,
             sampling_frequency=sampling_frequency,
             grid_spacing_um=grid_spacing_um,
             experiment_name=experiment_name,
@@ -89,6 +91,7 @@ class HEKInterface(BaseDataInterface):
 
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         raw_data = imread(self.source_data["file_path"])
+        raw_scale = imread(self.source_data["scale_path"])
         raw_signal = raw_data[1::2, :, :]
         raw_reference = raw_data[::2, :, :]
 
@@ -167,5 +170,12 @@ class HEKInterface(BaseDataInterface):
             unit="normalized amplitude",
             description="Fluorescence isosbestic reference corresponding to the 400nm excitation wavelength.",
         )
+        scale_image = GrayscaleImage(
+            name="ScaleImage",
+            data=H5DataIO(raw_scale, compression=True),
+            description="Image of the scale bar: Lines represent 10um divisions.",
+        )
+        images = Images(name="Images", description="Container for scale image.", images=[scale_image])
         nwbfile.add_acquisition(signal_1p_series)
         nwbfile.add_acquisition(reference_1p_series)
+        nwbfile.add_acquisition(images)
