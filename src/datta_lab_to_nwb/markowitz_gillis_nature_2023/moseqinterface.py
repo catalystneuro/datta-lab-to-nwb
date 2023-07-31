@@ -19,7 +19,7 @@ from pynwb.behavior import (
 )
 from neuroconv.tools import nwb_helpers
 from ndx_events import LabeledEvents
-from ndx_moseq import DepthImageSeries, MoSeqExtractGroup
+from ndx_moseq import DepthImageSeries, MoSeqExtractGroup, MoSeqExtractParameterGroup
 
 
 class MoseqInterface(BaseDataInterface):
@@ -103,20 +103,41 @@ class MoseqInterface(BaseDataInterface):
                 kinematic_vars[k] = np.array(v)
 
             # Parameters
-            parameter_names, parameter_data, parameter_descriptions, parameters = [], [], [], {}
+            parameters = {}
             for name, data in file["metadata"]["extraction"]["parameters"].items():
-                if name == "output_dir":
+                if name in {"output_dir", "input_file"}:
                     continue  # skipping this bc it is Null
-                parameter_names.append(name)
-                if name == "input_file":
-                    parameter_descriptions.append("Path to input depth video file")
-                else:
-                    parameter_descriptions.append(data.attrs["description"])
                 data = np.array(data)
-                if len(data.shape) == 0:
-                    data = np.array([data.item()])
-                parameter_data.append(data)
-                parameters[name] = data
+                if name == "bg_roi_depth_range":
+                    parameters["bg_roi_depth_range_min"] = data[0]
+                    parameters["bg_roi_depth_range_max"] = data[1]
+                elif name == "bg_roi_dilate":
+                    parameters["bg_roi_dilate_x"] = data[0]
+                    parameters["bg_roi_dilate_y"] = data[1]
+                elif name == "bg_roi_weights":
+                    parameters["bg_roi_weight_area"] = data[0]
+                    parameters["bg_roi_weight_extent"] = data[1]
+                    parameters["bg_roi_weight_dist"] = data[2]
+                elif name == "cable_filter_size":
+                    parameters["cable_filter_size_x"] = data[0]
+                    parameters["cable_filter_size_y"] = data[1]
+                elif name == "crop_size":
+                    parameters["crop_size_width"] = data[0]
+                    parameters["crop_size_height"] = data[1]
+                elif name == "frame_trim":
+                    parameters["frame_trim_beginning"] = data[0]
+                    parameters["frame_trim_end"] = data[1]
+                elif name == "model_smoothing_clips":
+                    parameters["model_smoothing_clips_x"] = data[0]
+                    parameters["model_smoothing_clips_y"] = data[1]
+                elif name == "tail_filter_size":
+                    parameters["tail_filter_size_x"] = data[0]
+                    parameters["tail_filter_size_y"] = data[1]
+                elif data.dtype == "object":
+                    parameters[name] = data.item().decode("ASCII")
+                else:
+                    data = np.array([data.item()], dtype=data.dtype)
+                    parameters[name] = data[0]
 
         # Add Imaging Data
         # TODO: grid_spacing to images
@@ -276,24 +297,13 @@ class MoseqInterface(BaseDataInterface):
         nwbfile.add_acquisition(events)
 
         # Add Parameters
-        moseq_extract_parameters = DynamicTable(
-            name="ParameterTable",
-            description="Parameters used by moseq-extract.",
-            id=[0],
-        )
-        for name, description, data in zip(parameter_names, parameter_descriptions, parameter_data):
-            moseq_extract_parameters.add_column(
-                name=name,
-                description=description,
-                data=data,
-                index=[data.shape[0]],
-            )
+        parameters = MoSeqExtractParameterGroup(name="parameters", **parameters)
 
         # Add MoseqExtractGroup
         moseq_extract_group = MoSeqExtractGroup(
             name="moseq_extract_group",
             version=version,
-            ParameterTable=moseq_extract_parameters,
+            parameters=parameters,
             background=background,
             processed_depth_video=processed_depth_video,
             loglikelihood_video=loglikelihood_video,
