@@ -25,15 +25,21 @@ def session_to_nwb(
     nwbfile_path = output_dir_path / f"{session_id}.nwb"
     source_data = {
         "DepthVideo": dict(
-            depth_path=str(depth_path),
+            data_path=str(depth_path),
             metadata_path=str(metadata_path),
             timestamp_path=timestamp_path,
-            ir_path=ir_path,
         ),
     }
     conversion_options = {
         "DepthVideo": dict(),
     }
+    if ir_path is not None:
+        source_data["IRVideo"] = dict(
+            data_path=str(ir_path),
+            metadata_path=str(metadata_path),
+            timestamp_path=timestamp_path,
+        )
+        conversion_options["IRVideo"] = dict()
     converter = markowitz_gillis_nature_2023.NWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
 
