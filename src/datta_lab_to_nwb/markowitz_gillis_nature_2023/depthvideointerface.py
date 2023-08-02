@@ -18,16 +18,18 @@ from pynwb.behavior import (
 from neuroconv.tools import nwb_helpers
 from neuroconv.datainterfaces import VideoInterface
 from ndx_moseq import DepthImageSeries, MoSeqExtractGroup, MoSeqExtractParameterGroup
+from typing import Optional
 
 
 class DepthVideoInterface(BaseDataInterface):
     """Depth video interface for markowitz_gillis_nature_2023 conversion"""
 
-    def __init__(self, data_path: str, metadata_path: str, timestamp_path: str):
+    def __init__(self, depth_path: str, metadata_path: str, timestamp_path: str, ir_path: Optional[str] = None):
         super().__init__(
-            data_path=data_path,
+            depth_path=depth_path,
             metadata_path=metadata_path,
             timestamp_path=timestamp_path,
+            ir_path=ir_path,
         )
 
     def get_metadata(self) -> dict:
@@ -82,8 +84,10 @@ class DepthVideoInterface(BaseDataInterface):
         TIMESTAMPS_TO_SECONDS = 1.25e-4
         timestamps -= timestamps[0]
         timestamps = timestamps * TIMESTAMPS_TO_SECONDS
-        video_interface = VideoInterface(file_paths=[self.source_data["data_path"]], verbose=True)
-        video_interface.set_aligned_timestamps([timestamps])
+
+        file_paths = [self.source_data["depth_path"]]
+        aligned_timestamps = [timestamps]
+        starting_frames = [0]
         video_metadata = dict(
             Behavior=dict(
                 Videos=[
@@ -102,5 +106,33 @@ class DepthVideoInterface(BaseDataInterface):
                 ]
             )
         )
+        print(self.source_data["ir_path"])
+        if self.source_data["ir_path"] is not None:
+            print("this runs")
+            file_paths.append(self.source_data["ir_path"])
+            aligned_timestamps.append(timestamps)
+            starting_frames.append(0)
+            video_metadata["Behavior"]["Videos"].append(
+                dict(
+                    name="ir_video",
+                    description=(
+                        "To align photometry and behavioural data, a custom IR led-based synchronization system was "
+                        "implemented. Two sets of 3 IR (850nm) LEDs (Mouser part # 720-SFH4550) were attached to the walls "
+                        "of the recording bucket and directed towards the Kinect depth sensor. The signal used to power "
+                        "the LEDs was digitally copied to the TDT. An Arduino was used to generate a sequence of pulses "
+                        "for each LED set. One LED set transitioned between on and off states every 2s while the other "
+                        "transitioned into an on state randomly every 2–5s and remained in the on state for 1s. "
+                        "The sequences of on and off states of each LED set were detected in the photometry data acquired "
+                        "with the TDT and IR videos captured by the Kinect. "
+                        "The timestamps of the sequences were aligned across each recording modality and photometry "
+                        "recordings were down sampled to 30Hz to match the depth video sampling rate."
+                    ),
+                    unit="n.a.",
+                )
+            )
+        video_interface = VideoInterface(file_paths=file_paths, verbose=True)
+        video_interface.set_aligned_timestamps(aligned_timestamps=aligned_timestamps)
         metadata.update(video_metadata)
-        video_interface.add_to_nwbfile(nwbfile=nwbfile, metadata=metadata, stub_test=True, external_mode=False)
+        video_interface.add_to_nwbfile(
+            nwbfile=nwbfile, metadata=metadata, stub_test=True, external_mode=True, starting_frames=starting_frames
+        )
