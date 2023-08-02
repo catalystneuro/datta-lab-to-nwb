@@ -10,6 +10,7 @@ from pynwb import NWBHDF5IO
 def session_to_nwb(
     data_path: Union[str, Path],
     metadata_path: Union[str, Path],
+    timestamp_path: Union[str, Path],
     session_id: str,
     output_dir_path: Union[str, Path],
     stub_test: bool = False,
@@ -22,7 +23,7 @@ def session_to_nwb(
     output_dir_path.mkdir(parents=True, exist_ok=True)
     nwbfile_path = output_dir_path / f"{session_id}.nwb"
     source_data = {
-        "DepthVideo": dict(data_path=str(data_path), metadata_path=str(metadata_path)),
+        "DepthVideo": dict(data_path=str(data_path), metadata_path=str(metadata_path), timestamp_path=timestamp_path),
     }
     conversion_options = {
         "DepthVideo": dict(),
@@ -42,6 +43,7 @@ def session_to_nwb(
 if __name__ == "__main__":
     data_path = "/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20190913101448-010005/depth.avi"
     metadata_path = "/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20190913101448-010005/proc/results_00.h5"
+    timestamp_path = "/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20190913101448-010005/depth_ts.txt"
     session_id = "874e5509-f12b-4aab-9a0e-64d004007a4f"
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     if output_dir_path.exists():
@@ -50,6 +52,7 @@ if __name__ == "__main__":
     session_to_nwb(
         data_path=data_path,
         metadata_path=metadata_path,
+        timestamp_path=timestamp_path,
         session_id=session_id,
         output_dir_path=output_dir_path,
         stub_test=False,

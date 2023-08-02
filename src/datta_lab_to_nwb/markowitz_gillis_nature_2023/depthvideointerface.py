@@ -4,6 +4,7 @@ from datetime import datetime
 from pytz import timezone
 import h5py
 import numpy as np
+import pandas as pd
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 from neuroconv.basedatainterface import BaseDataInterface
 from pynwb.image import GrayscaleImage, ImageMaskSeries
@@ -22,10 +23,11 @@ from ndx_moseq import DepthImageSeries, MoSeqExtractGroup, MoSeqExtractParameter
 class DepthVideoInterface(BaseDataInterface):
     """Depth video interface for markowitz_gillis_nature_2023 conversion"""
 
-    def __init__(self, data_path: str, metadata_path: str):
+    def __init__(self, data_path: str, metadata_path: str, timestamp_path: str):
         super().__init__(
             data_path=data_path,
             metadata_path=metadata_path,
+            timestamp_path=timestamp_path,
         )
 
     def get_metadata(self) -> dict:
@@ -76,7 +78,12 @@ class DepthVideoInterface(BaseDataInterface):
         return metadata_schema
 
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
+        timestamps = pd.read_csv(self.source_data["timestamp_path"]).to_numpy().squeeze()
+        TIMESTAMPS_TO_SECONDS = 1.25e-4
+        timestamps -= timestamps[0]
+        timestamps = timestamps * TIMESTAMPS_TO_SECONDS
         video_interface = VideoInterface(file_paths=[self.source_data["data_path"]], verbose=True)
+        video_interface.set_aligned_timestamps([timestamps])
         video_metadata = dict(
             Behavior=dict(
                 Videos=[
