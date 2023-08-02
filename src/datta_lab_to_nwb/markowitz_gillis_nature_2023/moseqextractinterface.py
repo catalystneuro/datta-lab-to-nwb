@@ -85,6 +85,7 @@ class MoseqExtractInterface(BaseDataInterface):
             # Timestamps
             TIMESTAMPS_TO_SECONDS = 1.25e-4
             timestamps = np.array(file["timestamps"]) * TIMESTAMPS_TO_SECONDS
+            timestamps -= timestamps[0]
 
             # Extraction
             background = np.array(file["metadata"]["extraction"]["background"])
