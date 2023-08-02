@@ -27,4 +27,4 @@ jobs:
     - name: Test module load
       uses: jannekem/run-python-script-action@v1
       with:
-        script: import {{cookiecutter.repo_name_slug}}
+        script: import datta_lab_to_nwb
