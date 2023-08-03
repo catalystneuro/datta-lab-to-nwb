@@ -19,4 +19,4 @@ repos:
         pass_filenames: false
 ci:
   skip:
-    - freeze_dependencies
+    - freeze-dependencies
