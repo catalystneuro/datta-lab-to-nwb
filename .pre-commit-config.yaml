@@ -10,3 +10,10 @@ repos:
     hooks:
     -   id: black
         exclude: ^docs/
+-   repo: local
+    hooks:
+    -   id: freeze-dependencies
+        name: Freeze Dependencies
+        entry: python freeze_dependencies.py
+        language: python
+        pass_filenames: false
