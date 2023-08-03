@@ -142,4 +142,3 @@ widgetsnbextension==4.0.8
 yarl==1.9.2
 zarr==2.16.0
 zarr-checksum==0.2.9
-zipp==3.16.2
