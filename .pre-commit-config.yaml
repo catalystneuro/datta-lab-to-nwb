@@ -15,5 +15,5 @@ repos:
     -   id: freeze-dependencies
         name: Freeze Dependencies
         entry: python -m freeze_dependencies
-        language: python
+        language: system
         pass_filenames: false
