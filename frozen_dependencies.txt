@@ -1,0 +1,219 @@
+aiohttp==3.8.4
+aiosignal==1.3.1
+anyio==3.6.2
+appdirs==1.4.4
+appnope @ file:///Users/ec2-user/ci_py311/appnope_1678317440516/work
+argon2-cffi==21.3.0
+argon2-cffi-bindings==21.2.0
+arrow==1.2.3
+asciitree==0.3.3
+asttokens @ file:///opt/conda/conda-bld/asttokens_1646925590279/work
+async-timeout==4.0.2
+attrs==23.1.0
+backcall @ file:///home/ktietz/src/ci/backcall_1611930011877/work
+beautifulsoup4==4.12.2
+bidsschematools==0.7.1
+bleach==6.0.0
+blessed==1.20.0
+boto3==1.26.133
+botocore==1.29.133
+bqplot==0.12.39
+cellpose==1.0.2
+certifi==2023.5.7
+cffi==1.15.1
+cfgv==3.3.1
+charset-normalizer==3.1.0
+ci-info==0.3.0
+click==8.1.3
+click-didyoumean==0.3.0
+colorcet==3.0.1
+comm @ file:///Users/ec2-user/ci_py311/comm_1678317779525/work
+contourpy==1.0.7
+cycler==0.11.0
+dandi==0.55.1
+dandischema==0.8.3
+-e git+https://github.com/catalystneuro/datta-lab-to-nwb.git@8c702c1be4d369941e35755496632d5c736bbd5a#egg=datta_lab_to_nwb
+debugpy @ file:///Users/ec2-user/ci_py311/debugpy_1678317801115/work
+decorator @ file:///opt/conda/conda-bld/decorator_1643638310831/work
+defusedxml==0.7.1
+dill==0.3.6
+distlib==0.3.6
+dnspython==2.3.0
+email-validator==2.0.0.post2
+entrypoints==0.4
+etelemetry==0.3.0
+executing @ file:///opt/conda/conda-bld/executing_1646925071911/work
+fasteners==0.18
+fastjsonschema==2.17.1
+fastremap==1.13.5
+filelock==3.12.0
+fonttools==4.39.4
+fparse==1.20.1
+fqdn==1.5.1
+frozenlist==1.3.3
+fscacher==0.3.0
+fsspec==2023.5.0
+gast==0.4.0
+h5py==3.8.0
+hdmf==3.8.0
+humanize==4.6.0
+identify==2.5.24
+idna==3.4
+imagecodecs==2023.7.10
+imageio==2.29.0
+importlib-metadata==4.13.0
+iniconfig==2.0.0
+interleave==0.2.1
+ipydatagrid==1.1.15
+ipydatawidgets==4.3.2
+ipykernel @ file:///Users/ec2-user/ci_py311/ipykernel_1678318220696/work
+ipympl==0.9.3
+ipython @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_cd4ia5pr17/croot/ipython_1680701875298/work
+ipython-genutils==0.2.0
+ipyvolume==0.6.1
+ipyvue==1.9.1
+ipyvuetify==1.8.10
+ipywebrtc==0.6.0
+ipywidgets==8.0.6
+isodate==0.6.1
+isoduration==20.11.0
+jaraco.classes==3.2.3
+jedi @ file:///Users/ec2-user/ci_py311_2/jedi_1679336327335/work
+Jinja2==3.1.2
+jmespath==1.0.1
+joblib==1.2.0
+jsonpointer==2.3
+jsonschema==4.17.3
+jupyter==1.0.0
+jupyter-console==6.6.3
+jupyter-events==0.6.3
+jupyter_client @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_5e4bbpqn9e/croot/jupyter_client_1680171866753/work
+jupyter_core @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_b82fz_h369/croot/jupyter_core_1679906581737/work
+jupyter_server==2.5.0
+jupyter_server_terminals==0.4.4
+jupyterlab-pygments==0.2.2
+jupyterlab-widgets==3.0.7
+keyring==23.13.1
+keyrings.alt==4.2.0
+kiwisolver==1.4.4
+lazy-ops==0.2.0
+lazy_loader==0.2
+llvmlite==0.40.1
+MarkupSafe==2.1.2
+matplotlib==3.7.1
+matplotlib-inline @ file:///Users/ec2-user/ci_py311/matplotlib-inline_1678317544666/work
+mistune==2.0.5
+more-itertools==9.1.0
+mpmath==1.3.0
+multidict==6.0.4
+natsort==8.3.1
+nbclassic==1.0.0
+nbclient==0.8.0
+nbconvert==7.4.0
+nbformat==5.8.0
+ndx-events==0.2.0
+ndx-grayscalevolume==0.0.2
+ndx-icephys-meta==0.1.0
+-e git+https://github.com/pauladkisson/ndx-moseq.git@763920c5695e3bb1aa4acc00abd2aa71c79153d7#egg=ndx_moseq
+-e git+https://github.com/catalystneuro/ndx-photometry.git@7ea9d755ceac9524125f50ab528b403b135c4530#egg=ndx_photometry
+ndx-spectrum==0.2.2
+neo==0.12.0
+nest-asyncio @ file:///Users/ec2-user/ci_py311/nest-asyncio_1678316288195/work
+networkx==3.1
+-e git+https://github.com/catalystneuro/neuroconv.git@7b978ca05126d8f0e57c9ba4cf8d63433c9222b2#egg=neuroconv
+nodeenv==1.8.0
+notebook==6.5.4
+notebook_shim==0.2.3
+numba==0.57.1
+numcodecs==0.11.0
+numpy==1.23.5
+nwbinspector==0.4.28
+nwbwidgets==0.10.2
+opencv-python==4.8.0.74
+opencv-python-headless==4.8.0.74
+packaging @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_c3zlhpboab/croot/packaging_1678965318579/work
+pandas==1.5.3
+pandocfilters==1.5.0
+param==1.13.0
+parso @ file:///opt/conda/conda-bld/parso_1641458642106/work
+pexpect @ file:///tmp/build/80754af9/pexpect_1605563209008/work
+pickleshare @ file:///tmp/build/80754af9/pickleshare_1606932040724/work
+Pillow==9.5.0
+platformdirs @ file:///Users/ec2-user/ci_py311/platformdirs_1678315988118/work
+plotly==5.14.1
+pluggy==1.0.0
+pre-commit==3.3.2
+probeinterface==0.2.16
+prometheus-client==0.16.0
+prompt-toolkit @ file:///Users/ec2-user/ci_py311/prompt-toolkit_1678317707969/work
+psutil @ file:///Users/ec2-user/ci_py311_2/psutil_1679337242143/work
+ptyprocess @ file:///tmp/build/80754af9/ptyprocess_1609355006118/work/dist/ptyprocess-0.7.0-py2.py3-none-any.whl
+pure-eval @ file:///opt/conda/conda-bld/pure_eval_1646925070566/work
+py2vega==0.6.1
+pyarrow==12.0.0
+pycparser==2.21
+pycryptodomex==3.17
+pyct==0.5.0
+pydantic==1.10.7
+Pygments @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_cflayrfqsi/croot/pygments_1684279981084/work
+pynwb==2.4.0
+pyout==0.7.3
+pyparsing==3.0.9
+pyrsistent==0.19.3
+pytest==7.3.1
+python-dateutil @ file:///tmp/build/80754af9/python-dateutil_1626374649649/work
+python-json-logger==2.0.7
+pythreejs==2.4.2
+pytz==2023.3
+PyWavelets==1.4.1
+PyYAML==6.0
+pyzmq @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_e6wiufh44w/croot/pyzmq_1686601381524/work
+qtconsole==5.4.3
+QtPy==2.3.1
+quantities==0.14.1
+requests==2.30.0
+rfc3339-validator==0.1.4
+rfc3986-validator==0.1.1
+rfc3987==1.3.8
+roiextractors==0.5.3
+ruamel.yaml==0.17.26
+ruamel.yaml.clib==0.2.7
+s3transfer==0.6.1
+scikit-image==0.20.0
+scipy==1.10.1
+seaborn==0.12.2
+semantic-version==2.10.0
+Send2Trash==1.8.2
+six @ file:///tmp/build/80754af9/six_1644875935023/work
+sniffio==1.3.0
+soupsieve==2.4.1
+spikeextractors==0.9.11
+spikeinterface==0.97.1
+stack-data @ file:///opt/conda/conda-bld/stack_data_1646927590127/work
+sympy==1.12
+tenacity==8.2.2
+terminado==0.17.1
+threadpoolctl==3.1.0
+tifffile==2023.4.12
+tinycss2==1.2.1
+toml==0.10.2
+torch==2.0.1
+tornado @ file:///Users/ec2-user/ci_py311/tornado_1678316833426/work
+tqdm==4.65.0
+traitlets @ file:///Users/ec2-user/ci_py311/traitlets_1678316097905/work
+traittypes==0.2.1
+trimesh==3.21.7
+typing_extensions==4.5.0
+tzdata==2023.3
+uri-template==1.2.0
+urllib3==1.26.15
+virtualenv==20.23.0
+wcwidth @ file:///Users/ktietz/demo/mc3/conda-bld/wcwidth_1629357192024/work
+webcolors==1.13
+webencodings==0.5.1
+websocket-client==1.5.2
+widgetsnbextension==4.0.7
+yarl==1.9.2
+zarr==2.14.2
+zarr-checksum==0.2.9
+zipp==3.15.0
