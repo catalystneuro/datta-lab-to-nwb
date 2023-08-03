@@ -17,3 +17,6 @@ repos:
         entry: python -m freeze_dependencies
         language: system
         pass_filenames: false
+ci:
+  skip:
+    - freeze_dependencies
