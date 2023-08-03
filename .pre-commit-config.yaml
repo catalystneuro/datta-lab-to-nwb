@@ -14,7 +14,7 @@ repos:
     hooks:
     -   id: freeze-dependencies
         name: Freeze Dependencies
-        entry: pip freeze > frozen_dependencies.txt
+        entry: python -m freeze_dependencies
         language: system
         pass_filenames: false
 ci:
