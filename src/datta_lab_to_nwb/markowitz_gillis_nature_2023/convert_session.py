@@ -17,6 +17,7 @@ def session_to_nwb(
     session_id: str,
     data_path: Union[str, Path],
     tdt_path: Union[str, Path],
+    tdt_metadata_path: Union[str, Path],
     output_dir_path: Union[str, Path],
     experiment_type: Literal["reinforcement", "photometry", "reinforcement_photometry"],
     stub_test: bool = False,
@@ -49,6 +50,7 @@ def session_to_nwb(
         source_data["FiberPhotometry"] = dict(
             file_path=str(photometry_path),
             tdt_path=str(tdt_path),
+            tdt_metadata_path=str(tdt_metadata_path),
             session_metadata_path=str(session_metadata_path),
             subject_metadata_path=str(subject_metadata_path),
             session_uuid=session_id,
@@ -96,6 +98,9 @@ if __name__ == "__main__":
     tdt_path = Path(
         "/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20210215162554-455929/tdt_data_20210215162932.dat"
     )
+    tdt_metadata_path = Path(
+        "/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20210215162554-455929/tdt_data_20210215162932.json"
+    )
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     if output_dir_path.exists():
         shutil.rmtree(output_dir_path)
@@ -132,6 +137,7 @@ if __name__ == "__main__":
         session_id=raw_fp_example,
         data_path=data_path,
         tdt_path=tdt_path,
+        tdt_metadata_path=tdt_metadata_path,
         output_dir_path=output_dir_path,
         experiment_type="reinforcement_photometry",
         stub_test=stub_test,

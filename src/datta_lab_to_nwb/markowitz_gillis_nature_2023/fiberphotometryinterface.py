@@ -28,7 +28,13 @@ class FiberPhotometryInterface(BaseDattaInterface):
     """Fiber Photometry  interface for markowitz_gillis_nature_2023 conversion"""
 
     def __init__(
-        self, file_path: str, tdt_path: str, session_uuid: str, session_metadata_path: str, subject_metadata_path: str
+        self,
+        file_path: str,
+        tdt_path: str,
+        tdt_metadata_path: str,
+        session_uuid: str,
+        session_metadata_path: str,
+        subject_metadata_path: str,
     ):
         # This should load the data lazily and prepare variables you need
         columns = (
@@ -42,6 +48,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
         super().__init__(
             file_path=file_path,
             tdt_path=tdt_path,
+            tdt_metadata_path=tdt_metadata_path,
             session_uuid=session_uuid,
             columns=columns,
             session_metadata_path=session_metadata_path,
@@ -52,6 +59,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
         metadata = super().get_metadata()
         session_metadata = load_dict_from_file(self.source_data["session_metadata_path"])
         subject_metadata = load_dict_from_file(self.source_data["subject_metadata_path"])
+        tdt_metadata = load_dict_from_file(self.source_data["tdt_metadata_path"])
         session_metadata = session_metadata[self.source_data["session_uuid"]]
         subject_metadata = subject_metadata[session_metadata["subject_id"]]
 
@@ -60,6 +68,12 @@ class FiberPhotometryInterface(BaseDattaInterface):
         metadata["FiberPhotometry"]["signal_reference_corr"] = session_metadata["signal_reference_corr"]
         metadata["FiberPhotometry"]["snr"] = session_metadata["snr"]
         metadata["FiberPhotometry"]["area"] = subject_metadata["photometry_area"]
+        metadata["FiberPhotometry"]["gain"] = tdt_metadata["tags"]["OutputGain"]
+        metadata["FiberPhotometry"]["signal_amp"] = tdt_metadata["tags"]["LED1Amp"]
+        metadata["FiberPhotometry"]["reference_amp"] = tdt_metadata["tags"]["LED2Amp"]
+        metadata["FiberPhotometry"]["signal_freq"] = float(tdt_metadata["tags"]["LED1Freq"])
+        metadata["FiberPhotometry"]["reference_freq"] = float(tdt_metadata["tags"]["LED2Freq"])
+        metadata["FiberPhotometry"]["raw_rate"] = tdt_metadata["status"]["sampling_rate"]
 
         return metadata
 
@@ -83,8 +97,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
             columns=self.source_data["columns"],
             filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
-        raw_fs = 6103.515625
-        photometry_dict = load_tdt_data(self.source_data["tdt_path"], fs=raw_fs)
+        photometry_dict = load_tdt_data(self.source_data["tdt_path"], fs=metadata["FiberPhotometry"]["raw_rate"])
         session_start_index = np.flatnonzero(photometry_dict["sync"])[0]
         raw_timestamps = photometry_dict["tstep"][session_start_index:] - photometry_dict["tstep"][session_start_index]
         raw_signal = photometry_dict["pmt00"][session_start_index:]
@@ -97,17 +110,17 @@ class FiberPhotometryInterface(BaseDattaInterface):
         commanded_signal_series = multi_commanded_voltage.create_commanded_voltage_series(
             name="commanded_signal",
             data=H5DataIO(commanded_signal, compression=True),
-            frequency=161.0,
-            power=0.349999994,  # TODO: clarify with Cody/Datta Lab
-            rate=raw_fs,
+            frequency=metadata["FiberPhotometry"]["signal_freq"],
+            power=metadata["FiberPhotometry"]["signal_amp"],  # TODO: clarify with Cody/Datta Lab
+            rate=metadata["FiberPhotometry"]["raw_rate"],
             unit="volts",
         )
         commanded_reference_series = multi_commanded_voltage.create_commanded_voltage_series(
             name="commanded_reference",
             data=H5DataIO(commanded_reference, compression=True),
-            frequency=381.0,
-            power=0.07999999821,
-            rate=raw_fs,
+            frequency=metadata["FiberPhotometry"]["reference_freq"],
+            power=metadata["FiberPhotometry"]["reference_amp"],  # TODO: clarify with Cody/Datta Lab
+            rate=metadata["FiberPhotometry"]["raw_rate"],
             unit="volts",
         )
         # Excitation Sources Table
@@ -146,7 +159,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
                 "offline analysis."
             ),
         )
-        photodetectors_table.add_row(peak_wavelength=527.0, type="PMT", gain=1.0)
+        photodetectors_table.add_row(peak_wavelength=527.0, type="PMT", gain=metadata["FiberPhotometry"]["gain"])
 
         # Fluorophores Table
         fluorophores_table = FluorophoresTable(
