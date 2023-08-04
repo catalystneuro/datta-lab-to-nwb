@@ -1,3 +1,8 @@
+hdmf==3.6.1
+colorcet
+ndx-events
+ndx-photometry @ git+https://github.com/catalystneuro/ndx-photometry.git@7ea9d755ceac9524125f50ab528b403b135c4530
+pyarrow
 neuroconv
 nwbwidgets
 nwbinspector
