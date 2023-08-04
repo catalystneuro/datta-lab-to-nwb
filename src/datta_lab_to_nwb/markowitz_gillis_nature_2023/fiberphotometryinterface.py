@@ -68,7 +68,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
         metadata["FiberPhotometry"]["signal_reference_corr"] = session_metadata["signal_reference_corr"]
         metadata["FiberPhotometry"]["snr"] = session_metadata["snr"]
         metadata["FiberPhotometry"]["area"] = subject_metadata["photometry_area"]
-        metadata["FiberPhotometry"]["gain"] = tdt_metadata["tags"]["OutputGain"]
+        metadata["FiberPhotometry"]["gain"] = float(tdt_metadata["tags"]["OutputGain"])
         metadata["FiberPhotometry"]["signal_amp"] = tdt_metadata["tags"]["LED1Amp"]
         metadata["FiberPhotometry"]["reference_amp"] = tdt_metadata["tags"]["LED2Amp"]
         metadata["FiberPhotometry"]["signal_freq"] = float(tdt_metadata["tags"]["LED1Freq"])
@@ -139,12 +139,12 @@ class FiberPhotometryInterface(BaseDattaInterface):
         )
         excitation_sources_table.add_row(
             peak_wavelength=470.0,
-            source_type="laser",
+            source_type="LED",
             commanded_voltage=commanded_signal_series,
         )
         excitation_sources_table.add_row(
             peak_wavelength=405.0,
-            source_type="laser",
+            source_type="LED",
             commanded_voltage=commanded_reference_series,
         )
 
@@ -298,7 +298,7 @@ def load_tdt_data(filename, pmt_channels=[0, 3], sync_channel=6, clock_channel=7
     if any(np.diff(photometry_dict["clock"]) != 1):
         raise IOError("Timebase not uniform in TDT file.")
 
-    clock_df = np.diff(photometry_dict["clock"].astype("float32"))
+    clock_df = np.diff(photometry_dict["clock"].astype("float64"))
     clock_df = np.insert(clock_df, 0, 0, axis=0)
     photometry_dict["tstep"] = np.cumsum(clock_df * 1 / fs)
 

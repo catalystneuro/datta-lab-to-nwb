@@ -28,7 +28,7 @@ NWBFile:
     - Datta, Sandeep Robert
 Subject:
   species: Homo sapiens
-  age: P0M/P9M
+  age: P0M/
   age__reference: gestational
   sex: F
   subject_id: HEK293
