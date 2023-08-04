@@ -9,7 +9,7 @@ from neuroconv.utils import dict_deep_update, load_dict_from_file
 from pynwb import NWBHDF5IO
 
 # Local
-from datta_lab_to_nwb.markowitz_gillis_nature_2023.postconversion import reproduce_figures
+from datta_lab_to_nwb.markowitz_gillis_nature_2023.postconversion import reproduce_fig1d
 from datta_lab_to_nwb import markowitz_gillis_nature_2023
 
 
