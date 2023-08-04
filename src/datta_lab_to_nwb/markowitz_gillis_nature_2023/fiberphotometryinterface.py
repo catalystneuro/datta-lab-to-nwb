@@ -198,23 +198,41 @@ class FiberPhotometryInterface(BaseDattaInterface):
         # ROI Response Series
         # Here we set up a list of fibers that our recording came from
         fibers_ref = DynamicTableRegion(name="rois", data=[0, 1], description="source fibers", table=fibers_table)
-        signal_series = RoiResponseSeries(
+        raw_signal_series = RoiResponseSeries(
+            name="RawSignal",
+            description="The raw acquisition signal from the blue light excitation (470nm) corresponding to the dopamine signal.",
+            data=H5DataIO(raw_signal, compression=True),
+            unit="F",
+            timestamps=H5DataIO(raw_timestamps, compression=True),
+            rois=fibers_ref,
+        )
+        raw_reference_series = RoiResponseSeries(
+            name="RawReference",
+            description="The raw acquisition signal from the isosbestic UV excitation (405nm) corresponding to the reference signal.",
+            data=H5DataIO(raw_reference, compression=True),
+            unit="F",
+            timestamps=raw_signal_series.timestamps,
+            rois=fibers_ref,
+        )
+        signal_series = DeconvolvedRoiResponseSeries(
             name="SignalDfOverF",
             description="The ΔF/F from the blue light excitation (470nm) corresponding to the dopamine signal.",
             data=H5DataIO(session_df.signal_dff.to_numpy(), compression=True),
             unit="a.u.",
             timestamps=H5DataIO(session_df.timestamp.to_numpy(), compression=True),
             rois=fibers_ref,
+            raw=raw_signal_series,
         )
-        reference_series = RoiResponseSeries(
+        reference_series = DeconvolvedRoiResponseSeries(
             name="ReferenceDfOverF",
             description="The ∆F/F from the isosbestic UV excitation (405nm) corresponding to the reference signal.",
             data=H5DataIO(session_df.reference_dff.to_numpy(), compression=True),
             unit="a.u.",
             timestamps=signal_series.timestamps,
             rois=fibers_ref,
+            raw=raw_reference_series,
         )
-        reference_fit_series = RoiResponseSeries(
+        reference_fit_series = DeconvolvedRoiResponseSeries(
             name="ReferenceDfOverFSmoothed",
             description=(
                 "The ∆F/F from the isosbestic UV excitation (405nm) that has been smoothed "
@@ -224,8 +242,9 @@ class FiberPhotometryInterface(BaseDattaInterface):
             unit="a.u.",
             timestamps=signal_series.timestamps,
             rois=fibers_ref,
+            raw=raw_reference_series,
         )
-        uv_reference_fit_series = RoiResponseSeries(
+        uv_reference_fit_series = DeconvolvedRoiResponseSeries(
             name="UVReferenceFSmoothed",
             description=(
                 "Raw fluorescence (F) from the isosbestic UV excitation (405nm) that has been smoothed "
@@ -235,9 +254,12 @@ class FiberPhotometryInterface(BaseDattaInterface):
             unit="n.a.",
             timestamps=signal_series.timestamps,
             rois=fibers_ref,
+            raw=raw_reference_series,
         )
 
-        # Aggregate into OPhys Module
+        # Aggregate into OPhys Module and NWBFile
+        nwbfile.add_acquisition(raw_signal_series)
+        nwbfile.add_acquisition(raw_reference_series)
         ophys_module = nwb_helpers.get_module(nwbfile, name="ophys", description="Fiber photometry data")
         ophys_module.add(multi_commanded_voltage)
         ophys_module.add(signal_series)
