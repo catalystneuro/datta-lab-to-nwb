@@ -51,7 +51,6 @@ if __name__ == "__main__":
     if output_dir_path.exists():
         shutil.rmtree(output_dir_path)
     stub_test = False
-    # file_paths = file_paths[:1]
     for file_path in file_paths:
         session_to_nwb(
             file_path=file_path,

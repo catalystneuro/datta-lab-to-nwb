@@ -28,7 +28,8 @@ NWBFile:
     - Datta, Sandeep Robert
 Subject:
   species: Homo sapiens
-  age: fetus
+  age: P0M/P9M
+  age__reference: gestational
   sex: F
   subject_id: HEK293
   description: HEK 293 cells (ATCC, cells were validated by ATCC via short tandem repeat analysis and were not tested for mycoplasma) were transfected with the dLight1.1 plasmid (Addgene 111067-AAV5) using Mirus TransIT-LT1 (MIR 2304).
