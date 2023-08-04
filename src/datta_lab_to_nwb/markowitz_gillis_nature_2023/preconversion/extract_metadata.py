@@ -357,7 +357,13 @@ if __name__ == "__main__":
     figure1d_example = "2891f649-4fbd-4119-a807-b8ef507edfab"
     pulsed_photometry_example = "b8360fcd-acfd-4414-9e67-ba0dc5c979a8"
     excitation_photometry_example = "95bec433-2242-4276-b8a5-6d069afa3910"
-    reinforcement_photometry_examples = [figure1d_example, pulsed_photometry_example, excitation_photometry_example]
+    raw_fp_example = "b814a426-7ec9-440e-baaa-105ba27a5fa6"
+    reinforcement_photometry_examples = [
+        figure1d_example,
+        pulsed_photometry_example,
+        excitation_photometry_example,
+        raw_fp_example,
+    ]
 
     reinforcement_session_metadata, reinforcement_subject_metadata = extract_reinforcement_metadata(
         data_path,

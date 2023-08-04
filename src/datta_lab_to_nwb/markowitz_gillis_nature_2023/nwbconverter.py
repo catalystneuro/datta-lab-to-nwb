@@ -5,6 +5,8 @@ from .fiberphotometryinterface import FiberPhotometryInterface
 from .optogeneticinterface import OptogeneticInterface
 from .behavioralsyllableinterface import BehavioralSyllableInterface
 from .moseqextractinterface import MoseqExtractInterface
+from .depthvideointerface import DepthVideoInterface
+from .irvideointerface import IRVideoInterface
 
 
 class NWBConverter(NWBConverter):
@@ -16,4 +18,6 @@ class NWBConverter(NWBConverter):
         FiberPhotometry=FiberPhotometryInterface,
         Optogenetic=OptogeneticInterface,
         MoseqExtract=MoseqExtractInterface,
+        DepthVideo=DepthVideoInterface,
+        IRVideo=IRVideoInterface,
     )
