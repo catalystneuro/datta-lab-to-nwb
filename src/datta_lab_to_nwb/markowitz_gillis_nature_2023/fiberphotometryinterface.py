@@ -1,6 +1,7 @@
 """Primary class for converting fiber photometry data (dLight fluorescence)."""
 # Standard Scientific Python
 import pandas as pd
+import numpy as np
 
 # NWB Ecosystem
 from pynwb.file import NWBFile
@@ -26,7 +27,15 @@ from hdmf.backends.hdf5.h5_utils import H5DataIO
 class FiberPhotometryInterface(BaseDattaInterface):
     """Fiber Photometry  interface for markowitz_gillis_nature_2023 conversion"""
 
-    def __init__(self, file_path: str, session_uuid: str, session_metadata_path: str, subject_metadata_path: str):
+    def __init__(
+        self,
+        file_path: str,
+        tdt_path: str,
+        tdt_metadata_path: str,
+        session_uuid: str,
+        session_metadata_path: str,
+        subject_metadata_path: str,
+    ):
         # This should load the data lazily and prepare variables you need
         columns = (
             "uuid",
@@ -38,6 +47,8 @@ class FiberPhotometryInterface(BaseDattaInterface):
         )
         super().__init__(
             file_path=file_path,
+            tdt_path=tdt_path,
+            tdt_metadata_path=tdt_metadata_path,
             session_uuid=session_uuid,
             columns=columns,
             session_metadata_path=session_metadata_path,
@@ -48,6 +59,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
         metadata = super().get_metadata()
         session_metadata = load_dict_from_file(self.source_data["session_metadata_path"])
         subject_metadata = load_dict_from_file(self.source_data["subject_metadata_path"])
+        tdt_metadata = load_dict_from_file(self.source_data["tdt_metadata_path"])
         session_metadata = session_metadata[self.source_data["session_uuid"]]
         subject_metadata = subject_metadata[session_metadata["subject_id"]]
 
@@ -56,6 +68,12 @@ class FiberPhotometryInterface(BaseDattaInterface):
         metadata["FiberPhotometry"]["signal_reference_corr"] = session_metadata["signal_reference_corr"]
         metadata["FiberPhotometry"]["snr"] = session_metadata["snr"]
         metadata["FiberPhotometry"]["area"] = subject_metadata["photometry_area"]
+        metadata["FiberPhotometry"]["gain"] = tdt_metadata["tags"]["OutputGain"]
+        metadata["FiberPhotometry"]["signal_amp"] = tdt_metadata["tags"]["LED1Amp"]
+        metadata["FiberPhotometry"]["reference_amp"] = tdt_metadata["tags"]["LED2Amp"]
+        metadata["FiberPhotometry"]["signal_freq"] = float(tdt_metadata["tags"]["LED1Freq"])
+        metadata["FiberPhotometry"]["reference_freq"] = float(tdt_metadata["tags"]["LED2Freq"])
+        metadata["FiberPhotometry"]["raw_rate"] = tdt_metadata["status"]["sampling_rate"]
 
         return metadata
 
@@ -79,7 +97,32 @@ class FiberPhotometryInterface(BaseDattaInterface):
             columns=self.source_data["columns"],
             filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
+        photometry_dict = load_tdt_data(self.source_data["tdt_path"], fs=metadata["FiberPhotometry"]["raw_rate"])
+        session_start_index = np.flatnonzero(photometry_dict["sync"])[0]
+        raw_timestamps = photometry_dict["tstep"][session_start_index:] - photometry_dict["tstep"][session_start_index]
+        raw_signal = photometry_dict["pmt00"][session_start_index:]
+        raw_reference = photometry_dict["pmt01"][session_start_index:]
+        commanded_signal = photometry_dict["pmt00_x"][session_start_index:]
+        commanded_reference = photometry_dict["pmt01_x"][session_start_index:]
 
+        # Commanded Voltage
+        multi_commanded_voltage = MultiCommandedVoltage()
+        commanded_signal_series = multi_commanded_voltage.create_commanded_voltage_series(
+            name="commanded_signal",
+            data=H5DataIO(commanded_signal, compression=True),
+            frequency=metadata["FiberPhotometry"]["signal_freq"],
+            power=metadata["FiberPhotometry"]["signal_amp"],  # TODO: clarify with Cody/Datta Lab
+            rate=metadata["FiberPhotometry"]["raw_rate"],
+            unit="volts",
+        )
+        commanded_reference_series = multi_commanded_voltage.create_commanded_voltage_series(
+            name="commanded_reference",
+            data=H5DataIO(commanded_reference, compression=True),
+            frequency=metadata["FiberPhotometry"]["reference_freq"],
+            power=metadata["FiberPhotometry"]["reference_amp"],  # TODO: clarify with Cody/Datta Lab
+            rate=metadata["FiberPhotometry"]["raw_rate"],
+            unit="volts",
+        )
         # Excitation Sources Table
         excitation_sources_table = ExcitationSourcesTable(
             description=(
@@ -97,10 +140,12 @@ class FiberPhotometryInterface(BaseDattaInterface):
         excitation_sources_table.add_row(
             peak_wavelength=470.0,
             source_type="laser",
+            commanded_voltage=commanded_signal_series,
         )
         excitation_sources_table.add_row(
             peak_wavelength=405.0,
             source_type="laser",
+            commanded_voltage=commanded_reference_series,
         )
 
         # Photodetectors Table
@@ -114,7 +159,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
                 "offline analysis."
             ),
         )
-        photodetectors_table.add_row(peak_wavelength=527.0, type="PMT", gain=1.0)
+        photodetectors_table.add_row(peak_wavelength=527.0, type="PMT", gain=metadata["FiberPhotometry"]["gain"])
 
         # Fluorophores Table
         fluorophores_table = FluorophoresTable(
@@ -166,23 +211,41 @@ class FiberPhotometryInterface(BaseDattaInterface):
         # ROI Response Series
         # Here we set up a list of fibers that our recording came from
         fibers_ref = DynamicTableRegion(name="rois", data=[0, 1], description="source fibers", table=fibers_table)
-        signal_series = RoiResponseSeries(
+        raw_signal_series = RoiResponseSeries(
+            name="RawSignal",
+            description="The raw acquisition signal from the blue light excitation (470nm) corresponding to the dopamine signal.",
+            data=H5DataIO(raw_signal, compression=True),
+            unit="F",
+            timestamps=H5DataIO(raw_timestamps, compression=True),
+            rois=fibers_ref,
+        )
+        raw_reference_series = RoiResponseSeries(
+            name="RawReference",
+            description="The raw acquisition signal from the isosbestic UV excitation (405nm) corresponding to the reference signal.",
+            data=H5DataIO(raw_reference, compression=True),
+            unit="F",
+            timestamps=raw_signal_series.timestamps,
+            rois=fibers_ref,
+        )
+        signal_series = DeconvolvedRoiResponseSeries(
             name="SignalDfOverF",
             description="The ΔF/F from the blue light excitation (470nm) corresponding to the dopamine signal.",
             data=H5DataIO(session_df.signal_dff.to_numpy(), compression=True),
             unit="a.u.",
             timestamps=H5DataIO(session_df.timestamp.to_numpy(), compression=True),
             rois=fibers_ref,
+            raw=raw_signal_series,
         )
-        reference_series = RoiResponseSeries(
+        reference_series = DeconvolvedRoiResponseSeries(
             name="ReferenceDfOverF",
             description="The ∆F/F from the isosbestic UV excitation (405nm) corresponding to the reference signal.",
             data=H5DataIO(session_df.reference_dff.to_numpy(), compression=True),
             unit="a.u.",
             timestamps=signal_series.timestamps,
             rois=fibers_ref,
+            raw=raw_reference_series,
         )
-        reference_fit_series = RoiResponseSeries(
+        reference_fit_series = DeconvolvedRoiResponseSeries(
             name="ReferenceDfOverFSmoothed",
             description=(
                 "The ∆F/F from the isosbestic UV excitation (405nm) that has been smoothed "
@@ -192,8 +255,9 @@ class FiberPhotometryInterface(BaseDattaInterface):
             unit="a.u.",
             timestamps=signal_series.timestamps,
             rois=fibers_ref,
+            raw=raw_reference_series,
         )
-        uv_reference_fit_series = RoiResponseSeries(
+        uv_reference_fit_series = DeconvolvedRoiResponseSeries(
             name="UVReferenceFSmoothed",
             description=(
                 "Raw fluorescence (F) from the isosbestic UV excitation (405nm) that has been smoothed "
@@ -203,11 +267,39 @@ class FiberPhotometryInterface(BaseDattaInterface):
             unit="n.a.",
             timestamps=signal_series.timestamps,
             rois=fibers_ref,
+            raw=raw_reference_series,
         )
 
-        # Aggregate into OPhys Module
+        # Aggregate into OPhys Module and NWBFile
+        nwbfile.add_acquisition(raw_signal_series)
+        nwbfile.add_acquisition(raw_reference_series)
         ophys_module = nwb_helpers.get_module(nwbfile, name="ophys", description="Fiber photometry data")
+        ophys_module.add(multi_commanded_voltage)
         ophys_module.add(signal_series)
         ophys_module.add(reference_series)
         ophys_module.add(reference_fit_series)
         ophys_module.add(uv_reference_fit_series)
+
+
+def load_tdt_data(filename, pmt_channels=[0, 3], sync_channel=6, clock_channel=7, nch=8, fs=6103.515625):
+    float_data = np.fromfile(filename, dtype=">f4")
+    int_data = np.fromfile(filename, dtype=">i4")
+
+    photometry_dict = {}
+
+    for i, pmt in enumerate(pmt_channels):
+        photometry_dict["pmt{:02d}".format(i)] = float_data[pmt::nch]
+        photometry_dict["pmt{:02d}_x".format(i)] = float_data[pmt + 1 :: nch]
+        photometry_dict["pmt{:02d}_y".format(i)] = float_data[pmt + 2 :: nch]
+
+    photometry_dict["sync"] = int_data[sync_channel::8]
+    photometry_dict["clock"] = int_data[clock_channel::8]
+
+    if any(np.diff(photometry_dict["clock"]) != 1):
+        raise IOError("Timebase not uniform in TDT file.")
+
+    clock_df = np.diff(photometry_dict["clock"].astype("float32"))
+    clock_df = np.insert(clock_df, 0, 0, axis=0)
+    photometry_dict["tstep"] = np.cumsum(clock_df * 1 / fs)
+
+    return photometry_dict
