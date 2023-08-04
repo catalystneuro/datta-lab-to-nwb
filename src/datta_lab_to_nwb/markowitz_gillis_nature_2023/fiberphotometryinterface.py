@@ -83,7 +83,33 @@ class FiberPhotometryInterface(BaseDattaInterface):
             columns=self.source_data["columns"],
             filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
+        raw_fs = 6103.515625
+        photometry_dict = load_tdt_data(self.source_data["tdt_path"], fs=raw_fs)
+        session_start_index = np.flatnonzero(photometry_dict["sync"])[0]
+        raw_timestamps = photometry_dict["tstep"][session_start_index:] - photometry_dict["tstep"][session_start_index]
+        raw_signal = photometry_dict["pmt00"][session_start_index:]
+        raw_reference = photometry_dict["pmt01"][session_start_index:]
+        commanded_signal = photometry_dict["pmt00_x"][session_start_index:]
+        commanded_reference = photometry_dict["pmt01_x"][session_start_index:]
 
+        # Commanded Voltage
+        multi_commanded_voltage = MultiCommandedVoltage()
+        commanded_signal_series = multi_commanded_voltage.create_commanded_voltage_series(
+            name="commanded_signal",
+            data=H5DataIO(commanded_signal, compression=True),
+            frequency=161.0,
+            power=0.349999994,  # TODO: clarify with Cody/Datta Lab
+            rate=raw_fs,
+            unit="volts",
+        )
+        commanded_reference_series = multi_commanded_voltage.create_commanded_voltage_series(
+            name="commanded_reference",
+            data=H5DataIO(commanded_reference, compression=True),
+            frequency=381.0,
+            power=0.07999999821,
+            rate=raw_fs,
+            unit="volts",
+        )
         # Excitation Sources Table
         excitation_sources_table = ExcitationSourcesTable(
             description=(
@@ -101,10 +127,12 @@ class FiberPhotometryInterface(BaseDattaInterface):
         excitation_sources_table.add_row(
             peak_wavelength=470.0,
             source_type="laser",
+            commanded_voltage=commanded_signal_series,
         )
         excitation_sources_table.add_row(
             peak_wavelength=405.0,
             source_type="laser",
+            commanded_voltage=commanded_reference_series,
         )
 
         # Photodetectors Table
@@ -211,6 +239,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
 
         # Aggregate into OPhys Module
         ophys_module = nwb_helpers.get_module(nwbfile, name="ophys", description="Fiber photometry data")
+        ophys_module.add(multi_commanded_voltage)
         ophys_module.add(signal_series)
         ophys_module.add(reference_series)
         ophys_module.add(reference_fit_series)
