@@ -6,6 +6,7 @@ from typing import Union, Literal
 
 # Third Party
 from neuroconv.utils import dict_deep_update, load_dict_from_file
+from pynwb import NWBHDF5IO
 
 # Local
 from datta_lab_to_nwb.markowitz_gillis_nature_2023.postconversion import reproduce_figures
@@ -15,6 +16,7 @@ from datta_lab_to_nwb import markowitz_gillis_nature_2023
 def session_to_nwb(
     session_id: str,
     data_path: Union[str, Path],
+    tdt_path: Union[str, Path],
     output_dir_path: Union[str, Path],
     experiment_type: Literal["reinforcement", "photometry", "reinforcement_photometry"],
     stub_test: bool = False,
@@ -46,6 +48,7 @@ def session_to_nwb(
     if "photometry" in session_metadata.keys():
         source_data["FiberPhotometry"] = dict(
             file_path=str(photometry_path),
+            tdt_path=str(tdt_path),
             session_metadata_path=str(session_metadata_path),
             subject_metadata_path=str(subject_metadata_path),
             session_uuid=session_id,
@@ -90,6 +93,9 @@ def session_to_nwb(
 if __name__ == "__main__":
     # Parameters for conversion
     data_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior")
+    tdt_path = Path(
+        "/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20210215162554-455929/tdt_data_20210215162932.dat"
+    )
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     if output_dir_path.exists():
         shutil.rmtree(output_dir_path)
@@ -107,20 +113,32 @@ if __name__ == "__main__":
     excitation_photometry_example = "95bec433-2242-4276-b8a5-6d069afa3910"
     reinforcement_photometry_examples = [figure1d_example, pulsed_photometry_example, excitation_photometry_example]
 
-    experiment_type2example_sessions = {
-        "reinforcement_photometry": reinforcement_photometry_examples,
-        "photometry": photometry_examples,
-        "reinforcement": reinforcement_examples,
-    }
-    for experiment_type, example_sessions in experiment_type2example_sessions.items():
-        for example_session in example_sessions:
-            session_to_nwb(
-                session_id=example_session,
-                data_path=data_path,
-                output_dir_path=output_dir_path,
-                experiment_type=experiment_type,
-                stub_test=stub_test,
-            )
-    nwbfile_path = output_dir_path / f"{figure1d_example}.nwb"
-    paper_metadata_path = Path(__file__).parent / "markowitz_gillis_nature_2023_metadata.yaml"
-    reproduce_figures.reproduce_fig1d(nwbfile_path, paper_metadata_path)
+    # experiment_type2example_sessions = {
+    #     "reinforcement_photometry": reinforcement_photometry_examples,
+    #     "photometry": photometry_examples,
+    #     "reinforcement": reinforcement_examples,
+    # }
+    # for experiment_type, example_sessions in experiment_type2example_sessions.items():
+    #     for example_session in example_sessions:
+    #         session_to_nwb(
+    #             session_id=example_session,
+    #             data_path=data_path,
+    #             output_dir_path=output_dir_path,
+    #             experiment_type=experiment_type,
+    #             stub_test=stub_test,
+    #         )
+    raw_fp_example = "b814a426-7ec9-440e-baaa-105ba27a5fa6"
+    session_to_nwb(
+        session_id=raw_fp_example,
+        data_path=data_path,
+        tdt_path=tdt_path,
+        output_dir_path=output_dir_path,
+        experiment_type="reinforcement_photometry",
+        stub_test=stub_test,
+    )
+    with NWBHDF5IO(output_dir_path / f"{raw_fp_example}.nwb", "r") as io:
+        nwbfile = io.read()
+        print(nwbfile)
+    # nwbfile_path = output_dir_path / f"{figure1d_example}.nwb"
+    # paper_metadata_path = Path(__file__).parent / "markowitz_gillis_nature_2023_metadata.yaml"
+    # reproduce_figures.reproduce_fig1d(nwbfile_path, paper_metadata_path)
