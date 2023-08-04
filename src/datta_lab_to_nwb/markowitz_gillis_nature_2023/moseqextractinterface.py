@@ -12,7 +12,6 @@ from pynwb.behavior import (
     CompassDirection,
     Position,
     SpatialSeries,
-    BehavioralTimeSeries,
 )
 from neuroconv.tools import nwb_helpers
 from ndx_moseq import DepthImageSeries, MoSeqExtractGroup, MoSeqExtractParameterGroup
@@ -206,60 +205,54 @@ class MoseqExtractInterface(BaseDataInterface):
         heading_2d = CompassDirection(spatial_series=heading_2d_series, name="heading_2d")
 
         # Add speed/velocity data
-        speed_2d_series = TimeSeries(
+        speed_2d = TimeSeries(
             name="speed_2d",
             description="2D speed (mm / frame), note that missing frames are not accounted for",
             data=H5DataIO(kinematic_vars["velocity_2d_mm"], compression=True),
             timestamps=flipped_series.timestamps,
             unit="mm/frame",
         )
-        speed_2d = BehavioralTimeSeries(time_series=speed_2d_series, name="speed_2d")
-        speed_3d_series = TimeSeries(
+        speed_3d = TimeSeries(
             name="speed_3d",
             description="3D speed (mm / frame), note that missing frames are not accounted for",
             data=H5DataIO(kinematic_vars["velocity_3d_mm"], compression=True),
             timestamps=flipped_series.timestamps,
             unit="mm/frame",
         )
-        speed_3d = BehavioralTimeSeries(time_series=speed_3d_series, name="speed_3d")
-        angular_velocity_2d_series = TimeSeries(
+        angular_velocity_2d = TimeSeries(
             name="angular_velocity_2d",
             description="Angular component of velocity (arctan(vel_x, vel_y))",
             data=H5DataIO(kinematic_vars["velocity_theta"], compression=True),
             timestamps=flipped_series.timestamps,
             unit="radians/frame",
         )
-        angular_velocity_2d = BehavioralTimeSeries(time_series=angular_velocity_2d_series, name="angular_velocity_2d")
 
         # Add length/width/area data
-        length_series = TimeSeries(
+        length = TimeSeries(
             name="length",
             description="Length of mouse (mm)",
             data=H5DataIO(kinematic_vars["length_mm"], compression=True),
             timestamps=flipped_series.timestamps,
             unit="mm",
         )
-        length = BehavioralTimeSeries(time_series=length_series, name="length")
-        width_series = TimeSeries(
+        width = TimeSeries(
             name="width",
             description="Width of mouse (mm)",
             data=H5DataIO(kinematic_vars["width_mm"], compression=True),
             timestamps=flipped_series.timestamps,
             unit="mm",
         )
-        width = BehavioralTimeSeries(time_series=width_series, name="width")
         width_px_to_mm = kinematic_vars["width_mm"] / kinematic_vars["width_px"]
         length_px_to_mm = kinematic_vars["length_mm"] / kinematic_vars["length_px"]
         area_px_to_mm2 = width_px_to_mm * length_px_to_mm
         area_mm2 = kinematic_vars["area_px"] * area_px_to_mm2
-        area_series = TimeSeries(
+        area = TimeSeries(
             name="area",
             description="Pixel-wise area of mouse (mm^2)",
             data=H5DataIO(area_mm2, compression=True),
             timestamps=flipped_series.timestamps,
             unit="mm^2",
         )
-        area = BehavioralTimeSeries(time_series=area_series, name="area")
 
         # Add Parameters
         parameters = MoSeqExtractParameterGroup(name="parameters", **parameters)
