@@ -37,7 +37,6 @@ def session_to_nwb(
     raw_path = Path(raw_path)
     depth_path = raw_path / "depth.avi"
     depth_ts_path = raw_path / "depth_ts.txt"
-    moseq_output_path = raw_path / "proc" / "results_00.h5"
 
     source_data, conversion_options = {}, {}
     if "reinforcement" in session_metadata.keys():
@@ -65,8 +64,10 @@ def session_to_nwb(
         behavior_path = photometry_path  # Note: if photometry and optogenetics are both present, photometry is used for behavioral data bc it is quicker to load
         source_data["IRVideo"] = dict(
             data_path=str(ir_path),
-            metadata_path=str(moseq_output_path),
             timestamp_path=str(depth_ts_path),
+            session_metadata_path=str(session_metadata_path),
+            subject_metadata_path=str(subject_metadata_path),
+            session_uuid=session_id,
         )
         conversion_options["IRVideo"] = {}
     source_data.update(
@@ -85,8 +86,10 @@ def session_to_nwb(
             ),
             DepthVideo=dict(
                 data_path=str(depth_path),
-                metadata_path=str(moseq_output_path),
                 timestamp_path=str(depth_ts_path),
+                session_metadata_path=str(session_metadata_path),
+                subject_metadata_path=str(subject_metadata_path),
+                session_uuid=session_id,
             ),
         )
     )
