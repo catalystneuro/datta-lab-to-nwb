@@ -39,6 +39,6 @@ class BaseVideoInterface(BaseDattaInterface):
         video_interface.add_to_nwbfile(
             nwbfile=nwbfile,
             metadata=metadata,
-            stub_test=True,
-            external_mode=False,
+            stub_test=False,
+            external_mode=True,
         )
