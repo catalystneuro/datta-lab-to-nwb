@@ -26,7 +26,7 @@ contourpy==1.1.0
 cycler==0.11.0
 dandi==0.55.1
 dandischema==0.8.4
--e git+https://github.com/catalystneuro/datta-lab-to-nwb.git@a5f0dd79c0bdae959fccb6b97f95222adf943c74#egg=datta_lab_to_nwb
+-e git+https://github.com/catalystneuro/datta-lab-to-nwb.git@28496b8ba505d27d7ac3bcb9bec48502a98f5e59#egg=datta_lab_to_nwb
 decorator==5.1.1
 distlib==0.3.7
 dnspython==2.4.1

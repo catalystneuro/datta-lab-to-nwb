@@ -37,6 +37,7 @@ def session_to_nwb(
     raw_path = Path(raw_path)
     depth_path = raw_path / "depth.avi"
     depth_ts_path = raw_path / "depth_ts.txt"
+    moseq_path = raw_path / "proc/results_00.h5"
 
     source_data, conversion_options = {}, {}
     if "reinforcement" in session_metadata.keys():
@@ -78,6 +79,9 @@ def session_to_nwb(
                 subject_metadata_path=str(subject_metadata_path),
                 session_uuid=session_id,
             ),
+            MoseqExtract=dict(
+                file_path=str(moseq_path),
+            ),
             BehavioralSyllable=dict(
                 file_path=str(behavior_path),
                 session_metadata_path=str(session_metadata_path),
@@ -96,6 +100,7 @@ def session_to_nwb(
     conversion_options.update(
         dict(
             Behavior={},
+            MoseqExtract={},
             BehavioralSyllable={},
             DepthVideo={},
         )
