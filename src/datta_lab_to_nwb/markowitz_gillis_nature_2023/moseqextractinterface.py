@@ -5,7 +5,7 @@ from pytz import timezone
 import h5py
 import numpy as np
 from hdmf.backends.hdf5.h5_utils import H5DataIO
-from neuroconv.basedatainterface import BaseDataInterface
+from .basedattainterface import BaseDattaInterface
 from pynwb.image import GrayscaleImage, ImageMaskSeries
 from pynwb import TimeSeries
 from pynwb.behavior import (
@@ -17,60 +17,17 @@ from neuroconv.tools import nwb_helpers
 from ndx_moseq import DepthImageSeries, MoSeqExtractGroup, MoSeqExtractParameterGroup
 
 
-class MoseqExtractInterface(BaseDataInterface):
+class MoseqExtractInterface(BaseDattaInterface):
     """Moseq interface for markowitz_gillis_nature_2023 conversion"""
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, session_uuid: str, session_metadata_path: str, subject_metadata_path: str):
+        # This should load the data lazily and prepare variables you need
         super().__init__(
             file_path=file_path,
+            session_uuid=session_uuid,
+            session_metadata_path=session_metadata_path,
+            subject_metadata_path=subject_metadata_path,
         )
-
-    def get_metadata(self) -> dict:
-        metadata = super().get_metadata()
-        with h5py.File(self.source_data["file_path"]) as file:
-            session_id = np.array(file["metadata"]["uuid"], dtype="U").item()
-            subject_id = np.array(file["metadata"]["acquisition"]["SubjectName"], dtype="U").item()
-            session_start_time = np.array(file["metadata"]["acquisition"]["StartTime"], dtype="U").item()
-            session_name = np.array(file["metadata"]["acquisition"]["SessionName"], dtype="U").item()
-        metadata["NWBFile"]["session_id"] = session_id
-        metadata["NWBFile"]["identifier"] = session_id
-        metadata["NWBFile"]["session_start_time"] = datetime.fromisoformat(session_start_time).astimezone(
-            timezone("US/Eastern")
-        )
-        metadata["NWBFile"]["session_description"] = session_name
-        metadata["Subject"]["subject_id"] = subject_id
-        metadata["Subject"]["sex"] = "U"  # TODO: Add dict of sexes from email
-
-        return metadata
-
-    def get_metadata_schema(self) -> dict:
-        metadata_schema = super().get_metadata_schema()
-        metadata_schema["properties"]["Behavior"] = {
-            "type": "object",
-            "properties": {
-                "CompassDirection": {
-                    "type": "object",
-                    "properties": {
-                        "reference_frame": {"type": "string"},
-                    },
-                },
-                "Position": {
-                    "type": "object",
-                    "properties": {
-                        "reference_frame": {"type": "string"},
-                    },
-                },
-            },
-        }
-        metadata_schema["properties"]["BehavioralSyllable"] = {
-            "type": "object",
-            "properties": {
-                "sorted_pseudoindex2name": {"type": "object"},
-                "id2sorted_index": {"type": "object"},
-                "sorted_index2id": {"type": "object"},
-            },
-        }
-        return metadata_schema
 
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         with h5py.File(self.source_data["file_path"]) as file:

@@ -81,6 +81,9 @@ def session_to_nwb(
             ),
             MoseqExtract=dict(
                 file_path=str(moseq_path),
+                session_metadata_path=str(session_metadata_path),
+                subject_metadata_path=str(subject_metadata_path),
+                session_uuid=session_id,
             ),
             BehavioralSyllable=dict(
                 file_path=str(behavior_path),
