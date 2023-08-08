@@ -47,7 +47,7 @@ if __name__ == "__main__":
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/hek_raw_data/210716_JM_HEK293T_dLight/dLight_exp4_20210716_112801_sVG.tif",
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/hek_raw_data/210716_JM_HEK293T_dLight/dLight_exp5_20210716_114158_sVG.tif",
     ]
-    output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
+    output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb_hek/")
     if output_dir_path.exists():
         shutil.rmtree(output_dir_path)
     stub_test = False
