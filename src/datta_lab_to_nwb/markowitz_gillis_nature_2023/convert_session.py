@@ -48,7 +48,7 @@ def session_to_nwb(
             session_uuid=session_id,
         )
         conversion_options["Optogenetic"] = {}
-        behavior_path = optoda_path
+        behavioral_syllable_path = optoda_path
     if "photometry" in session_metadata.keys():
         tdt_path = list(raw_path.glob("tdt_data*.dat"))[0]
         tdt_metadata_path = list(raw_path.glob("tdt_data*.json"))[0]
@@ -62,7 +62,7 @@ def session_to_nwb(
             session_uuid=session_id,
         )
         conversion_options["FiberPhotometry"] = {}
-        behavior_path = photometry_path  # Note: if photometry and optogenetics are both present, photometry is used for behavioral data bc it is quicker to load
+        behavioral_syllable_path = photometry_path  # Note: if photometry and optogenetics are both present, photometry is used for syllable data bc it is quicker to load
         source_data["IRVideo"] = dict(
             data_path=str(ir_path),
             timestamp_path=str(depth_ts_path),
@@ -73,12 +73,6 @@ def session_to_nwb(
         conversion_options["IRVideo"] = {}
     source_data.update(
         dict(
-            Behavior=dict(
-                file_path=str(behavior_path),
-                session_metadata_path=str(session_metadata_path),
-                subject_metadata_path=str(subject_metadata_path),
-                session_uuid=session_id,
-            ),
             MoseqExtract=dict(
                 file_path=str(moseq_path),
                 session_metadata_path=str(session_metadata_path),
@@ -86,7 +80,7 @@ def session_to_nwb(
                 session_uuid=session_id,
             ),
             BehavioralSyllable=dict(
-                file_path=str(behavior_path),
+                file_path=str(behavioral_syllable_path),
                 session_metadata_path=str(session_metadata_path),
                 subject_metadata_path=str(subject_metadata_path),
                 session_uuid=session_id,
@@ -102,7 +96,6 @@ def session_to_nwb(
     )
     conversion_options.update(
         dict(
-            Behavior={},
             MoseqExtract={},
             BehavioralSyllable={},
             DepthVideo={},
