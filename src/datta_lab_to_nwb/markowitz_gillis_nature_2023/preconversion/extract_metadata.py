@@ -432,7 +432,7 @@ if __name__ == "__main__":
         excitation_photometry_example,
         raw_fp_example,
     ]
-    velocity_modulation_examples = ["0ed109ab-6876-4551-9121-c7d1277a89e4"]
+    velocity_modulation_examples = ["c621e134-50ec-4e8b-8175-a8c023d92789"]
 
     reinforcement_session_metadata, reinforcement_subject_metadata = extract_reinforcement_metadata(
         data_path,

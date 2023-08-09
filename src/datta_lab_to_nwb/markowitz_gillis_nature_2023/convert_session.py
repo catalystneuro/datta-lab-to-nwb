@@ -151,7 +151,7 @@ if __name__ == "__main__":
     #             stub_test=stub_test,
     #         )
     raw_fp_example = "b814a426-7ec9-440e-baaa-105ba27a5fa6"
-    velocity_modulation_example = "46b27216-73b1-4fbf-bf07-76fafaf9f19b"
+    velocity_modulation_example = "c621e134-50ec-4e8b-8175-a8c023d92789"
     session_to_nwb(
         session_id=velocity_modulation_example,
         processed_path=processed_path,
