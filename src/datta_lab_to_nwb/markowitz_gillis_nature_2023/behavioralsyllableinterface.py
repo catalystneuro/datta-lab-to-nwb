@@ -39,10 +39,14 @@ class BehavioralSyllableInterface(BaseDattaInterface):
         }
         return metadata_schema
 
-    def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
+    def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict, velocity_modulation: bool = False) -> None:
+        if velocity_modulation:
+            columns = ["uuid", "predicted_syllable", "timestamp"]
+        else:
+            columns = self.source_data["columns"]
         session_df = pd.read_parquet(
             self.source_data["file_path"],
-            columns=self.source_data["columns"],
+            columns=columns,
             filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
         # Add Syllable Data
@@ -53,7 +57,10 @@ class BehavioralSyllableInterface(BaseDattaInterface):
         index2name = syllable_names[np.argsort(syllable_pseudoindices)].tolist()
         for _ in range(len(id2sorted_index) - len(index2name)):
             index2name.append("Uncommon Syllable (frequency < 1%)")
-        syllable_ids = session_df["predicted_syllable (offline)"]
+        if velocity_modulation:
+            syllable_ids = session_df["predicted_syllable"]
+        else:
+            syllable_ids = session_df["predicted_syllable (offline)"]
         syllable_indices = syllable_ids.map(id2sorted_index).to_numpy(dtype=np.uint8)
         events = LabeledEvents(
             name="BehavioralSyllable",

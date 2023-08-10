@@ -18,7 +18,7 @@ def session_to_nwb(
     processed_path: Union[str, Path],
     raw_path: Union[str, Path],
     output_dir_path: Union[str, Path],
-    experiment_type: Literal["reinforcement", "photometry", "reinforcement_photometry"],
+    experiment_type: Literal["reinforcement", "photometry", "reinforcement_photometry", "velocity_modulation"],
     stub_test: bool = False,
 ):
     processed_path = Path(processed_path)
@@ -28,7 +28,10 @@ def session_to_nwb(
     output_dir_path.mkdir(parents=True, exist_ok=True)
     nwbfile_path = output_dir_path / f"{session_id}.nwb"
     photometry_path = processed_path / "dlight_raw_data/dlight_photometry_processed_full.parquet"
-    optoda_path = processed_path / "optoda_raw_data/closed_loop_behavior.parquet"
+    if experiment_type == "velocity_modulation":
+        optoda_path = processed_path / "optoda_raw_data/closed_loop_behavior_velocity_conditioned.parquet"
+    else:
+        optoda_path = processed_path / "optoda_raw_data/closed_loop_behavior.parquet"
     metadata_path = processed_path / "metadata"
     session_metadata_path = metadata_path / f"{experiment_type}_session_metadata.yaml"
     subject_metadata_path = metadata_path / f"{experiment_type}_subject_metadata.yaml"
@@ -101,6 +104,8 @@ def session_to_nwb(
             DepthVideo={},
         )
     )
+    if experiment_type == "velocity_modulation":
+        conversion_options["BehavioralSyllable"] = dict(velocity_modulation=True)
 
     converter = markowitz_gillis_nature_2023.NWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
@@ -157,7 +162,7 @@ if __name__ == "__main__":
         processed_path=processed_path,
         raw_path=raw_path,
         output_dir_path=output_dir_path,
-        experiment_type="reinforcement_photometry",
+        experiment_type="velocity_modulation",
         stub_test=stub_test,
     )
     with NWBHDF5IO(output_dir_path / f"{raw_fp_example}.nwb", "r") as io:
