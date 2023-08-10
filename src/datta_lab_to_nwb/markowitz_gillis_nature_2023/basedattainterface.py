@@ -17,6 +17,11 @@ class BaseDattaInterface(BaseDataInterface):
         metadata["NWBFile"]["session_start_time"] = session_metadata["session_start_time"]
         metadata["NWBFile"]["identifier"] = self.source_data["session_uuid"]
         metadata["NWBFile"]["session_id"] = self.source_data["session_uuid"]
+        if "trigger_syllable_scalar_comparison" in session_metadata.keys():
+            if session_metadata["trigger_syllable_scalar_comparison"] == "lt":
+                metadata["NWBFile"]["stimulus_notes"] = "Stim Down: Stimulate when target velocity <25th percentile"
+            elif session_metadata["trigger_syllable_scalar_comparison"] == "gt":
+                metadata["NWBFile"]["stimulus_notes"] = "Stim Up: Stimulate when target velocity >75th percentile"
 
         metadata["Subject"] = {}
         metadata["Subject"]["subject_id"] = session_metadata["subject_id"]

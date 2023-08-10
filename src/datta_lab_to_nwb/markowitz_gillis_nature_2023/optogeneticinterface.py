@@ -47,14 +47,6 @@ class OptogeneticInterface(BaseDattaInterface):
         metadata["Optogenetics"]["power_watts"] = session_metadata["power_watts"]
         metadata["Optogenetics"]["area"] = subject_metadata["optogenetic_area"]
 
-        if "trigger_syllable_scalar_comparison" in session_metadata.keys():
-            metadata["Optogenetics"]["trigger_syllable_scalar_comparison"] = session_metadata[
-                "trigger_syllable_scalar_comparison"
-            ]
-            metadata["Optogenetics"]["trigger_syllable_scalar_threshold"] = session_metadata[
-                "trigger_syllable_scalar_threshold"
-            ]
-
         return metadata
 
     def get_metadata_schema(self) -> dict:
@@ -94,17 +86,9 @@ class OptogeneticInterface(BaseDattaInterface):
             data, timestamps = self.reconstruct_cts_stim(metadata, session_df)
         else:  # pulsed stim
             data, timestamps = self.reconstruct_pulsed_stim(metadata, session_df)
-        if "trigger_syllable_scalar_comparison" in metadata["Optogenetics"].keys():  # velocity modulated
-            comments = (
-                f"trigger_syllable_scalar_threshold = {metadata['Optogenetics']['trigger_syllable_scalar_threshold']}\n"
-                f"trigger_syllable_scalar_comparison = {metadata['Optogenetics']['trigger_syllable_scalar_comparison']}"
-            )
-        else:
-            comments = ""
         ogen_series = OptogeneticSeries(
             name="OptogeneticSeries",
             description="Onset of optogenetic stimulation is recorded as a 1, and offset is recorded as a 0.",
-            comments=comments,
             site=ogen_site,
             data=H5DataIO(data, compression=True),
             timestamps=H5DataIO(timestamps, compression=True),
