@@ -17,6 +17,7 @@ class BehavioralSyllableInterface(BaseDattaInterface):
         columns = (
             "uuid",
             "predicted_syllable (offline)",
+            "predicted_syllable",
             "timestamp",
         )
         super().__init__(
@@ -57,16 +58,13 @@ class BehavioralSyllableInterface(BaseDattaInterface):
         index2name = syllable_names[np.argsort(syllable_pseudoindices)].tolist()
         for _ in range(len(id2sorted_index) - len(index2name)):
             index2name.append("Uncommon Syllable (frequency < 1%)")
-        if velocity_modulation:
-            syllable_ids = session_df["predicted_syllable"]
-        else:
-            syllable_ids = session_df["predicted_syllable (offline)"]
-        syllable_indices = syllable_ids.map(id2sorted_index).to_numpy(dtype=np.uint8)
-        events = LabeledEvents(
-            name="BehavioralSyllable",
-            description="Behavioral Syllable identified by Motion Sequencing (MoSeq).",
+        online_syllable_ids = session_df["predicted_syllable"]
+        online_syllable_indices = online_syllable_ids.map(id2sorted_index).to_numpy(dtype=np.uint8)
+        online_syllables = LabeledEvents(
+            name="BehavioralSyllableOnline",
+            description="Behavioral Syllable identified by online Motion Sequencing (MoSeq).",
             timestamps=H5DataIO(session_df["timestamp"].to_numpy(), compression=True),
-            data=H5DataIO(syllable_indices, compression=True),
+            data=H5DataIO(online_syllable_indices, compression=True),
             labels=H5DataIO(index2name, compression=True),
         )
         behavior_module = nwb_helpers.get_module(
@@ -74,4 +72,15 @@ class BehavioralSyllableInterface(BaseDattaInterface):
             name="behavior",
             description="Processed behavioral data from MoSeq",
         )
-        behavior_module.add(events)
+        behavior_module.add(online_syllables)
+        if not velocity_modulation:
+            offline_syllable_ids = session_df["predicted_syllable (offline)"]
+            offline_syllable_indices = offline_syllable_ids.map(id2sorted_index).to_numpy(dtype=np.uint8)
+            offline_syllables = LabeledEvents(
+                name="BehavioralSyllableOffline",
+                description="Behavioral Syllable identified by offline Motion Sequencing (MoSeq).",
+                timestamps=H5DataIO(session_df["timestamp"].to_numpy(), compression=True),
+                data=H5DataIO(offline_syllable_indices, compression=True),
+                labels=H5DataIO(index2name, compression=True),
+            )
+            behavior_module.add(offline_syllables)

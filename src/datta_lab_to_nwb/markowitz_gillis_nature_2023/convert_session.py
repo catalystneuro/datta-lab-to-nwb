@@ -122,8 +122,8 @@ def session_to_nwb(
 if __name__ == "__main__":
     # Parameters for conversion
     processed_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior")
-    raw_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20210215162554-455929")
-    # raw_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/velocity_modulation")
+    raw_rp_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20210215162554-455929")
+    raw_velocity_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/velocity_modulation")
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     if output_dir_path.exists():
         shutil.rmtree(
@@ -143,30 +143,26 @@ if __name__ == "__main__":
     excitation_photometry_example = "95bec433-2242-4276-b8a5-6d069afa3910"
     reinforcement_photometry_examples = [figure1d_example, pulsed_photometry_example, excitation_photometry_example]
 
-    # experiment_type2example_sessions = {
-    #     "reinforcement_photometry": reinforcement_photometry_examples,
-    #     "photometry": photometry_examples,
-    #     "reinforcement": reinforcement_examples,
-    # }
-    # for experiment_type, example_sessions in experiment_type2example_sessions.items():
-    #     for example_session in example_sessions:
-    #         session_to_nwb(
-    #             session_id=example_session,
-    #             data_path=data_path,
-    #             output_dir_path=output_dir_path,
-    #             experiment_type=experiment_type,
-    #             stub_test=stub_test,
-    #         )
-    raw_fp_example = "b814a426-7ec9-440e-baaa-105ba27a5fa6"
+    raw_rp_example = "b814a426-7ec9-440e-baaa-105ba27a5fa6"
     velocity_modulation_example = "c621e134-50ec-4e8b-8175-a8c023d92789"
-    session_to_nwb(
-        session_id=raw_fp_example,
-        processed_path=processed_path,
-        raw_path=raw_path,
-        output_dir_path=output_dir_path,
-        experiment_type="reinforcement_photometry",
-        stub_test=stub_test,
-    )
+    experiment_type2example_sessions = {
+        "reinforcement_photometry": [raw_rp_example],
+        "velocity_modulation": [velocity_modulation_example],
+    }
+    experiment_type2raw_path = {
+        "reinforcement_photometry": raw_rp_path,
+        "velocity_modulation": raw_velocity_path,
+    }
+    for experiment_type, example_sessions in experiment_type2example_sessions.items():
+        for example_session in example_sessions:
+            session_to_nwb(
+                session_id=example_session,
+                processed_path=processed_path,
+                raw_path=experiment_type2raw_path[experiment_type],
+                output_dir_path=output_dir_path,
+                experiment_type=experiment_type,
+                stub_test=stub_test,
+            )
     with NWBHDF5IO(output_dir_path / f"{raw_fp_example}.nwb", "r") as io:
         nwbfile = io.read()
         print(nwbfile)
