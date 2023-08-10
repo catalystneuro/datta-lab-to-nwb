@@ -127,6 +127,7 @@ def extract_reinforcement_metadata(
         "stim_frequency",
         "pulse_width",
         "power",
+        "target_syllable",
     )
     subject_columns = (
         "mouse_id",
@@ -209,7 +210,7 @@ def extract_velocity_modulation_metadata(
         "date",
         "mouse_id",
         "stim_duration",
-        "trigger_syllable",
+        "target_syllable",
         "trigger_syllable_scalar_threshold",
         "trigger_syllable_scalar_comparison",
     )
