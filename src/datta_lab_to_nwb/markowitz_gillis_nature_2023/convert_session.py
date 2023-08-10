@@ -165,7 +165,7 @@ if __name__ == "__main__":
         experiment_type="velocity_modulation",
         stub_test=stub_test,
     )
-    with NWBHDF5IO(output_dir_path / f"{raw_fp_example}.nwb", "r") as io:
+    with NWBHDF5IO(output_dir_path / f"{velocity_modulation_example}.nwb", "r") as io:
         nwbfile = io.read()
         print(nwbfile)
     # nwbfile_path = output_dir_path / f"{figure1d_example}.nwb"
