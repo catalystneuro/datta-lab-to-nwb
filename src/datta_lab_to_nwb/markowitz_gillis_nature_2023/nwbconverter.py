@@ -2,6 +2,7 @@
 from neuroconv import NWBConverter
 from .fiberphotometryinterface import FiberPhotometryInterface
 from .optogeneticinterface import OptogeneticInterface
+from .velocitymodulationinterface import VelocityModulationInterface
 from .behavioralsyllableinterface import BehavioralSyllableInterface
 from .moseqextractinterface import MoseqExtractInterface
 from .depthvideointerface import DepthVideoInterface
@@ -15,6 +16,7 @@ class NWBConverter(NWBConverter):
         BehavioralSyllable=BehavioralSyllableInterface,
         FiberPhotometry=FiberPhotometryInterface,
         Optogenetic=OptogeneticInterface,
+        VelocityModulation=VelocityModulationInterface,
         MoseqExtract=MoseqExtractInterface,
         DepthVideo=DepthVideoInterface,
         IRVideo=IRVideoInterface,

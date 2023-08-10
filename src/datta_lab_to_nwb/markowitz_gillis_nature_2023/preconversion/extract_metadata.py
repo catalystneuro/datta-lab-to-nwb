@@ -238,6 +238,7 @@ def extract_velocity_modulation_metadata(
         session_metadata[uuid]["pulse_width_s"] = np.NaN
         session_metadata[uuid]["power_watts"] = 10 / 1000  # power = 10mW from paper
         session_metadata[uuid]["reinforcement"] = True
+        session_metadata[uuid]["velocity_modulation"] = True
         if i + 1 >= num_sessions:
             break
     subject_ids = set(session_metadata[uuid]["subject_id"] for uuid in session_metadata)
