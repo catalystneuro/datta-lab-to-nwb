@@ -4,6 +4,7 @@ import pandas as pd
 from pynwb import NWBFile
 from .basedattainterface import BaseDattaInterface
 from neuroconv.utils import load_dict_from_file
+from neuroconv.tools import nwb_helpers
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 from ndx_events import LabeledEvents
 
@@ -61,4 +62,9 @@ class BehavioralSyllableInterface(BaseDattaInterface):
             data=H5DataIO(syllable_indices, compression=True),
             labels=H5DataIO(index2name, compression=True),
         )
-        nwbfile.add_acquisition(events)
+        behavior_module = nwb_helpers.get_module(
+            nwbfile,
+            name="behavior",
+            description="Processed behavioral data from MoSeq",
+        )
+        behavior_module.add(events)

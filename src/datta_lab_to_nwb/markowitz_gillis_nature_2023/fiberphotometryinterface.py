@@ -109,6 +109,10 @@ class FiberPhotometryInterface(BaseDattaInterface):
         multi_commanded_voltage = MultiCommandedVoltage()
         commanded_signal_series = multi_commanded_voltage.create_commanded_voltage_series(
             name="commanded_signal",
+            description=(
+                "A 470nm (blue) LED and a 405nM (UV) LED (Mightex) were sinusoidally modulated at 161Hz and 381Hz, "
+                "respectively (these frequencies were chosen to avoid harmonic cross-talk)."
+            ),
             data=H5DataIO(commanded_signal, compression=True),
             frequency=metadata["FiberPhotometry"]["signal_freq"],
             power=metadata["FiberPhotometry"]["signal_amp"],  # TODO: clarify with Cody/Datta Lab
@@ -117,6 +121,10 @@ class FiberPhotometryInterface(BaseDattaInterface):
         )
         commanded_reference_series = multi_commanded_voltage.create_commanded_voltage_series(
             name="commanded_reference",
+            description=(
+                "A 470nm (blue) LED and a 405nM (UV) LED (Mightex) were sinusoidally modulated at 161Hz and 381Hz, "
+                "respectively (these frequencies were chosen to avoid harmonic cross-talk)."
+            ),
             data=H5DataIO(commanded_reference, compression=True),
             frequency=metadata["FiberPhotometry"]["reference_freq"],
             power=metadata["FiberPhotometry"]["reference_amp"],  # TODO: clarify with Cody/Datta Lab
@@ -216,7 +224,8 @@ class FiberPhotometryInterface(BaseDattaInterface):
             description="The raw acquisition signal from the blue light excitation (470nm) corresponding to the dopamine signal.",
             data=H5DataIO(raw_signal, compression=True),
             unit="F",
-            timestamps=H5DataIO(raw_timestamps, compression=True),
+            starting_time=0.0,
+            rate=metadata["FiberPhotometry"]["raw_rate"],
             rois=fibers_ref,
         )
         raw_reference_series = RoiResponseSeries(
@@ -224,7 +233,8 @@ class FiberPhotometryInterface(BaseDattaInterface):
             description="The raw acquisition signal from the isosbestic UV excitation (405nm) corresponding to the reference signal.",
             data=H5DataIO(raw_reference, compression=True),
             unit="F",
-            timestamps=raw_signal_series.timestamps,
+            starting_time=0.0,
+            rate=metadata["FiberPhotometry"]["raw_rate"],
             rois=fibers_ref,
         )
         signal_series = DeconvolvedRoiResponseSeries(
