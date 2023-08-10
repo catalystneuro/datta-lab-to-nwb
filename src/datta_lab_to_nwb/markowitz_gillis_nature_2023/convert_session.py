@@ -142,9 +142,9 @@ if __name__ == "__main__":
     pulsed_photometry_example = "b8360fcd-acfd-4414-9e67-ba0dc5c979a8"
     excitation_photometry_example = "95bec433-2242-4276-b8a5-6d069afa3910"
     reinforcement_photometry_examples = [figure1d_example, pulsed_photometry_example, excitation_photometry_example]
-
     raw_rp_example = "b814a426-7ec9-440e-baaa-105ba27a5fa6"
     velocity_modulation_example = "c621e134-50ec-4e8b-8175-a8c023d92789"
+
     experiment_type2example_sessions = {
         "reinforcement_photometry": [raw_rp_example],
         "velocity_modulation": [velocity_modulation_example],
@@ -163,7 +163,7 @@ if __name__ == "__main__":
                 experiment_type=experiment_type,
                 stub_test=stub_test,
             )
-    with NWBHDF5IO(output_dir_path / f"{raw_fp_example}.nwb", "r") as io:
+    with NWBHDF5IO(output_dir_path / f"{raw_rp_example}.nwb", "r") as io:
         nwbfile = io.read()
         print(nwbfile)
     # nwbfile_path = output_dir_path / f"{figure1d_example}.nwb"
