@@ -25,7 +25,6 @@ contourpy==1.1.0
 cycler==0.11.0
 dandi==0.55.1
 dandischema==0.8.4
--e git+https://github.com/catalystneuro/datta-lab-to-nwb@e6422213973986572d3726a9216f566c9f3658e8#egg=datta_lab_to_nwb
 decorator==5.1.1
 distlib==0.3.7
 dnspython==2.4.2
@@ -98,12 +97,12 @@ neuroconv==0.4.1
 nodeenv==1.8.0
 numba==0.57.1
 numcodecs==0.11.0
-numpy==1.24.4
+numpy==1.23.2
 nwbinspector==0.4.29
 nwbwidgets==0.11.3
 opencv-python-headless==4.8.0.76
 packaging==23.1
-pandas==2.0.3
+pandas==1.5.3
 param==1.13.0
 parso==0.8.3
 pickleshare==0.7.5
@@ -121,7 +120,7 @@ pycryptodomex==3.18.0
 pyct==0.5.0
 pydantic==1.10.12
 Pygments==2.16.1
-pynwb==2.3.3
+pynwb==2.3.1
 pyout==0.7.3
 pyparsing==3.0.9
 python-dateutil==2.8.2
