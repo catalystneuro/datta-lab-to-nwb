@@ -74,14 +74,6 @@ def session_to_nwb(
             session_uuid=session_id,
         )
         conversion_options["IRVideo"] = {}
-    if "velocity_modulation" in session_metadata.keys():
-        source_data["VelocityModulation"] = dict(
-            file_path=str(optoda_path),
-            session_metadata_path=str(session_metadata_path),
-            subject_metadata_path=str(subject_metadata_path),
-            session_uuid=session_id,
-        )
-        conversion_options["VelocityModulation"] = {}
     source_data.update(
         dict(
             MoseqExtract=dict(

@@ -46,6 +46,12 @@ class OptogeneticInterface(BaseDattaInterface):
         metadata["Optogenetics"]["stim_duration_s"] = session_metadata["stim_duration_s"]
         metadata["Optogenetics"]["power_watts"] = session_metadata["power_watts"]
         metadata["Optogenetics"]["area"] = subject_metadata["optogenetic_area"]
+        if "velocity_modulation" in session_metadata.keys():
+            if session_metadata["trigger_syllable_scalar_comparison"] == "lt":
+                stimulus_notes = "Stim Down: Stimulate when target velocity <25th percentile"
+            elif session_metadata["trigger_syllable_scalar_comparison"] == "gt":
+                stimulus_notes = "Stim Up: Stimulate when target velocity >75th percentile"
+        metadata["NWBFile"]["stimulus_notes"] = stimulus_notes
 
         return metadata
 
