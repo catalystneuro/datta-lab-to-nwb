@@ -126,7 +126,9 @@ if __name__ == "__main__":
     raw_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/velocity_modulation")
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     if output_dir_path.exists():
-        shutil.rmtree(output_dir_path)
+        shutil.rmtree(
+            output_dir_path, ignore_errors=True
+        )  # ignore errors due to MacOS race condition (https://github.com/python/cpython/issues/81441)
     stub_test = False
 
     # Example UUIDs
