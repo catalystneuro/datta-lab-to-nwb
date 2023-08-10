@@ -15,14 +15,13 @@ from datta_lab_to_nwb import markowitz_gillis_nature_2023
 
 def session_to_nwb(
     session_id: str,
-    data_path: Union[str, Path],
-    tdt_path: Union[str, Path],
-    tdt_metadata_path: Union[str, Path],
+    processed_path: Union[str, Path],
+    raw_path: Union[str, Path],
     output_dir_path: Union[str, Path],
     experiment_type: Literal["reinforcement", "photometry", "reinforcement_photometry"],
     stub_test: bool = False,
 ):
-    data_path = Path(data_path)
+    processed_path = Path(processed_path)
     output_dir_path = Path(output_dir_path)
 
     if stub_test:
@@ -30,13 +29,17 @@ def session_to_nwb(
 
     output_dir_path.mkdir(parents=True, exist_ok=True)
     nwbfile_path = output_dir_path / f"{session_id}.nwb"
-    photometry_path = data_path / "dlight_raw_data/dlight_photometry_processed_full.parquet"
-    optoda_path = data_path / "optoda_raw_data/closed_loop_behavior.parquet"
-    metadata_path = data_path / "metadata"
+    photometry_path = processed_path / "dlight_raw_data/dlight_photometry_processed_full.parquet"
+    optoda_path = processed_path / "optoda_raw_data/closed_loop_behavior.parquet"
+    metadata_path = processed_path / "metadata"
     session_metadata_path = metadata_path / f"{experiment_type}_session_metadata.yaml"
     subject_metadata_path = metadata_path / f"{experiment_type}_subject_metadata.yaml"
     session_metadata = load_dict_from_file(session_metadata_path)
     session_metadata = session_metadata[session_id]
+    raw_path = Path(raw_path)
+    depth_path = raw_path / "depth.avi"
+    depth_ts_path = raw_path / "depth_ts.txt"
+    moseq_path = raw_path / "proc/results_00.h5"
 
     source_data, conversion_options = {}, {}
     if "reinforcement" in session_metadata.keys():
@@ -47,8 +50,11 @@ def session_to_nwb(
             session_uuid=session_id,
         )
         conversion_options["Optogenetic"] = {}
-        behavior_path = optoda_path
+        behavioral_syllable_path = optoda_path
     if "photometry" in session_metadata.keys():
+        tdt_path = list(raw_path.glob("tdt_data*.dat"))[0]
+        tdt_metadata_path = list(raw_path.glob("tdt_data*.json"))[0]
+        ir_path = raw_path / "ir.avi"
         source_data["FiberPhotometry"] = dict(
             file_path=str(photometry_path),
             tdt_path=str(tdt_path),
@@ -58,17 +64,32 @@ def session_to_nwb(
             session_uuid=session_id,
         )
         conversion_options["FiberPhotometry"] = {}
-        behavior_path = photometry_path  # Note: if photometry and optogenetics are both present, photometry is used for behavioral data bc it is quicker to load
+        behavioral_syllable_path = photometry_path  # Note: if photometry and optogenetics are both present, photometry is used for syllable data bc it is quicker to load
+        source_data["IRVideo"] = dict(
+            data_path=str(ir_path),
+            timestamp_path=str(depth_ts_path),
+            session_metadata_path=str(session_metadata_path),
+            subject_metadata_path=str(subject_metadata_path),
+            session_uuid=session_id,
+        )
+        conversion_options["IRVideo"] = {}
     source_data.update(
         dict(
-            Behavior=dict(
-                file_path=str(behavior_path),
+            MoseqExtract=dict(
+                file_path=str(moseq_path),
                 session_metadata_path=str(session_metadata_path),
                 subject_metadata_path=str(subject_metadata_path),
                 session_uuid=session_id,
             ),
             BehavioralSyllable=dict(
-                file_path=str(behavior_path),
+                file_path=str(behavioral_syllable_path),
+                session_metadata_path=str(session_metadata_path),
+                subject_metadata_path=str(subject_metadata_path),
+                session_uuid=session_id,
+            ),
+            DepthVideo=dict(
+                data_path=str(depth_path),
+                timestamp_path=str(depth_ts_path),
                 session_metadata_path=str(session_metadata_path),
                 subject_metadata_path=str(subject_metadata_path),
                 session_uuid=session_id,
@@ -77,8 +98,9 @@ def session_to_nwb(
     )
     conversion_options.update(
         dict(
-            Behavior={},
+            MoseqExtract={},
             BehavioralSyllable={},
+            DepthVideo={},
         )
     )
 
@@ -96,13 +118,8 @@ def session_to_nwb(
 
 if __name__ == "__main__":
     # Parameters for conversion
-    data_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior")
-    tdt_path = Path(
-        "/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20210215162554-455929/tdt_data_20210215162932.dat"
-    )
-    tdt_metadata_path = Path(
-        "/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20210215162554-455929/tdt_data_20210215162932.json"
-    )
+    processed_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior")
+    raw_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20210215162554-455929")
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     if output_dir_path.exists():
         shutil.rmtree(output_dir_path)
@@ -137,9 +154,8 @@ if __name__ == "__main__":
     raw_fp_example = "b814a426-7ec9-440e-baaa-105ba27a5fa6"
     session_to_nwb(
         session_id=raw_fp_example,
-        data_path=data_path,
-        tdt_path=tdt_path,
-        tdt_metadata_path=tdt_metadata_path,
+        processed_path=processed_path,
+        raw_path=raw_path,
         output_dir_path=output_dir_path,
         experiment_type="reinforcement_photometry",
         stub_test=stub_test,

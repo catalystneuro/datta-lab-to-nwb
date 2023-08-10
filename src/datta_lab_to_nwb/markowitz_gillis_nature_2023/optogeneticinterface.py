@@ -92,6 +92,7 @@ class OptogeneticInterface(BaseDattaInterface):
             data, timestamps = self.reconstruct_pulsed_stim(metadata, session_df)
         ogen_series = OptogeneticSeries(
             name="OptogeneticSeries",
+            description="Onset of optogenetic stimulation is recorded as a 1, and offset is recorded as a 0.",
             site=ogen_site,
             data=H5DataIO(data, compression=True),
             timestamps=H5DataIO(timestamps, compression=True),
