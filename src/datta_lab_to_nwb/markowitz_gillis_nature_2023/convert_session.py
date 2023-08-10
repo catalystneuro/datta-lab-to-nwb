@@ -24,8 +24,10 @@ def session_to_nwb(
 ):
     data_path = Path(data_path)
     output_dir_path = Path(output_dir_path)
+
     if stub_test:
         output_dir_path = output_dir_path / "nwb_stub"
+
     output_dir_path.mkdir(parents=True, exist_ok=True)
     nwbfile_path = output_dir_path / f"{session_id}.nwb"
     photometry_path = data_path / "dlight_raw_data/dlight_photometry_processed_full.parquet"
