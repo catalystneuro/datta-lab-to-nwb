@@ -18,7 +18,7 @@ def session_to_nwb(
     processed_path: Union[str, Path],
     raw_path: Union[str, Path],
     output_dir_path: Union[str, Path],
-    experiment_type: Literal["reinforcement", "photometry", "reinforcement_photometry"],
+    experiment_type: Literal["reinforcement", "photometry", "reinforcement_photometry", "velocity_modulation"],
     stub_test: bool = False,
 ):
     processed_path = Path(processed_path)
@@ -28,7 +28,10 @@ def session_to_nwb(
     output_dir_path.mkdir(parents=True, exist_ok=True)
     nwbfile_path = output_dir_path / f"{session_id}.nwb"
     photometry_path = processed_path / "dlight_raw_data/dlight_photometry_processed_full.parquet"
-    optoda_path = processed_path / "optoda_raw_data/closed_loop_behavior.parquet"
+    if experiment_type == "velocity_modulation":
+        optoda_path = processed_path / "optoda_raw_data/closed_loop_behavior_velocity_conditioned.parquet"
+    else:
+        optoda_path = processed_path / "optoda_raw_data/closed_loop_behavior.parquet"
     metadata_path = processed_path / "metadata"
     session_metadata_path = metadata_path / f"{experiment_type}_session_metadata.yaml"
     subject_metadata_path = metadata_path / f"{experiment_type}_subject_metadata.yaml"
@@ -101,6 +104,8 @@ def session_to_nwb(
             DepthVideo={},
         )
     )
+    if experiment_type == "velocity_modulation":
+        conversion_options["BehavioralSyllable"] = dict(velocity_modulation=True)
 
     converter = markowitz_gillis_nature_2023.NWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
@@ -117,10 +122,13 @@ def session_to_nwb(
 if __name__ == "__main__":
     # Parameters for conversion
     processed_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior")
-    raw_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20210215162554-455929")
+    # raw_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20210215162554-455929")
+    raw_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/velocity_modulation")
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
     if output_dir_path.exists():
-        shutil.rmtree(output_dir_path)
+        shutil.rmtree(
+            output_dir_path, ignore_errors=True
+        )  # ignore errors due to MacOS race condition (https://github.com/python/cpython/issues/81441)
     stub_test = False
 
     # Example UUIDs
@@ -150,15 +158,16 @@ if __name__ == "__main__":
     #             stub_test=stub_test,
     #         )
     raw_fp_example = "b814a426-7ec9-440e-baaa-105ba27a5fa6"
+    velocity_modulation_example = "c621e134-50ec-4e8b-8175-a8c023d92789"
     session_to_nwb(
-        session_id=raw_fp_example,
+        session_id=velocity_modulation_example,
         processed_path=processed_path,
         raw_path=raw_path,
         output_dir_path=output_dir_path,
-        experiment_type="reinforcement_photometry",
+        experiment_type="velocity_modulation",
         stub_test=stub_test,
     )
-    with NWBHDF5IO(output_dir_path / f"{raw_fp_example}.nwb", "r") as io:
+    with NWBHDF5IO(output_dir_path / f"{velocity_modulation_example}.nwb", "r") as io:
         nwbfile = io.read()
         print(nwbfile)
     # nwbfile_path = output_dir_path / f"{figure1d_example}.nwb"

@@ -183,6 +183,73 @@ def extract_reinforcement_metadata(
     return session_metadata, subject_metadata
 
 
+def extract_velocity_modulation_metadata(
+    data_path: str,
+    example_uuids: str = None,
+    num_sessions: int = None,
+) -> dict:
+    """Extract metadata from velocity modulation data.
+    Parameters
+    ----------
+    data_path : str
+        Path to data.
+    example_uuids : str, optional
+        UUID of example session to extract metadata from.
+    num_sessions : int, optional
+        Number of sessions to extract metadata from.
+    Returns
+    -------
+    metadata : dict
+        Dictionary of metadata.
+    """
+    velocity_data_path = Path(data_path) / "optoda_raw_data/closed_loop_behavior_velocity_conditioned.parquet"
+    session_columns = (
+        "uuid",
+        "SessionName",
+        "date",
+        "mouse_id",
+        "stim_duration",
+        "trigger_syllable",
+        "trigger_syllable_scalar_threshold",
+        "trigger_syllable_scalar_comparison",
+    )
+    subject_columns = (
+        "mouse_id",
+        "genotype",
+        "cohort",
+    )
+    if example_uuids is None:
+        df = pd.read_parquet(
+            velocity_data_path,
+            columns=["uuid"],
+        )
+        uuids = set(df.uuid[df.uuid.notnull()])
+        del df
+    else:
+        uuids = set(example_uuids)
+    session_metadata, subject_metadata = {}, {}
+    if num_sessions is None:
+        num_sessions = len(uuids)
+    for i, uuid in enumerate(tqdm(uuids, desc="Extracting velocity-modulation session metadata")):
+        extract_session_metadata(session_columns, velocity_data_path, session_metadata, uuid)
+        # add si units to names
+        session_metadata[uuid]["stim_duration_s"] = session_metadata[uuid].pop("stim_duration")
+        session_metadata[uuid]["stim_frequency_Hz"] = np.NaN
+        session_metadata[uuid]["pulse_width_s"] = np.NaN
+        session_metadata[uuid]["power_watts"] = 10 / 1000  # power = 10mW from paper
+        session_metadata[uuid]["reinforcement"] = True
+        session_metadata[uuid]["velocity_modulation"] = True
+        if i + 1 >= num_sessions:
+            break
+    subject_ids = set(session_metadata[uuid]["subject_id"] for uuid in session_metadata)
+    for mouse_id in tqdm(subject_ids, desc="Extracting reinforcement subject metadata"):
+        extract_subject_metadata(subject_columns, velocity_data_path, subject_metadata, mouse_id)
+        subject_metadata[mouse_id]["optogenetic_area"] = "snc (axon)"  # from paper
+        subject_metadata[mouse_id]["sex"] = "U"
+
+    return session_metadata, subject_metadata
+
+
 def extract_reinforcement_photometry_metadata(
     data_path: str, example_uuids: str = None, num_sessions: int = None
 ) -> dict:
@@ -346,6 +413,8 @@ if __name__ == "__main__":
     reinforcement_subject_metadata_path = metadata_path / "reinforcement_subject_metadata.yaml"
     reinforcement_photometry_session_metadata_path = metadata_path / "reinforcement_photometry_session_metadata.yaml"
     reinforcement_photometry_subject_metadata_path = metadata_path / "reinforcement_photometry_subject_metadata.yaml"
+    velocity_session_metadata_path = metadata_path / "velocity_modulation_session_metadata.yaml"
+    velocity_subject_metadata_path = metadata_path / "velocity_modulation_subject_metadata.yaml"
 
     # Example UUIDs
     dls_dlight_1_example = "18dc5ad5-13f0-4297-8b21-75d434770e57"
@@ -364,6 +433,7 @@ if __name__ == "__main__":
         excitation_photometry_example,
         raw_fp_example,
     ]
+    velocity_modulation_examples = ["c621e134-50ec-4e8b-8175-a8c023d92789"]
 
     reinforcement_session_metadata, reinforcement_subject_metadata = extract_reinforcement_metadata(
         data_path,
@@ -377,6 +447,9 @@ if __name__ == "__main__":
         reinforcement_photometry_session_metadata,
         reinforcement_photometry_subject_metadata,
     ) = extract_reinforcement_photometry_metadata(data_path, example_uuids=reinforcement_photometry_examples)
+    velocity_session_metadata, velocity_subject_metadata = extract_velocity_modulation_metadata(
+        data_path, example_uuids=velocity_modulation_examples
+    )
 
     path2metadata = {
         photometry_session_metadata_path: photometry_session_metadata,
@@ -385,6 +458,8 @@ if __name__ == "__main__":
         reinforcement_subject_metadata_path: reinforcement_subject_metadata,
         reinforcement_photometry_session_metadata_path: reinforcement_photometry_session_metadata,
         reinforcement_photometry_subject_metadata_path: reinforcement_photometry_subject_metadata,
+        velocity_session_metadata_path: velocity_session_metadata,
+        velocity_subject_metadata_path: velocity_subject_metadata,
     }
     for path, resolved_dict in path2metadata.items():
         with open(path, "w") as f:
