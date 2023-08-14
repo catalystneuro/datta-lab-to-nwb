@@ -46,12 +46,12 @@ class OptogeneticInterface(BaseDattaInterface):
         metadata["Optogenetics"]["stim_duration_s"] = session_metadata["stim_duration_s"]
         metadata["Optogenetics"]["power_watts"] = session_metadata["power_watts"]
         metadata["Optogenetics"]["area"] = subject_metadata["optogenetic_area"]
+        metadata["Optogenetics"]["target_syllable"] = session_metadata["target_syllable"]
         if "velocity_modulation" in session_metadata.keys():
             if session_metadata["trigger_syllable_scalar_comparison"] == "lt":
-                stimulus_notes = "Stim Down: Stimulate when target velocity <25th percentile"
+                metadata["NWBFile"]["stimulus_notes"] = "Stim Down: Stimulate when target velocity <25th percentile"
             elif session_metadata["trigger_syllable_scalar_comparison"] == "gt":
-                stimulus_notes = "Stim Up: Stimulate when target velocity >75th percentile"
-        metadata["NWBFile"]["stimulus_notes"] = stimulus_notes
+                metadata["NWBFile"]["stimulus_notes"] = "Stim Up: Stimulate when target velocity >75th percentile"
 
         return metadata
 
@@ -64,6 +64,8 @@ class OptogeneticInterface(BaseDattaInterface):
                 "stim_frequency_Hz": {"type": "number"},
                 "stim_duration_s": {"type": "number"},
                 "power_watts": {"type": "number"},
+                "pulse_width_s": {"type": "number"},
+                "target_syllable": {"type": "number"},
             },
         }
         return metadata_schema
@@ -92,9 +94,12 @@ class OptogeneticInterface(BaseDattaInterface):
             data, timestamps = self.reconstruct_cts_stim(metadata, session_df)
         else:  # pulsed stim
             data, timestamps = self.reconstruct_pulsed_stim(metadata, session_df)
+        id2sorted_index = metadata["BehavioralSyllable"]["id2sorted_index"]
+        target_syllable = id2sorted_index[metadata["Optogenetics"]["target_syllable"]]
         ogen_series = OptogeneticSeries(
             name="OptogeneticSeries",
             description="Onset of optogenetic stimulation is recorded as a 1, and offset is recorded as a 0.",
+            comments=f"target_syllable = {target_syllable}",
             site=ogen_site,
             data=H5DataIO(data, compression=True),
             timestamps=H5DataIO(timestamps, compression=True),
