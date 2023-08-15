@@ -125,7 +125,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
             ),
             data=H5DataIO(commanded_reference, compression=True),
             frequency=metadata["FiberPhotometry"]["reference_freq"],
-            power=metadata["FiberPhotometry"]["reference_amp"],  # TODO: clarify with Cody/Datta Lab
+            power=metadata["FiberPhotometry"]["reference_amp"],  # TODO: Fix this in ndx-photometry
             rate=metadata["FiberPhotometry"]["raw_rate"],
             unit="volts",
         )
