@@ -408,14 +408,14 @@ def get_session_name(session_df):
 if __name__ == "__main__":
     data_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior")
     metadata_path = data_path / "metadata"
-    photometry_session_metadata_path = metadata_path / "photometry_session_metadata.yaml"
-    photometry_subject_metadata_path = metadata_path / "photometry_subject_metadata.yaml"
-    reinforcement_session_metadata_path = metadata_path / "reinforcement_session_metadata.yaml"
-    reinforcement_subject_metadata_path = metadata_path / "reinforcement_subject_metadata.yaml"
-    reinforcement_photometry_session_metadata_path = metadata_path / "reinforcement_photometry_session_metadata.yaml"
-    reinforcement_photometry_subject_metadata_path = metadata_path / "reinforcement_photometry_subject_metadata.yaml"
-    velocity_session_metadata_path = metadata_path / "velocity_modulation_session_metadata.yaml"
-    velocity_subject_metadata_path = metadata_path / "velocity_modulation_subject_metadata.yaml"
+    photometry_session_metadata_path = metadata_path / "photometry-session-metadata.yaml"
+    photometry_subject_metadata_path = metadata_path / "photometry-subject-metadata.yaml"
+    reinforcement_session_metadata_path = metadata_path / "reinforcement-session-metadata.yaml"
+    reinforcement_subject_metadata_path = metadata_path / "reinforcement-subject-metadata.yaml"
+    reinforcement_photometry_session_metadata_path = metadata_path / "reinforcement-photometry-session-metadata.yaml"
+    reinforcement_photometry_subject_metadata_path = metadata_path / "reinforcement-photometry-subject-metadata.yaml"
+    velocity_session_metadata_path = metadata_path / "velocity-modulation-session-metadata.yaml"
+    velocity_subject_metadata_path = metadata_path / "velocity-modulation-subject-metadata.yaml"
 
     # Example UUIDs
     dls_dlight_1_example = "18dc5ad5-13f0-4297-8b21-75d434770e57"

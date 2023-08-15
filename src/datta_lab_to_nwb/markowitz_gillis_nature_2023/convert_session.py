@@ -18,7 +18,7 @@ def session_to_nwb(
     processed_path: Union[str, Path],
     raw_path: Union[str, Path],
     output_dir_path: Union[str, Path],
-    experiment_type: Literal["reinforcement", "photometry", "reinforcement_photometry", "velocity_modulation"],
+    experiment_type: Literal["reinforcement", "photometry", "reinforcement-photometry", "velocity-modulation"],
     stub_test: bool = False,
 ):
     processed_path = Path(processed_path)
@@ -26,15 +26,15 @@ def session_to_nwb(
     if stub_test:
         output_dir_path = output_dir_path / "nwb_stub"
     output_dir_path.mkdir(parents=True, exist_ok=True)
-    nwbfile_path = output_dir_path / f"{session_id}.nwb"
+    nwbfile_path = output_dir_path / f"{experiment_type}-{session_id}.nwb"
     photometry_path = processed_path / "dlight_raw_data/dlight_photometry_processed_full.parquet"
-    if experiment_type == "velocity_modulation":
+    if experiment_type == "velocity-modulation":
         optoda_path = processed_path / "optoda_raw_data/closed_loop_behavior_velocity_conditioned.parquet"
     else:
         optoda_path = processed_path / "optoda_raw_data/closed_loop_behavior.parquet"
     metadata_path = processed_path / "metadata"
-    session_metadata_path = metadata_path / f"{experiment_type}_session_metadata.yaml"
-    subject_metadata_path = metadata_path / f"{experiment_type}_subject_metadata.yaml"
+    session_metadata_path = metadata_path / f"{experiment_type}-session-metadata.yaml"
+    subject_metadata_path = metadata_path / f"{experiment_type}-subject-metadata.yaml"
     session_metadata = load_dict_from_file(session_metadata_path)
     session_metadata = session_metadata[session_id]
     raw_path = Path(raw_path)
@@ -104,7 +104,7 @@ def session_to_nwb(
             DepthVideo={},
         )
     )
-    if experiment_type == "velocity_modulation":
+    if experiment_type == "velocity-modulation":
         conversion_options["BehavioralSyllable"] = dict(velocity_modulation=True)
 
     converter = markowitz_gillis_nature_2023.NWBConverter(source_data=source_data)
@@ -146,12 +146,12 @@ if __name__ == "__main__":
     velocity_modulation_example = "c621e134-50ec-4e8b-8175-a8c023d92789"
 
     experiment_type2example_sessions = {
-        "reinforcement_photometry": [raw_rp_example],
-        "velocity_modulation": [velocity_modulation_example],
+        "reinforcement-photometry": [raw_rp_example],
+        "velocity-modulation": [velocity_modulation_example],
     }
     experiment_type2raw_path = {
-        "reinforcement_photometry": raw_rp_path,
-        "velocity_modulation": raw_velocity_path,
+        "reinforcement-photometry": raw_rp_path,
+        "velocity-modulation": raw_velocity_path,
     }
     for experiment_type, example_sessions in experiment_type2example_sessions.items():
         for example_session in example_sessions:
@@ -163,7 +163,7 @@ if __name__ == "__main__":
                 experiment_type=experiment_type,
                 stub_test=stub_test,
             )
-    with NWBHDF5IO(output_dir_path / f"{raw_rp_example}.nwb", "r") as io:
+    with NWBHDF5IO(output_dir_path / f"reinforcement-photometry-{raw_rp_example}.nwb", "r") as io:
         nwbfile = io.read()
         print(nwbfile)
     # nwbfile_path = output_dir_path / f"{figure1d_example}.nwb"
