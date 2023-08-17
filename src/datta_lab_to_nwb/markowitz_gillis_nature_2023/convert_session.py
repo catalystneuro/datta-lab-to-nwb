@@ -14,7 +14,7 @@ from datta_lab_to_nwb import markowitz_gillis_nature_2023
 
 
 def session_to_nwb(
-    session_id: str,
+    session_uuid: str,
     processed_path: Union[str, Path],
     raw_path: Union[str, Path],
     output_dir_path: Union[str, Path],
@@ -26,7 +26,8 @@ def session_to_nwb(
     if stub_test:
         output_dir_path = output_dir_path / "nwb_stub"
     output_dir_path.mkdir(parents=True, exist_ok=True)
-    nwbfile_path = output_dir_path / f"{experiment_type}-{session_id}.nwb"
+    session_id = f"{experiment_type}-{session_uuid}"
+    nwbfile_path = output_dir_path / f"{session_id}.nwb"
     photometry_path = processed_path / "dlight_raw_data/dlight_photometry_processed_full.parquet"
     if experiment_type == "velocity-modulation":
         optoda_path = processed_path / "optoda_raw_data/closed_loop_behavior_velocity_conditioned.parquet"
@@ -36,7 +37,7 @@ def session_to_nwb(
     session_metadata_path = metadata_path / f"{experiment_type}-session-metadata.yaml"
     subject_metadata_path = metadata_path / f"{experiment_type}-subject-metadata.yaml"
     session_metadata = load_dict_from_file(session_metadata_path)
-    session_metadata = session_metadata[session_id]
+    session_metadata = session_metadata[session_uuid]
     raw_path = Path(raw_path)
     depth_path = raw_path / "depth.avi"
     depth_ts_path = raw_path / "depth_ts.txt"
@@ -48,7 +49,8 @@ def session_to_nwb(
             file_path=str(optoda_path),
             session_metadata_path=str(session_metadata_path),
             subject_metadata_path=str(subject_metadata_path),
-            session_uuid=session_id,
+            session_uuid=session_uuid,
+            session_id=session_id,
         )
         conversion_options["Optogenetic"] = {}
         behavioral_syllable_path = optoda_path
@@ -62,7 +64,8 @@ def session_to_nwb(
             tdt_metadata_path=str(tdt_metadata_path),
             session_metadata_path=str(session_metadata_path),
             subject_metadata_path=str(subject_metadata_path),
-            session_uuid=session_id,
+            session_uuid=session_uuid,
+            session_id=session_id,
         )
         conversion_options["FiberPhotometry"] = {}
         behavioral_syllable_path = photometry_path  # Note: if photometry and optogenetics are both present, photometry is used for syllable data bc it is quicker to load
@@ -71,7 +74,8 @@ def session_to_nwb(
             timestamp_path=str(depth_ts_path),
             session_metadata_path=str(session_metadata_path),
             subject_metadata_path=str(subject_metadata_path),
-            session_uuid=session_id,
+            session_uuid=session_uuid,
+            session_id=session_id,
         )
         conversion_options["IRVideo"] = {}
     source_data.update(
@@ -80,20 +84,23 @@ def session_to_nwb(
                 file_path=str(moseq_path),
                 session_metadata_path=str(session_metadata_path),
                 subject_metadata_path=str(subject_metadata_path),
-                session_uuid=session_id,
+                session_uuid=session_uuid,
+                session_id=session_id,
             ),
             BehavioralSyllable=dict(
                 file_path=str(behavioral_syllable_path),
                 session_metadata_path=str(session_metadata_path),
                 subject_metadata_path=str(subject_metadata_path),
-                session_uuid=session_id,
+                session_uuid=session_uuid,
+                session_id=session_id,
             ),
             DepthVideo=dict(
                 data_path=str(depth_path),
                 timestamp_path=str(depth_ts_path),
                 session_metadata_path=str(session_metadata_path),
                 subject_metadata_path=str(subject_metadata_path),
-                session_uuid=session_id,
+                session_uuid=session_uuid,
+                session_id=session_id,
             ),
         )
     )
@@ -156,7 +163,7 @@ if __name__ == "__main__":
     for experiment_type, example_sessions in experiment_type2example_sessions.items():
         for example_session in example_sessions:
             session_to_nwb(
-                session_id=example_session,
+                session_uuid=example_session,
                 processed_path=processed_path,
                 raw_path=experiment_type2raw_path[experiment_type],
                 output_dir_path=output_dir_path,

@@ -33,6 +33,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
         tdt_path: str,
         tdt_metadata_path: str,
         session_uuid: str,
+        session_id: str,
         session_metadata_path: str,
         subject_metadata_path: str,
     ):
@@ -50,6 +51,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
             tdt_path=tdt_path,
             tdt_metadata_path=tdt_metadata_path,
             session_uuid=session_uuid,
+            session_id=session_id,
             columns=columns,
             session_metadata_path=session_metadata_path,
             subject_metadata_path=subject_metadata_path,

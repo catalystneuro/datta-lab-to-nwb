@@ -16,7 +16,7 @@ class BaseDattaInterface(BaseDataInterface):
         metadata["NWBFile"]["session_description"] = session_metadata["session_description"]
         metadata["NWBFile"]["session_start_time"] = session_metadata["session_start_time"]
         metadata["NWBFile"]["identifier"] = self.source_data["session_uuid"]
-        metadata["NWBFile"]["session_id"] = self.source_data["session_uuid"]
+        metadata["NWBFile"]["session_id"] = self.source_data["session_id"]
 
         metadata["Subject"] = {}
         metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
