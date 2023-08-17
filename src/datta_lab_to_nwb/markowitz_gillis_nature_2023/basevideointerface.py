@@ -17,6 +17,7 @@ class BaseVideoInterface(BaseDattaInterface):
         data_path: str,
         timestamp_path: str,
         session_uuid: str,
+        session_id: str,
         session_metadata_path: str,
         subject_metadata_path: str,
     ):
@@ -24,6 +25,7 @@ class BaseVideoInterface(BaseDattaInterface):
             data_path=data_path,
             timestamp_path=timestamp_path,
             session_uuid=session_uuid,
+            session_id=session_id,
             session_metadata_path=session_metadata_path,
             subject_metadata_path=subject_metadata_path,
         )

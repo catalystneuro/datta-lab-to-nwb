@@ -19,7 +19,9 @@ from hdmf.backends.hdf5.h5_utils import H5DataIO
 class OptogeneticInterface(BaseDattaInterface):
     """Optogenetic interface for markowitz_gillis_nature_2023 conversion"""
 
-    def __init__(self, file_path: str, session_uuid: str, session_metadata_path: str, subject_metadata_path: str):
+    def __init__(
+        self, file_path: str, session_uuid: str, session_id: str, session_metadata_path: str, subject_metadata_path: str
+    ):
         # This should load the data lazily and prepare variables you need
         columns = (
             "uuid",
@@ -29,6 +31,7 @@ class OptogeneticInterface(BaseDattaInterface):
         super().__init__(
             file_path=file_path,
             session_uuid=session_uuid,
+            session_id=session_id,
             columns=columns,
             session_metadata_path=session_metadata_path,
             subject_metadata_path=subject_metadata_path,
