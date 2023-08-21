@@ -156,7 +156,7 @@ class HEKInterface(BaseDataInterface):
         )
         signal_1p_series = OnePhotonSeries(
             name="Signal1PSeries",
-            data=H5DataIO(raw_signal, compression=True),
+            data=H5DataIO(raw_signal, compression=True, chunks=(14, 520, 688)),
             imaging_plane=signal_imaging_plane,
             rate=self.source_data["sampling_frequency"],
             unit="normalized amplitude",
@@ -164,7 +164,7 @@ class HEKInterface(BaseDataInterface):
         )
         reference_1p_series = OnePhotonSeries(
             name="Reference1PSeries",
-            data=H5DataIO(raw_reference, compression=True),
+            data=H5DataIO(raw_reference, compression=True, chunks=(14, 520, 688)),
             imaging_plane=reference_imaging_plane,
             rate=self.source_data["sampling_frequency"],
             unit="normalized amplitude",
