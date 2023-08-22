@@ -49,7 +49,7 @@ if __name__ == "__main__":
     ]
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb_hek/")
     if output_dir_path.exists():
-        shutil.rmtree(output_dir_path)
+        shutil.rmtree(output_dir_path, ignore_errors=True)
     stub_test = False
     for file_path in file_paths:
         session_to_nwb(
