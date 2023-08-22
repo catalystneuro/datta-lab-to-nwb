@@ -154,17 +154,31 @@ class HEKInterface(BaseDataInterface):
             origin_coords=[0.0, 0.0],
             origin_coords_unit="micrometers",
         )
+        MiB = 1024**2
+        desired_nbytes = 10 * MiB
+        chunk_size = desired_nbytes / raw_signal.itemsize
+        chunks = (
+            int(chunk_size / (raw_signal.shape[1] * raw_signal.shape[2])),
+            raw_signal.shape[1],
+            raw_signal.shape[2],
+        )
         signal_1p_series = OnePhotonSeries(
             name="Signal1PSeries",
-            data=H5DataIO(raw_signal, compression=True),
+            data=H5DataIO(raw_signal, compression=True, chunks=chunks),
             imaging_plane=signal_imaging_plane,
             rate=self.source_data["sampling_frequency"],
             unit="normalized amplitude",
             description="Fluorescence signal corresponding to the 480nm excitation wavelength.",
         )
+        chunk_size = desired_nbytes / raw_reference.itemsize
+        chunks = (
+            int(chunk_size / (raw_reference.shape[1] * raw_reference.shape[2])),
+            raw_reference.shape[1],
+            raw_reference.shape[2],
+        )
         reference_1p_series = OnePhotonSeries(
             name="Reference1PSeries",
-            data=H5DataIO(raw_reference, compression=True),
+            data=H5DataIO(raw_reference, compression=True, chunks=chunks),
             imaging_plane=reference_imaging_plane,
             rate=self.source_data["sampling_frequency"],
             unit="normalized amplitude",
