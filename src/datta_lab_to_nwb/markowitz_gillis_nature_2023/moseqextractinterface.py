@@ -14,7 +14,7 @@ from pynwb.behavior import (
     SpatialSeries,
 )
 from neuroconv.tools import nwb_helpers
-from ndx_moseq import DepthImageSeries, MoSeqExtractGroup, MoSeqExtractParameterGroup
+from ndx_depth_moseq import DepthImageSeries, MoSeqExtractGroup, MoSeqExtractParameterGroup
 
 
 class MoseqExtractInterface(BaseDattaInterface):
