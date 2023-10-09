@@ -8,7 +8,7 @@ from .depthvideointerface import DepthVideoInterface
 from .irvideointerface import IRVideoInterface
 
 
-class NWBConverter(NWBConverter):
+class DattaNWBConverter(NWBConverter):
     """Primary conversion class."""
 
     data_interface_classes = dict(
