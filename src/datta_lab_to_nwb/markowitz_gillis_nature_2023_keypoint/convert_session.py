@@ -45,6 +45,16 @@ def session_to_nwb(
     )
     conversion_options["FiberPhotometry"] = {}
 
+    # IR Video
+    source_data["IRVideo"] = dict(
+        data_path=str(raw_path),
+        session_metadata_path=str(session_metadata_path),
+        subject_metadata_path=str(subject_metadata_path),
+        session_uuid=subject_id,
+        session_id=session_id,
+    )
+    conversion_options["IRVideo"] = {}
+
     converter = markowitz_gillis_nature_2023_keypoint.NWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
 
