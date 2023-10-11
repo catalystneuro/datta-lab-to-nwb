@@ -21,11 +21,9 @@ from neuroconv.utils import load_dict_from_file
 from neuroconv.tools import nwb_helpers
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
-# Local
 
-
-class FiberPhotometryInterface(BaseDattaInterface):
-    """Fiber Photometry  interface for markowitz_gillis_nature_2023 conversion"""
+class RawFiberPhotometryInterface(BaseDattaInterface):
+    """Raw Fiber Photometry interface for markowitz_gillis_nature_2023 conversion."""
 
     def __init__(
         self,
@@ -94,11 +92,6 @@ class FiberPhotometryInterface(BaseDattaInterface):
         return metadata_schema
 
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
-        session_df = pd.read_parquet(
-            self.source_data["file_path"],
-            columns=self.source_data["columns"],
-            filters=[("uuid", "==", self.source_data["session_uuid"])],
-        )
         photometry_dict = load_tdt_data(self.source_data["tdt_path"], fs=metadata["FiberPhotometry"]["raw_rate"])
         session_start_index = np.flatnonzero(photometry_dict["sync"])[0]
         raw_photometry = photometry_dict["pmt00"][session_start_index:]
@@ -218,7 +211,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
 
         # ROI Response Series
         # Here we set up a list of fibers that our recording came from
-        fibers_ref = DynamicTableRegion(name="rois", data=[0, 1], description="source fibers", table=fibers_table)
+        self.fibers_ref = DynamicTableRegion(name="rois", data=[0, 1], description="source fibers", table=fibers_table)
         raw_photometry = RoiResponseSeries(
             name="RawPhotometry",
             description="The raw acquisition with mixed signal from both the blue light excitation (470nm) and UV excitation (405nm).",
@@ -226,7 +219,22 @@ class FiberPhotometryInterface(BaseDattaInterface):
             unit="F",
             starting_time=0.0,
             rate=metadata["FiberPhotometry"]["raw_rate"],
-            rois=fibers_ref,
+            rois=self.fibers_ref,
+        )
+
+        # Aggregate into OPhys Module and NWBFile
+        nwbfile.add_acquisition(raw_photometry)
+        ophys_module = nwb_helpers.get_module(nwbfile, name="ophys", description="Fiber photometry data")
+        ophys_module.add(multi_commanded_voltage)
+
+
+class FiberPhotometryInterface(RawFiberPhotometryInterface):
+    def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
+        super().add_to_nwbfile(nwbfile, metadata)
+        session_df = pd.read_parquet(
+            self.source_data["file_path"],
+            columns=self.source_data["columns"],
+            filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
         signal_series = RoiResponseSeries(
             name="SignalDfOverF",
@@ -234,7 +242,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
             data=H5DataIO(session_df.signal_dff.to_numpy(), compression=True),
             unit="a.u.",
             timestamps=H5DataIO(session_df.timestamp.to_numpy(), compression=True),
-            rois=fibers_ref,
+            rois=self.fibers_ref,
         )
         reference_series = RoiResponseSeries(
             name="ReferenceDfOverF",
@@ -242,7 +250,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
             data=H5DataIO(session_df.reference_dff.to_numpy(), compression=True),
             unit="a.u.",
             timestamps=signal_series.timestamps,
-            rois=fibers_ref,
+            rois=self.fibers_ref,
         )
         reference_fit_series = RoiResponseSeries(
             name="ReferenceDfOverFSmoothed",
@@ -253,7 +261,7 @@ class FiberPhotometryInterface(BaseDattaInterface):
             data=H5DataIO(session_df.reference_dff_fit.to_numpy(), compression=True),
             unit="a.u.",
             timestamps=signal_series.timestamps,
-            rois=fibers_ref,
+            rois=self.fibers_ref,
         )
         uv_reference_fit_series = RoiResponseSeries(
             name="UVReferenceFSmoothed",
@@ -264,13 +272,9 @@ class FiberPhotometryInterface(BaseDattaInterface):
             data=H5DataIO(session_df.uv_reference_fit.to_numpy(), compression=True),
             unit="n.a.",
             timestamps=signal_series.timestamps,
-            rois=fibers_ref,
+            rois=self.fibers_ref,
         )
-
-        # Aggregate into OPhys Module and NWBFile
-        nwbfile.add_acquisition(raw_photometry)
         ophys_module = nwb_helpers.get_module(nwbfile, name="ophys", description="Fiber photometry data")
-        ophys_module.add(multi_commanded_voltage)
         ophys_module.add(signal_series)
         ophys_module.add(reference_series)
         ophys_module.add(reference_fit_series)
