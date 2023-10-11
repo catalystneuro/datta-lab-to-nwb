@@ -27,32 +27,22 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
 
     def __init__(
         self,
-        file_path: str,
         tdt_path: str,
         tdt_metadata_path: str,
         session_uuid: str,
         session_id: str,
         session_metadata_path: str,
         subject_metadata_path: str,
+        **kwargs,
     ):
-        # This should load the data lazily and prepare variables you need
-        columns = (
-            "uuid",
-            "signal_dff",
-            "reference_dff",
-            "uv_reference_fit",
-            "reference_dff_fit",
-            "timestamp",
-        )
         super().__init__(
-            file_path=file_path,
             tdt_path=tdt_path,
             tdt_metadata_path=tdt_metadata_path,
             session_uuid=session_uuid,
             session_id=session_id,
-            columns=columns,
             session_metadata_path=session_metadata_path,
             subject_metadata_path=subject_metadata_path,
+            **kwargs,
         )
 
     def get_metadata(self) -> dict:
@@ -229,6 +219,36 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
 
 
 class FiberPhotometryInterface(RawFiberPhotometryInterface):
+    def __init__(
+        self,
+        file_path: str,
+        tdt_path: str,
+        tdt_metadata_path: str,
+        session_uuid: str,
+        session_id: str,
+        session_metadata_path: str,
+        subject_metadata_path: str,
+    ):
+        # This should load the data lazily and prepare variables you need
+        columns = (
+            "uuid",
+            "signal_dff",
+            "reference_dff",
+            "uv_reference_fit",
+            "reference_dff_fit",
+            "timestamp",
+        )
+        super().__init__(
+            file_path=file_path,
+            tdt_path=tdt_path,
+            tdt_metadata_path=tdt_metadata_path,
+            session_uuid=session_uuid,
+            session_id=session_id,
+            columns=columns,
+            session_metadata_path=session_metadata_path,
+            subject_metadata_path=subject_metadata_path,
+        )
+
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         super().add_to_nwbfile(nwbfile, metadata)
         session_df = pd.read_parquet(

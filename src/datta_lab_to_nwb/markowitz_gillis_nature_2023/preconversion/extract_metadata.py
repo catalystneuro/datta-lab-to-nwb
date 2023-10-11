@@ -296,6 +296,8 @@ def extract_keypoint_metadata(data_path: str):
         session_metadata[subject] = dict(
             keypoint=True,
             photometry=True,
+            session_description="keypoint session",
+            session_start_time="1901-01-01T00:00:00-05:00",  # TODO: replace with real session start time
             reference_max=np.NaN,
             signal_max=np.NaN,
             signal_reference_corr=np.NaN,
