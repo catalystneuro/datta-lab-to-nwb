@@ -289,6 +289,28 @@ def extract_reinforcement_photometry_metadata(
     return session_metadata, subject_metadata
 
 
+def extract_keypoint_metadata(data_path: str):
+    keypoint_subjects = ["dls-dlight-9", "dls-dlight-10", "dls-dlight-11", "dls-dlight-12", "dls-dlight-13"]
+    session_metadata, subject_metadata = {}, {}
+    for subject in keypoint_subjects:
+        session_metadata[subject] = dict(
+            keypoint=True,
+            photometry=True,
+            reference_max=np.NaN,
+            signal_max=np.NaN,
+            signal_reference_corr=np.NaN,
+            snr=np.NaN,
+            subject_id=subject,
+        )
+        subject_metadata[subject] = dict(
+            genotype="dls-dlight",
+            opsin="n/a",
+            photometry_area="dls",
+            sex="U",
+        )
+    return session_metadata, subject_metadata
+
+
 def resolve_duplicates(photometry_metadata, photometry_ids, reinforcement_metadata, reinforcement_ids):
     resolved_metadata = {}
     _resolve_duplicates(
@@ -416,6 +438,8 @@ if __name__ == "__main__":
     reinforcement_photometry_subject_metadata_path = metadata_path / "reinforcement-photometry-subject-metadata.yaml"
     velocity_session_metadata_path = metadata_path / "velocity-modulation-session-metadata.yaml"
     velocity_subject_metadata_path = metadata_path / "velocity-modulation-subject-metadata.yaml"
+    keypoint_session_metadata_path = metadata_path / "keypoint-session-metadata.yaml"
+    keypoint_subject_metadata_path = metadata_path / "keypoint-subject-metadata.yaml"
 
     # Example UUIDs
     dls_dlight_1_example = "18dc5ad5-13f0-4297-8b21-75d434770e57"
@@ -451,6 +475,7 @@ if __name__ == "__main__":
     velocity_session_metadata, velocity_subject_metadata = extract_velocity_modulation_metadata(
         data_path, example_uuids=velocity_modulation_examples
     )
+    keypoint_session_metadata, keypoint_subject_metadata = extract_keypoint_metadata(data_path)
 
     path2metadata = {
         photometry_session_metadata_path: photometry_session_metadata,
@@ -461,6 +486,8 @@ if __name__ == "__main__":
         reinforcement_photometry_subject_metadata_path: reinforcement_photometry_subject_metadata,
         velocity_session_metadata_path: velocity_session_metadata,
         velocity_subject_metadata_path: velocity_subject_metadata,
+        keypoint_session_metadata_path: keypoint_session_metadata,
+        keypoint_subject_metadata_path: keypoint_subject_metadata,
     }
     for path, resolved_dict in path2metadata.items():
         with open(path, "w") as f:
