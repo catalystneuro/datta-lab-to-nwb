@@ -30,3 +30,21 @@ Subject:
   species: Mus musculus
   age: P6W/P15W
   description: This study utilized wild-type DAT-IRES-Cre (The Jackson Laboratory 006660) and Ai32 (The Jackson Laboratory 012569) mice, both male and female, between 6-15 weeks of age.
+Keypoint:
+  reference_frame: TBD
+  index_to_name: # Mapping from keypoint index --> keypoint name (unique) [See fig_s03 notebook]
+    0: 'spine 1'
+    1: 'spine 2'
+    2: 'spine 3'
+    3: 'tail base'
+    4: 'tail tip'
+    5: 'head center'
+    6: 'left ear'
+    7: 'right ear'
+    8: 'nose'
+    9: 'left hind ankle'
+    10: 'left hindpaw'
+    11: 'right hind ankle'
+    12: 'right hindpaw'
+    13: 'left forepaw'
+    14: 'right forepaw'

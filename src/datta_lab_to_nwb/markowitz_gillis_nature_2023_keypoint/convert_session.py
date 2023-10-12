@@ -30,6 +30,7 @@ def session_to_nwb(
     session_metadata = load_dict_from_file(session_metadata_path)
     session_metadata = session_metadata[subject_id]
     raw_path = Path(raw_path)
+    keypoint_path = raw_path / "keypoints.p"
 
     source_data, conversion_options = {}, {}
     # Photometry
@@ -54,6 +55,15 @@ def session_to_nwb(
         session_id=session_id,
     )
     conversion_options["IRVideo"] = {}
+
+    # Keypoints
+    source_data["Keypoint"] = dict(
+        file_path=str(keypoint_path),
+        session_metadata_path=str(session_metadata_path),
+        subject_metadata_path=str(subject_metadata_path),
+        session_uuid=subject_id,
+        session_id=session_id,
+    )
 
     converter = markowitz_gillis_nature_2023_keypoint.NWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
