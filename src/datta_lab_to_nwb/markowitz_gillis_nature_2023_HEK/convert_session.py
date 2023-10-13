@@ -2,7 +2,7 @@
 from pathlib import Path
 from typing import Union
 from neuroconv.utils import dict_deep_update, load_dict_from_file
-from datta_lab_to_nwb import markowitz_gillis_nature_2023_HEK
+from datta_lab_to_nwb.markowitz_gillis_nature_2023_HEK.nwbconverter import DattaHEKNWBConverter
 import shutil
 from pynwb import NWBHDF5IO
 from datta_lab_to_nwb.markowitz_gillis_nature_2023_HEK.postconversion import reproduce_figS1abcd
@@ -28,7 +28,7 @@ def session_to_nwb(
     conversion_options = {
         "HEK": dict(),
     }
-    converter = markowitz_gillis_nature_2023_HEK.NWBConverter(source_data=source_data)
+    converter = DattaHEKNWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
 
     # Update metadata

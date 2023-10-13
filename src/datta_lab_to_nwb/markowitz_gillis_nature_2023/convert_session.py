@@ -10,7 +10,7 @@ from pynwb import NWBHDF5IO
 
 # Local
 from datta_lab_to_nwb.markowitz_gillis_nature_2023.postconversion import reproduce_fig1d
-from datta_lab_to_nwb import markowitz_gillis_nature_2023
+from datta_lab_to_nwb.markowitz_gillis_nature_2023.nwbconverter import DattaNWBConverter
 
 
 def session_to_nwb(
@@ -114,7 +114,7 @@ def session_to_nwb(
     if experiment_type == "velocity-modulation":
         conversion_options["BehavioralSyllable"] = dict(velocity_modulation=True)
 
-    converter = markowitz_gillis_nature_2023.NWBConverter(source_data=source_data)
+    converter = DattaNWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
 
     # Update metadata

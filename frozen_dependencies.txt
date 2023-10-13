@@ -115,7 +115,8 @@ natsort==8.4.0
 nbclient==0.8.0
 nbconvert==7.7.3
 nbformat==5.9.2
--e git+https://github.com/pauladkisson/ndx-moseq.git@2c25aaa85bb70762111a520918c73abac4ac0801#egg=ndx_depth_moseq
+# Editable install with no version control (ndx-depth-moseq==0.1.0)
+-e /opt/anaconda3/envs/datta_env/lib/python3.10/site-packages
 ndx-events==0.2.0
 ndx-grayscalevolume==0.0.2
 ndx-icephys-meta==0.1.0
