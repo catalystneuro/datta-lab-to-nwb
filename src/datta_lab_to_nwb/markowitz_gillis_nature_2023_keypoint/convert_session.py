@@ -16,6 +16,7 @@ def session_to_nwb(
     subject_id: str,
     raw_path: Union[str, Path],
     processed_path: Union[str, Path],
+    summary_image_path: Union[str, Path],
     metadata_path: Union[str, Path],
     output_dir_path: Union[str, Path],
     stub_test: bool = False,
@@ -61,6 +62,7 @@ def session_to_nwb(
     # Keypoints
     source_data["Keypoint"] = dict(
         file_path=str(keypoint_path),
+        summary_image_path=str(summary_image_path),
         session_metadata_path=str(session_metadata_path),
         subject_metadata_path=str(subject_metadata_path),
         session_uuid=subject_id,
@@ -86,6 +88,9 @@ if __name__ == "__main__":
     processed_path = Path(
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/keypoints_raw_data/photometry-dls-dlight-keypoints/photometry-dls-dlight-9.p"
     )
+    summary_image_path = Path(
+        "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/keypoints_raw_data/video-image.p"
+    )
     metadata_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/metadata")
     if output_dir_path.exists():
         shutil.rmtree(
@@ -101,6 +106,7 @@ if __name__ == "__main__":
             subject_id=subject_id,
             raw_path=raw_path,
             processed_path=processed_path,
+            summary_image_path=summary_image_path,
             metadata_path=metadata_path,
             output_dir_path=output_dir_path,
             stub_test=stub_test,

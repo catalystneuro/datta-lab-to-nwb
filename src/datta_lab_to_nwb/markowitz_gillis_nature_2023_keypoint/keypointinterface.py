@@ -1,6 +1,7 @@
 """Primary class for converting experiment-specific behavior."""
 import numpy as np
 from pynwb import NWBFile
+from pynwb.image import RGBImage, Images
 import joblib
 from ..markowitz_gillis_nature_2023.basedattainterface import BaseDattaInterface
 from neuroconv.tools import nwb_helpers
@@ -12,10 +13,17 @@ class KeypointInterface(BaseDattaInterface):
     """Keypoint Interface for markowitz_gillis_nature_2023 conversion"""
 
     def __init__(
-        self, file_path: str, session_uuid: str, session_id: str, session_metadata_path: str, subject_metadata_path: str
+        self,
+        file_path: str,
+        session_uuid: str,
+        session_id: str,
+        session_metadata_path: str,
+        subject_metadata_path: str,
+        summary_image_path: str,
     ):
         super().__init__(
             file_path=file_path,
+            summary_image_path=summary_image_path,
             session_uuid=session_uuid,
             session_id=session_id,
             session_metadata_path=session_metadata_path,
@@ -85,3 +93,11 @@ class KeypointInterface(BaseDattaInterface):
             description="3D Keypoints",
         )
         behavior_module.add(keypoints)
+        summary_image = joblib.load(self.source_data["summary_image_path"])
+        summary_image = RGBImage(
+            name="summary_image",
+            description="Summary image of 3D keypoints",
+            data=summary_image,
+        )
+        summary_images = Images(name="summary_images", images=[summary_image])
+        behavior_module.add(summary_images)
