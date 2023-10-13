@@ -1,6 +1,6 @@
 """Primary NWBConverter class for this dataset."""
 from neuroconv import NWBConverter
-from ..markowitz_gillis_nature_2023.fiberphotometryinterface import RawFiberPhotometryInterface
+from .fiberphotometryinterface import FiberPhotometryInterface
 from .irvideointerface import IRVideoInterface
 from .keypointinterface import KeypointInterface
 
@@ -9,7 +9,7 @@ class NWBConverter(NWBConverter):
     """Primary conversion class."""
 
     data_interface_classes = dict(
-        FiberPhotometry=RawFiberPhotometryInterface,
+        FiberPhotometry=FiberPhotometryInterface,
         IRVideo=IRVideoInterface,
         Keypoint=KeypointInterface,
     )

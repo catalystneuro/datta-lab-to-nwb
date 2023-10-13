@@ -92,27 +92,3 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
         ophys_module.add(reference_series)
         ophys_module.add(reference_fit_series)
         ophys_module.add(uv_reference_fit_series)
-
-
-def load_tdt_data(filename, pmt_channels=[0, 3], sync_channel=6, clock_channel=7, nch=8, fs=6103.515625):
-    float_data = np.fromfile(filename, dtype=">f4")
-    int_data = np.fromfile(filename, dtype=">i4")
-
-    photometry_dict = {}
-
-    for i, pmt in enumerate(pmt_channels):
-        photometry_dict["pmt{:02d}".format(i)] = float_data[pmt::nch]
-        photometry_dict["pmt{:02d}_x".format(i)] = float_data[pmt + 1 :: nch]
-        photometry_dict["pmt{:02d}_y".format(i)] = float_data[pmt + 2 :: nch]
-
-    photometry_dict["sync"] = int_data[sync_channel::8]
-    photometry_dict["clock"] = int_data[clock_channel::8]
-
-    if any(np.diff(photometry_dict["clock"]) != 1):
-        raise IOError("Timebase not uniform in TDT file.")
-
-    clock_df = np.diff(photometry_dict["clock"].astype("float64"))
-    clock_df = np.insert(clock_df, 0, 0, axis=0)
-    photometry_dict["tstep"] = np.cumsum(clock_df * 1 / fs)
-
-    return photometry_dict

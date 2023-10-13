@@ -15,6 +15,7 @@ from datta_lab_to_nwb import markowitz_gillis_nature_2023_keypoint
 def session_to_nwb(
     subject_id: str,
     raw_path: Union[str, Path],
+    processed_path: Union[str, Path],
     metadata_path: Union[str, Path],
     output_dir_path: Union[str, Path],
     stub_test: bool = False,
@@ -37,6 +38,7 @@ def session_to_nwb(
     tdt_path = list(raw_path.glob("tdt_data*.dat"))[0]
     tdt_metadata_path = list(raw_path.glob("tdt_data*.json"))[0]
     source_data["FiberPhotometry"] = dict(
+        file_path=str(processed_path),
         tdt_path=str(tdt_path),
         tdt_metadata_path=str(tdt_metadata_path),
         session_metadata_path=str(session_metadata_path),
@@ -81,6 +83,9 @@ if __name__ == "__main__":
     # Parameters for conversion
     base_raw_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw")
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
+    processed_path = Path(
+        "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/keypoints_raw_data/photometry-dls-dlight-keypoints/photometry-dls-dlight-9.p"
+    )
     metadata_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/metadata")
     if output_dir_path.exists():
         shutil.rmtree(
@@ -95,6 +100,7 @@ if __name__ == "__main__":
         session_to_nwb(
             subject_id=subject_id,
             raw_path=raw_path,
+            processed_path=processed_path,
             metadata_path=metadata_path,
             output_dir_path=output_dir_path,
             stub_test=stub_test,
