@@ -37,7 +37,6 @@ class KeypointInterface(BaseDattaInterface):
         keypoint_dict = joblib.load(self.source_data["file_path"])
         raw_keypoints = keypoint_dict["positions_median"]
         timestamps = H5DataIO(np.arange(raw_keypoints.shape[0]) / SAMPLING_RATE, compression=True)
-        confidence = np.ones(timestamps.shape[0]) * np.nan
 
         index_to_name = metadata["Keypoint"]["index_to_name"]
         camera_names = ["bottom", "side1", "side2", "side3", "side4", "top"]
@@ -52,8 +51,6 @@ class KeypointInterface(BaseDattaInterface):
                 description=f"Keypoint corresponding to {keypoint_name}",
                 data=H5DataIO(raw_keypoints[:, keypoint_index, :], compression=True),
                 timestamps=timestamps,
-                confidence=confidence,
-                confidence_definition="Confidence was not recorded for keypoints.",
                 unit="mm",
                 reference_frame=metadata["Keypoint"]["reference_frame"],
             )
@@ -80,6 +77,7 @@ class KeypointInterface(BaseDattaInterface):
                 "respectively for all keypoints."
             ),
             nodes=list(index_to_name.values()),
+            edges=metadata["Keypoint"]["edges"],
         )
         behavior_module = nwb_helpers.get_module(
             nwbfile,
