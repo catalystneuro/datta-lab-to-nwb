@@ -33,9 +33,9 @@ Subject:
 Keypoint:
   reference_frame: TBD
   index_to_name: # Mapping from keypoint index --> keypoint name (unique) [See fig_s03 notebook]
-    0: 'spine 1'
-    1: 'spine 2'
-    2: 'spine 3'
+    0: 'rostral spine'
+    1: 'medial spine'
+    2: 'caudal spine'
     3: 'tail base'
     4: 'tail tip'
     5: 'head center'
@@ -48,3 +48,18 @@ Keypoint:
     12: 'right hindpaw'
     13: 'left forepaw'
     14: 'right forepaw'
+  edges:
+    - [4, 3]
+    - [3, 2]
+    - [2, 1]
+    - [1, 0]
+    - [0, 5]
+    - [5, 6]
+    - [5, 7]
+    - [5, 8]
+    - [2, 9]
+    - [9, 10]
+    - [2, 11]
+    - [11, 12]
+    - [0, 13]
+    - [0, 14]
