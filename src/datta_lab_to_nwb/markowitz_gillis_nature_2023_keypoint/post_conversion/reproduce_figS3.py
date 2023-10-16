@@ -22,6 +22,10 @@ from sklearn.linear_model import LinearRegression
 from rl_analysis.plotting import save_factory, setup_plotting_env, fg
 from rl_analysis.photometry.signal import rolling_fluor_normalization, rereference
 
+from pynwb import NWBHDF5IO
+from pathlib import Path
+import yaml
+
 
 def _partial(df, x, y, window=range(-30, 30)):
     # new approach - remove transfer function here
@@ -117,20 +121,32 @@ def bin_data(data, timescale, n_offsets=0, neural_agg="mean", data_agg="mean", w
     return agg_matrix
 
 
-def reproduce_figS3():
+def reproduce_figS3(nwbfile_paths, config_path, metadata):
     print("reproducing figure S3")
-    with open(
-        "/Users/pauladkisson/Documents/CatalystNeuro/NWB/DattaConv/dopamine-reinforces-spontaneous-behavior/analysis_configuration.toml",
-        "r",
-    ) as f:
+    with open(config_path, "r") as f:
         config = toml.load(f)
     dlight_config = config["dlight_basic_analysis"]
-    data = {
-        os.path.basename(k): joblib.load(k)
-        for k in glob(
-            join(config["raw_data"]["keypoints"], "photometry-dls-dlight-keypoints/photometry-dls-dlight-*.p")
-        )
-    }
+    index_to_name = metadata["Keypoint"]["index_to_name"]
+    data = {}
+    for nwbfile_path in nwbfile_paths:
+        with NWBHDF5IO(nwbfile_path, "r", load_namespaces=True) as io:
+            nwbfile = io.read()
+            timestamps = (
+                nwbfile.processing["behavior"]
+                .data_interfaces["keypoints"]
+                .pose_estimation_series["rostral spine"]
+                .timestamps[:]
+            )
+            positions_median = np.zeros((len(timestamps), 15, 3))
+            for i, name in index_to_name.items():
+                positions_median[:, i, :] = (
+                    nwbfile.processing["behavior"].data_interfaces["keypoints"].pose_estimation_series[name].data[:]
+                )
+            data[os.path.basename(nwbfile_path)] = {
+                "dlight": nwbfile.processing["ophys"].data_interfaces["SignalF"].data[:],
+                "uv": nwbfile.processing["ophys"].data_interfaces["UVReferenceF"].data[:],
+                "positions_median": positions_median,
+            }
 
     window = range(-10, 10)
     dfs = {}
@@ -309,7 +325,7 @@ def reproduce_figS3():
 
     corrs = results.groupby(["timescale", "mouse_id", "neural_agg"]).corr(method="pearson")
     corrs.index = corrs.index.rename("feature", level=-1)
-    # plot_3c(results=results)
+    plot_3c(results=results)
 
     timescales = np.arange(*dlight_config["timescale_correlation"]["bins"])
 
@@ -417,4 +433,12 @@ def plot_3b(corrs):
 
 
 if __name__ == "__main__":
-    reproduce_figS3()
+    config_path = "/Users/pauladkisson/Documents/CatalystNeuro/NWB/DattaConv/dopamine-reinforces-spontaneous-behavior/analysis_configuration.toml"
+    output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
+    nwbfile_paths = [output_dir_path / f"keypoint-dls-dlight-{i}.nwb" for i in range(9, 14)]
+    with open(
+        "/Users/pauladkisson/Documents/CatalystNeuro/NWB/DattaConv/catalystneuro/datta-lab-to-nwb/src/datta_lab_to_nwb/markowitz_gillis_nature_2023_keypoint/markowitz_gillis_nature_2023_keypoint_metadata.yaml",
+        "r",
+    ) as f:
+        metadata = yaml.safe_load(f)
+    reproduce_figS3(nwbfile_paths=nwbfile_paths, config_path=config_path, metadata=metadata)
