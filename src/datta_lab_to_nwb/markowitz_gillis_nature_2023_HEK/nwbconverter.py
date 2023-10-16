@@ -3,7 +3,7 @@ from neuroconv import NWBConverter
 from .hekinterface import HEKInterface
 
 
-class NWBConverter(NWBConverter):
+class DattaHEKNWBConverter(NWBConverter):
     """Primary conversion class."""
 
     data_interface_classes = dict(
