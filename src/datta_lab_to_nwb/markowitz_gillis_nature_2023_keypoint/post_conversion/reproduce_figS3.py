@@ -1,25 +1,16 @@
 import os
 import toml
-import joblib
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from glob import glob
-from os.path import join
 from scipy import signal
 from toolz import partial
 from tqdm.auto import tqdm
 
-os.chdir("/Users/pauladkisson/Documents/CatalystNeuro/NWB/DattaConv/dopamine-reinforces-spontaneous-behavior")
 from rl_analysis.util import zscore
-
-os.chdir(
-    "/Users/pauladkisson/Documents/CatalystNeuro/NWB/DattaConv/dopamine-reinforces-spontaneous-behavior/notebooks_panels"
-)
 from sklearn.linear_model import LinearRegression
-from rl_analysis.plotting import save_factory, setup_plotting_env, fg
 from rl_analysis.photometry.signal import rolling_fluor_normalization, rereference
 
 from pynwb import NWBHDF5IO
@@ -218,24 +209,6 @@ def reproduce_figS3(nwbfile_paths, config_path, metadata):
         dfs[k] = pd.concat(y, axis=1)
 
     df = pd.concat(dfs.values())
-
-    mapping = {
-        0: "spine",
-        1: "spine",
-        2: "spine",
-        3: "tail base",
-        4: "tail tip",
-        5: "head center",
-        6: "left ear",
-        7: "right ear",
-        8: "noce",
-        9: "left hind ankle",
-        10: "left hindpaw",
-        11: "right hind ankle",
-        12: "right hindpaw",
-        13: "left forepaw",
-        14: "right forepaw",
-    }
 
     secs = 30 * 10
     threshold = 1.96
