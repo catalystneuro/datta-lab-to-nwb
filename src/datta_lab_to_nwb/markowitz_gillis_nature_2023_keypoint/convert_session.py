@@ -85,8 +85,8 @@ if __name__ == "__main__":
     # Parameters for conversion
     base_raw_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw")
     output_dir_path = Path("/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/")
-    processed_path = Path(
-        "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/keypoints_raw_data/photometry-dls-dlight-keypoints/photometry-dls-dlight-9.p"
+    base_processed_path = Path(
+        "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/keypoints_raw_data/photometry-dls-dlight-keypoints"
     )
     summary_image_path = Path(
         "/Volumes/T7/CatalystNeuro/NWB/Datta/dopamine-reinforces-spontaneous-behavior/keypoints_raw_data/video-image.p"
@@ -99,9 +99,10 @@ if __name__ == "__main__":
     stub_test = False
 
     # Example subjects
-    example_subjects = ["dls-dlight-9"]
+    example_subjects = ["dls-dlight-9", "dls-dlight-10", "dls-dlight-11", "dls-dlight-12", "dls-dlight-13"]
     for subject_id in example_subjects:
         raw_path = base_raw_path / ("photometry-" + subject_id)
+        processed_path = base_processed_path / ("photometry-" + subject_id + ".p")
         session_to_nwb(
             subject_id=subject_id,
             raw_path=raw_path,
@@ -111,6 +112,3 @@ if __name__ == "__main__":
             output_dir_path=output_dir_path,
             stub_test=stub_test,
         )
-    with NWBHDF5IO(output_dir_path / f"keypoint-dls-dlight-9.nwb", "r") as io:
-        nwbfile = io.read()
-        print(nwbfile)
