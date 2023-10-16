@@ -147,6 +147,11 @@ def reproduce_figS3(nwbfile_paths, config_path, metadata):
                 "uv": nwbfile.processing["ophys"].data_interfaces["UVReferenceF"].data[:],
                 "positions_median": positions_median,
             }
+            summary_image = (
+                nwbfile.processing["behavior"].data_interfaces["summary_images"].images["summary_image"].data[:]
+            )
+
+    plot_3a(summary_image=summary_image)
 
     window = range(-10, 10)
     dfs = {}
@@ -337,6 +342,12 @@ def reproduce_figS3(nwbfile_paths, config_path, metadata):
     corrs = results.groupby(["timescale", "mouse_id", "neural_agg"]).corr(method="pearson")
     corrs.index = corrs.index.rename("feature", level=-1)
     plot_3b(corrs=corrs)
+
+
+def plot_3a(summary_image):
+    fig = plt.figure()
+    plt.imshow(summary_image)
+    plt.show()
 
 
 def plot_3c(results):
