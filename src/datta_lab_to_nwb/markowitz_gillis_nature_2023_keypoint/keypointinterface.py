@@ -41,7 +41,7 @@ class KeypointInterface(BaseDattaInterface):
         return metadata_schema
 
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
-        SAMPLING_RATE = 30
+        SAMPLING_RATE = metadata["Constants"]["VIDEO_SAMPLING_RATE"]
         keypoint_dict = joblib.load(self.source_data["file_path"])
         raw_keypoints = keypoint_dict["positions_median"]
         timestamps = H5DataIO(np.arange(raw_keypoints.shape[0]) / SAMPLING_RATE, compression=True)

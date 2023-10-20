@@ -26,7 +26,7 @@ class IRVideoInterface(BaseDattaInterface):
         )
 
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
-        SAMPLING_RATE = 30
+        SAMPLING_RATE = metadata["Constants"]["VIDEO_SAMPLING_RATE"]
         matched_timestamp_path = (
             self.source_data["data_path"] / f"photometry-{self.source_data['session_uuid']}.matched_timestamps.npy"
         )
