@@ -1,9 +1,11 @@
 """Primary class for handling metadata non-specific to any other DataInterfaces."""
-from neuroconv.basedatainterface import BaseDataInterface
+from neuroconv.basetemporalalignmentinterface import BaseTemporalAlignmentInterface
 from neuroconv.utils import load_dict_from_file
+import pandas as pd
+import numpy as np
 
 
-class BaseDattaInterface(BaseDataInterface):
+class BaseDattaInterface(BaseTemporalAlignmentInterface):
     """Base interface for markowitz_gillis_nature_2023 conversion w/ non-specific metadata"""
 
     def get_metadata(self) -> dict:
@@ -22,4 +24,48 @@ class BaseDattaInterface(BaseDataInterface):
         metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
         metadata["Subject"]["sex"] = subject_metadata["sex"]
 
+        if self.source_data["alignment_path"] is not None:
+            alignment_df = pd.read_parquet(
+                "/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20210215162554-455929/alignment_df.parquet"
+            )
+            metadata["Alignment"]["slope"] = alignment_df["slope"].iloc[0]
+            metadata["Alignment"]["bias"] = alignment_df["bias"].iloc[0]
+            metadata["Alignment"]["start_time"] = (
+                metadata["Alignment"]["bias"] / metadata["Constants"]["DEMODULATED_PHOTOMETRY_SAMPLING_RATE"]
+            )
+
         return metadata
+
+    def get_metadata_schema(self) -> dict:
+        metadata_schema = super().get_metadata_schema()
+        if self.source_data["alignment_path"] is None:
+            return metadata_schema
+        metadata_schema["Alignment"] = {
+            "type": "object",
+            "description": "Metadata for temporal alignment with photometry data.",
+            "required": True,
+            "properties": {
+                "slope": {
+                    "description": "Slope of the linear regression mapping from behavioral video indices to demodulated photometry indices.",
+                    "required": True,
+                    "type": "float",
+                },
+                "bias": {
+                    "description": "Bias of the linear regression mapping from behavioral video indices to demodulated photometry indices.",
+                    "required": True,
+                    "type": "float",
+                },
+                "start_time": {
+                    "description": "Start time offset of raw fiber photometry data relative to behavioral video.",
+                    "required": True,
+                    "type": "float",
+                },
+            },
+        }
+        return metadata_schema
+
+    def set_aligned_timestamps(self, aligned_timestamps: np.ndarray) -> None:
+        self.aligned_timestamps = aligned_timestamps
+
+    def get_timestamps(self) -> np.ndarray:
+        return self.aligned_timestamps
