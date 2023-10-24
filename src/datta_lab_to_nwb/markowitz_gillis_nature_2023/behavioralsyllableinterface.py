@@ -13,14 +13,19 @@ class BehavioralSyllableInterface(BaseDattaInterface):
     """Behavioral Syllable Interface for markowitz_gillis_nature_2023 conversion"""
 
     def __init__(
-        self, file_path: str, session_uuid: str, session_id: str, session_metadata_path: str, subject_metadata_path: str
+        self,
+        file_path: str,
+        session_uuid: str,
+        session_id: str,
+        session_metadata_path: str,
+        subject_metadata_path: str,
+        alignment_path: str = None,
     ):
         # This should load the data lazily and prepare variables you need
         columns = (
             "uuid",
             "predicted_syllable (offline)",
             "predicted_syllable",
-            "timestamp",
         )
         super().__init__(
             file_path=file_path,
@@ -29,6 +34,7 @@ class BehavioralSyllableInterface(BaseDattaInterface):
             columns=columns,
             session_metadata_path=session_metadata_path,
             subject_metadata_path=subject_metadata_path,
+            alignment_path=alignment_path,
         )
 
     def get_metadata_schema(self) -> dict:
@@ -43,9 +49,27 @@ class BehavioralSyllableInterface(BaseDattaInterface):
         }
         return metadata_schema
 
+    def get_original_timestamps(self) -> np.ndarray:
+        session_df = pd.read_parquet(
+            self.source_data["file_path"],
+            columns=["timestamp", "uuid"],
+            filters=[("uuid", "==", self.source_data["session_uuid"])],
+        )
+        return session_df["timestamp"].to_numpy()
+
+    def align_timestamps(self, metadata: dict) -> np.ndarray:
+        timestamps = self.get_original_timestamps()
+        self.set_aligned_timestamps(aligned_timestamps=timestamps)
+        if self.source_data["alignment_path"] is not None:
+            aligned_starting_time = (
+                metadata["Alignment"]["bias"] / metadata["Constants"]["DEMODULATED_PHOTOMETRY_SAMPLING_RATE"]
+            )
+            self.set_aligned_starting_time(aligned_starting_time=aligned_starting_time)
+        return self.aligned_timestamps
+
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict, velocity_modulation: bool = False) -> None:
         if velocity_modulation:
-            columns = ["uuid", "predicted_syllable", "timestamp"]
+            columns = ["uuid", "predicted_syllable"]
         else:
             columns = self.source_data["columns"]
         session_df = pd.read_parquet(
@@ -53,6 +77,7 @@ class BehavioralSyllableInterface(BaseDattaInterface):
             columns=columns,
             filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
+        timestamps = self.align_timestamps(metadata=metadata)
         # Add Syllable Data
         sorted_pseudoindex2name = metadata["BehavioralSyllable"]["sorted_pseudoindex2name"]
         id2sorted_index = metadata["BehavioralSyllable"]["id2sorted_index"]
@@ -66,7 +91,7 @@ class BehavioralSyllableInterface(BaseDattaInterface):
         online_syllables = LabeledEvents(
             name="BehavioralSyllableOnline",
             description="Behavioral Syllable identified by online Motion Sequencing (MoSeq).",
-            timestamps=H5DataIO(session_df["timestamp"].to_numpy(), compression=True),
+            timestamps=H5DataIO(timestamps, compression=True),
             data=H5DataIO(online_syllable_indices, compression=True),
             labels=H5DataIO(index2name, compression=True),
         )
@@ -82,7 +107,7 @@ class BehavioralSyllableInterface(BaseDattaInterface):
             offline_syllables = LabeledEvents(
                 name="BehavioralSyllableOffline",
                 description="Behavioral Syllable identified by offline Motion Sequencing (MoSeq).",
-                timestamps=H5DataIO(session_df["timestamp"].to_numpy(), compression=True),
+                timestamps=H5DataIO(timestamps, compression=True),
                 data=H5DataIO(offline_syllable_indices, compression=True),
                 labels=H5DataIO(index2name, compression=True),
             )

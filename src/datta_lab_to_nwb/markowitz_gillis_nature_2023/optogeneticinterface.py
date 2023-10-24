@@ -20,7 +20,13 @@ class OptogeneticInterface(BaseDattaInterface):
     """Optogenetic interface for markowitz_gillis_nature_2023 conversion"""
 
     def __init__(
-        self, file_path: str, session_uuid: str, session_id: str, session_metadata_path: str, subject_metadata_path: str
+        self,
+        file_path: str,
+        session_uuid: str,
+        session_id: str,
+        session_metadata_path: str,
+        subject_metadata_path: str,
+        alignment_path: str = None,
     ):
         # This should load the data lazily and prepare variables you need
         columns = (
@@ -35,6 +41,7 @@ class OptogeneticInterface(BaseDattaInterface):
             columns=columns,
             session_metadata_path=session_metadata_path,
             subject_metadata_path=subject_metadata_path,
+            alignment_path=alignment_path,
         )
 
     def get_metadata(self) -> dict:
@@ -73,7 +80,26 @@ class OptogeneticInterface(BaseDattaInterface):
         }
         return metadata_schema
 
+    def get_original_timestamps(self) -> np.ndarray:
+        session_df = pd.read_parquet(
+            self.source_data["file_path"],
+            columns=["timestamp", "uuid"],
+            filters=[("uuid", "==", self.source_data["session_uuid"])],
+        )
+        return session_df["timestamp"].to_numpy()
+
+    def align_timestamps(self, metadata: dict) -> np.ndarray:
+        timestamps = self.get_original_timestamps()
+        self.set_aligned_timestamps(aligned_timestamps=timestamps)
+        if self.source_data["alignment_path"] is not None:
+            aligned_starting_time = (
+                metadata["Alignment"]["bias"] / metadata["Constants"]["DEMODULATED_PHOTOMETRY_SAMPLING_RATE"]
+            )
+            self.set_aligned_starting_time(aligned_starting_time=aligned_starting_time)
+        return self.aligned_timestamps
+
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
+        session_timestamps = self.align_timestamps(metadata=metadata)
         session_df = pd.read_parquet(
             self.source_data["file_path"],
             columns=self.source_data["columns"],
@@ -94,9 +120,9 @@ class OptogeneticInterface(BaseDattaInterface):
         )
         # Reconstruct optogenetic series from feedback status
         if pd.isnull(metadata["Optogenetics"]["stim_frequency_Hz"]):  # cts stim
-            data, timestamps = self.reconstruct_cts_stim(metadata, session_df)
+            data, timestamps = self.reconstruct_cts_stim(metadata, session_df, session_timestamps)
         else:  # pulsed stim
-            data, timestamps = self.reconstruct_pulsed_stim(metadata, session_df)
+            data, timestamps = self.reconstruct_pulsed_stim(metadata, session_df, session_timestamps)
         id2sorted_index = metadata["BehavioralSyllable"]["id2sorted_index"]
         target_syllable = id2sorted_index[metadata["Optogenetics"]["target_syllable"]]
         ogen_series = OptogeneticSeries(
@@ -111,22 +137,22 @@ class OptogeneticInterface(BaseDattaInterface):
 
         return nwbfile
 
-    def reconstruct_cts_stim(self, metadata, session_df):
+    def reconstruct_cts_stim(self, metadata, session_df, session_timestamps):
         stim_duration_s = metadata["Optogenetics"]["stim_duration_s"]
         power_watts = metadata["Optogenetics"]["power_watts"]
         feedback_is_on_index = np.where(session_df.feedback_status == 1)[0]
         data_len = len(feedback_is_on_index) * 2 + 2
         data, timestamps = np.zeros(data_len), np.zeros(data_len)
-        timestamps[0], timestamps[-1] = session_df.timestamp.iloc[0], session_df.timestamp.iloc[-1]
+        timestamps[0], timestamps[-1] = session_timestamps[0], session_timestamps[-1]
         for i, index in enumerate(feedback_is_on_index):
-            t = session_df.timestamp.iloc[index]
+            t = session_timestamps[index]
             data[i * 2 + 1 : i * 2 + 3] = [power_watts, 0]
             timestamps[i * 2 + 1 : i * 2 + 3] = [t, t + stim_duration_s]
         sorting_index = np.argsort(timestamps)
         data, timestamps = data[sorting_index], timestamps[sorting_index]
         return data, timestamps
 
-    def reconstruct_pulsed_stim(self, metadata, session_df):
+    def reconstruct_pulsed_stim(self, metadata, session_df, session_timestamps):
         stim_duration_s = metadata["Optogenetics"]["stim_duration_s"]
         power_watts = metadata["Optogenetics"]["power_watts"]
         stim_frequency_Hz = metadata["Optogenetics"]["stim_frequency_Hz"]
@@ -135,9 +161,9 @@ class OptogeneticInterface(BaseDattaInterface):
         pulses_per_stim = int(stim_duration_s * stim_frequency_Hz)
         data_len = len(feedback_is_on_index) * 2 * pulses_per_stim + 2
         data, timestamps = np.zeros(data_len), np.zeros(data_len)
-        timestamps[0], timestamps[-1] = session_df.timestamp.iloc[0], session_df.timestamp.iloc[-1]
+        timestamps[0], timestamps[-1] = session_timestamps[0], session_timestamps[-1]
         for i, index in enumerate(feedback_is_on_index):
-            t0 = session_df.timestamp.iloc[index]
+            t0 = session_timestamps[index]
             for pulse in range(pulses_per_stim):
                 t_on = t0 + pulse * 1 / stim_frequency_Hz
                 t_off = t_on + pulse_width_s

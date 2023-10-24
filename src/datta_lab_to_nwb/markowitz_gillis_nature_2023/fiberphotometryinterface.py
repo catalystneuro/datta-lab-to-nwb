@@ -17,10 +17,12 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
         file_path: str,
         tdt_path: str,
         tdt_metadata_path: str,
+        depth_timestamp_path: str,
         session_uuid: str,
         session_id: str,
         session_metadata_path: str,
         subject_metadata_path: str,
+        alignment_path: str = None,
     ):
         # This should load the data lazily and prepare variables you need
         columns = (
@@ -29,21 +31,41 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
             "reference_dff",
             "uv_reference_fit",
             "reference_dff_fit",
-            "timestamp",
         )
         super().__init__(
             file_path=file_path,
             tdt_path=tdt_path,
             tdt_metadata_path=tdt_metadata_path,
+            depth_timestamp_path=depth_timestamp_path,
             session_uuid=session_uuid,
             session_id=session_id,
             columns=columns,
             session_metadata_path=session_metadata_path,
             subject_metadata_path=subject_metadata_path,
+            alignment_path=alignment_path,
         )
+
+    def get_original_timestamps(self) -> np.ndarray:
+        session_df = pd.read_parquet(
+            self.source_data["file_path"],
+            columns=["timestamp", "uuid"],
+            filters=[("uuid", "==", self.source_data["session_uuid"])],
+        )
+        return session_df["timestamp"].to_numpy()
+
+    def align_processed_timestamps(self, metadata: dict) -> np.ndarray:
+        timestamps = self.get_original_timestamps()
+        self.set_aligned_timestamps(aligned_timestamps=timestamps)
+        if self.source_data["alignment_path"] is not None:
+            aligned_starting_time = (
+                metadata["Alignment"]["bias"] / metadata["Constants"]["DEMODULATED_PHOTOMETRY_SAMPLING_RATE"]
+            )
+            self.set_aligned_starting_time(aligned_starting_time=aligned_starting_time)
+        return self.aligned_timestamps
 
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         super().add_to_nwbfile(nwbfile, metadata)
+        timestamps = self.align_processed_timestamps(metadata)
         session_df = pd.read_parquet(
             self.source_data["file_path"],
             columns=self.source_data["columns"],
@@ -54,7 +76,7 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
             description="The ΔF/F from the blue light excitation (470nm) corresponding to the dopamine signal.",
             data=H5DataIO(session_df.signal_dff.to_numpy(), compression=True),
             unit="a.u.",
-            timestamps=H5DataIO(session_df.timestamp.to_numpy(), compression=True),
+            timestamps=H5DataIO(timestamps, compression=True),
             rois=self.fibers_ref,
         )
         reference_series = RoiResponseSeries(

@@ -30,9 +30,6 @@ class BaseDattaInterface(BaseTemporalAlignmentInterface):
             )
             metadata["Alignment"]["slope"] = alignment_df["slope"].iloc[0]
             metadata["Alignment"]["bias"] = alignment_df["bias"].iloc[0]
-            metadata["Alignment"]["start_time"] = (
-                metadata["Alignment"]["bias"] / metadata["Constants"]["DEMODULATED_PHOTOMETRY_SAMPLING_RATE"]
-            )
 
         return metadata
 

@@ -21,7 +21,13 @@ class MoseqExtractInterface(BaseDattaInterface):
     """Moseq interface for markowitz_gillis_nature_2023 conversion"""
 
     def __init__(
-        self, file_path: str, session_uuid: str, session_id: str, session_metadata_path: str, subject_metadata_path: str
+        self,
+        file_path: str,
+        session_uuid: str,
+        session_id: str,
+        session_metadata_path: str,
+        subject_metadata_path: str,
+        alignment_path: str = None,
     ):
         # This should load the data lazily and prepare variables you need
         super().__init__(
@@ -30,9 +36,29 @@ class MoseqExtractInterface(BaseDattaInterface):
             session_id=session_id,
             session_metadata_path=session_metadata_path,
             subject_metadata_path=subject_metadata_path,
+            alignment_path=alignment_path,
         )
 
+    def get_original_timestamps(self) -> np.ndarray:
+        with h5py.File(self.source_data["file_path"]) as file:
+            return np.array(file["timestamps"])
+
+    def align_timestamps(self, metadata: dict) -> np.ndarray:
+        timestamps = self.get_original_timestamps()
+        TIMESTAMPS_TO_SECONDS = metadata["Constants"]["TIMESTAMPS_TO_SECONDS"]
+        timestamps -= timestamps[0]
+        timestamps = timestamps * TIMESTAMPS_TO_SECONDS
+
+        self.set_aligned_timestamps(aligned_timestamps=timestamps)
+        if self.source_data["alignment_path"] is not None:
+            aligned_starting_time = (
+                metadata["Alignment"]["bias"] / metadata["Constants"]["DEMODULATED_PHOTOMETRY_SAMPLING_RATE"]
+            )
+            self.set_aligned_starting_time(aligned_starting_time=aligned_starting_time)
+        return self.aligned_timestamps
+
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
+        timestamps = self.align_timestamps(metadata)
         with h5py.File(self.source_data["file_path"]) as file:
             # Version
             version = np.array(file["metadata"]["extraction"]["extract_version"]).item().decode("ASCII")
@@ -40,11 +66,6 @@ class MoseqExtractInterface(BaseDattaInterface):
             # Video
             processed_depth_video = np.array(file["frames"])
             loglikelihood_video = np.array(file["frames_mask"])
-
-            # Timestamps
-            TIMESTAMPS_TO_SECONDS = metadata["Constants"]["TIMESTAMPS_TO_SECONDS"]
-            timestamps = np.array(file["timestamps"]) * TIMESTAMPS_TO_SECONDS
-            timestamps -= timestamps[0]
 
             # Extraction
             background = np.array(file["metadata"]["extraction"]["background"])

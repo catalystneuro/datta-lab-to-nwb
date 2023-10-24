@@ -20,6 +20,7 @@ class BaseVideoInterface(BaseDattaInterface):
         session_id: str,
         session_metadata_path: str,
         subject_metadata_path: str,
+        alignment_path: str = None,
     ):
         super().__init__(
             data_path=data_path,
@@ -28,6 +29,7 @@ class BaseVideoInterface(BaseDattaInterface):
             session_id=session_id,
             session_metadata_path=session_metadata_path,
             subject_metadata_path=subject_metadata_path,
+            alignment_path=alignment_path,
         )
 
     def get_original_timestamps(self) -> np.ndarray:
@@ -41,12 +43,14 @@ class BaseVideoInterface(BaseDattaInterface):
 
         self.set_aligned_timestamps(aligned_timestamps=timestamps)
         if self.source_data["alignment_path"] is not None:
-            aligned_starting_time = metadata["Alignment"]["start_time"]
+            aligned_starting_time = (
+                metadata["Alignment"]["bias"] / metadata["Constants"]["DEMODULATED_PHOTOMETRY_SAMPLING_RATE"]
+            )
             self.set_aligned_starting_time(aligned_starting_time=aligned_starting_time)
         return self.aligned_timestamps
 
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
-        timestamps = self.align_timestamps()
+        timestamps = self.align_timestamps(metadata=metadata)
 
         video_interface = VideoInterface(file_paths=[self.source_data["data_path"]], verbose=True)
         video_interface.set_aligned_timestamps(aligned_timestamps=[timestamps])

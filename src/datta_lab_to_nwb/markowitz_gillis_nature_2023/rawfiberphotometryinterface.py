@@ -2,6 +2,7 @@
 # Standard Scientific Python
 import pandas as pd
 import numpy as np
+from scipy.interpolate import interp1d
 
 # NWB Ecosystem
 from pynwb.file import NWBFile
@@ -28,10 +29,12 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
         self,
         tdt_path: str,
         tdt_metadata_path: str,
+        depth_timestamp_path: str,
         session_uuid: str,
         session_id: str,
         session_metadata_path: str,
         subject_metadata_path: str,
+        alignment_path: str = None,
         **kwargs,
     ):
         super().__init__(
@@ -41,6 +44,8 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
             session_id=session_id,
             session_metadata_path=session_metadata_path,
             subject_metadata_path=subject_metadata_path,
+            alignment_path=alignment_path,
+            depth_timestamp_path=depth_timestamp_path,
             **kwargs,
         )
 
@@ -80,12 +85,43 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
         }
         return metadata_schema
 
+    def align_raw_timestamps(self, metadata: dict) -> np.ndarray:
+        photometry_dict = load_tdt_data(self.source_data["tdt_path"], fs=metadata["FiberPhotometry"]["raw_rate"])
+        timestamps = photometry_dict["tstep"]
+        depth_timestamps = pd.read_csv(self.source_data["depth_timestamp_path"], header=None).to_numpy().squeeze()
+        TIMESTAMPS_TO_SECONDS = metadata["Constants"]["TIMESTAMPS_TO_SECONDS"]
+        depth_timestamps -= depth_timestamps[0]
+        depth_timestamps = depth_timestamps * TIMESTAMPS_TO_SECONDS
+
+        # Calculate sparse timestamps from linear alignment
+        DOWN_FS = metadata["Constants"]["DEMODULATED_PHOTOMETRY_SAMPLING_RATE"]
+        raw_fs = metadata["FiberPhotometry"]["raw_rate"]
+        raw_indices = []
+        for i, _ in enumerate(depth_timestamps):
+            tdt_down_index = i * metadata["Alignment"]["slope"] + metadata["Alignment"]["bias"]
+            tdt_raw_index = tdt_down_index / DOWN_FS * raw_fs
+            raw_indices.append(int(tdt_raw_index))
+        raw_indices = np.array(raw_indices)
+        raw_indices = raw_indices[raw_indices < len(timestamps)]
+        sparse_timestamps = depth_timestamps[np.arange(len(raw_indices))]
+        start_time = metadata["Alignment"]["bias"] / metadata["Constants"]["DEMODULATED_PHOTOMETRY_SAMPLING_RATE"]
+        sparse_timestamps += start_time
+        sparse_timestamps = np.concatenate((np.array([0]), sparse_timestamps))
+        raw_indices = np.concatenate((np.array([0]), raw_indices))
+
+        # Interpolate aligned timestamps to raw photometry data
+        temporal_interpolator = interp1d(raw_indices, sparse_timestamps, kind="linear", fill_value="extrapolate")
+        aligned_timestamps = temporal_interpolator(np.arange(len(timestamps)))
+        self.set_aligned_timestamps(aligned_timestamps=aligned_timestamps)
+
+        return self.aligned_timestamps
+
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         photometry_dict = load_tdt_data(self.source_data["tdt_path"], fs=metadata["FiberPhotometry"]["raw_rate"])
-        session_start_index = np.flatnonzero(photometry_dict["sync"])[0]
-        raw_photometry = photometry_dict["pmt00"][session_start_index:]
-        commanded_signal = photometry_dict["pmt00_x"][session_start_index:]
-        commanded_reference = photometry_dict["pmt01_x"][session_start_index:]
+        timestamps = self.align_raw_timestamps(metadata=metadata)
+        raw_photometry = photometry_dict["pmt00"]
+        commanded_signal = photometry_dict["pmt00_x"]
+        commanded_reference = photometry_dict["pmt01_x"]
 
         # Commanded Voltage
         multi_commanded_voltage = MultiCommandedVoltage()
@@ -98,7 +134,7 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
             data=H5DataIO(commanded_signal, compression=True),
             frequency=metadata["FiberPhotometry"]["signal_freq"],
             power=metadata["FiberPhotometry"]["signal_amp"],  # TODO: Fix this in ndx-photometry
-            rate=metadata["FiberPhotometry"]["raw_rate"],
+            timestamps=H5DataIO(timestamps, compression=True),
             unit="volts",
         )
         commanded_reference_series = multi_commanded_voltage.create_commanded_voltage_series(
@@ -110,7 +146,7 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
             data=H5DataIO(commanded_reference, compression=True),
             frequency=metadata["FiberPhotometry"]["reference_freq"],
             power=metadata["FiberPhotometry"]["reference_amp"],  # TODO: Fix this in ndx-photometry
-            rate=metadata["FiberPhotometry"]["raw_rate"],
+            timestamps=commanded_signal_series.timestamps,
             unit="volts",
         )
         # Excitation Sources Table
@@ -206,8 +242,7 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
             description="The raw acquisition with mixed signal from both the blue light excitation (470nm) and UV excitation (405nm).",
             data=H5DataIO(raw_photometry, compression=True),
             unit="F",
-            starting_time=0.0,
-            rate=metadata["FiberPhotometry"]["raw_rate"],
+            timestamps=commanded_signal_series.timestamps,
             rois=self.fibers_ref,
         )
 

@@ -32,7 +32,6 @@ Subject:
   description: This study utilized wild-type DAT-IRES-Cre (The Jackson Laboratory 006660) and Ai32 (The Jackson Laboratory 012569) mice, both male and female, between 6-15 weeks of age.
 Constants:
   VIDEO_SAMPLING_RATE: 30.0
-  RAW_PHOTOMETRY_SAMPLING_RATE: 6103.515625
   DEMODULATED_PHOTOMETRY_SAMPLING_RATE: 500.0
   TIMESTAMPS_TO_SECONDS: 1.25e-4
 Behavior:

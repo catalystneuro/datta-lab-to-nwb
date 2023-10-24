@@ -42,6 +42,7 @@ def session_to_nwb(
     depth_path = raw_path / "depth.avi"
     depth_ts_path = raw_path / "depth_ts.txt"
     moseq_path = raw_path / "proc/results_00.h5"
+    alignment_path = raw_path / "alignment_df.parquet"
 
     source_data, conversion_options = {}, {}
     if "reinforcement" in session_metadata.keys():
@@ -62,10 +63,12 @@ def session_to_nwb(
             file_path=str(photometry_path),
             tdt_path=str(tdt_path),
             tdt_metadata_path=str(tdt_metadata_path),
+            depth_timestamp_path=str(depth_ts_path),
             session_metadata_path=str(session_metadata_path),
             subject_metadata_path=str(subject_metadata_path),
             session_uuid=session_uuid,
             session_id=session_id,
+            alignment_path=str(alignment_path),
         )
         conversion_options["FiberPhotometry"] = {}
         behavioral_syllable_path = photometry_path  # Note: if photometry and optogenetics are both present, photometry is used for syllable data bc it is quicker to load
