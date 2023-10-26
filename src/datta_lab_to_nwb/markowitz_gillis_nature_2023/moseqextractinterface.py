@@ -6,6 +6,7 @@ import h5py
 import numpy as np
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 from .basedattainterface import BaseDattaInterface
+from .utils import convert_timestamps_to_seconds
 from pynwb.image import GrayscaleImage, ImageMaskSeries
 from pynwb import TimeSeries
 from pynwb.behavior import (
@@ -45,9 +46,7 @@ class MoseqExtractInterface(BaseDattaInterface):
 
     def align_timestamps(self, metadata: dict) -> np.ndarray:
         timestamps = self.get_original_timestamps()
-        TIMESTAMPS_TO_SECONDS = metadata["Constants"]["TIMESTAMPS_TO_SECONDS"]
-        timestamps -= timestamps[0]
-        timestamps = timestamps * TIMESTAMPS_TO_SECONDS
+        timestamps = convert_timestamps_to_seconds(timestamps=timestamps, metadata=metadata)
 
         self.set_aligned_timestamps(aligned_timestamps=timestamps)
         if self.source_data["alignment_path"] is not None:

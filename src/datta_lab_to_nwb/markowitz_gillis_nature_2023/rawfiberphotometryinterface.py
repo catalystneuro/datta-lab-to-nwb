@@ -17,6 +17,7 @@ from ndx_photometry import (
     FluorophoresTable,
 )
 from .basedattainterface import BaseDattaInterface
+from .utils import convert_timestamps_to_seconds
 from neuroconv.utils import load_dict_from_file
 from neuroconv.tools import nwb_helpers
 from hdmf.backends.hdf5.h5_utils import H5DataIO
@@ -89,9 +90,7 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
         photometry_dict = load_tdt_data(self.source_data["tdt_path"], fs=metadata["FiberPhotometry"]["raw_rate"])
         timestamps = photometry_dict["tstep"]
         depth_timestamps = pd.read_csv(self.source_data["depth_timestamp_path"], header=None).to_numpy().squeeze()
-        TIMESTAMPS_TO_SECONDS = metadata["Constants"]["TIMESTAMPS_TO_SECONDS"]
-        depth_timestamps -= depth_timestamps[0]
-        depth_timestamps = depth_timestamps * TIMESTAMPS_TO_SECONDS
+        depth_timestamps = convert_timestamps_to_seconds(depth_timestamps, metadata=metadata)
 
         # Calculate sparse timestamps from linear alignment
         DOWN_FS = metadata["Constants"]["DEMODULATED_PHOTOMETRY_SAMPLING_RATE"]
