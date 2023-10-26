@@ -45,6 +45,38 @@ def session_to_nwb(
     alignment_path = raw_path / "alignment_df.parquet"
 
     source_data, conversion_options = {}, {}
+    source_data.update(
+        dict(
+            MoseqExtract=dict(
+                file_path=str(moseq_path),
+                session_metadata_path=str(session_metadata_path),
+                subject_metadata_path=str(subject_metadata_path),
+                session_uuid=session_uuid,
+                session_id=session_id,
+            ),
+            BehavioralSyllable=dict(
+                session_metadata_path=str(session_metadata_path),
+                subject_metadata_path=str(subject_metadata_path),
+                session_uuid=session_uuid,
+                session_id=session_id,
+            ),
+            DepthVideo=dict(
+                data_path=str(depth_path),
+                timestamp_path=str(depth_ts_path),
+                session_metadata_path=str(session_metadata_path),
+                subject_metadata_path=str(subject_metadata_path),
+                session_uuid=session_uuid,
+                session_id=session_id,
+            ),
+        )
+    )
+    conversion_options.update(
+        dict(
+            MoseqExtract={},
+            BehavioralSyllable={},
+            DepthVideo={},
+        )
+    )
     if "reinforcement" in session_metadata.keys():
         source_data["Optogenetic"] = dict(
             file_path=str(optoda_path),
@@ -79,41 +111,14 @@ def session_to_nwb(
             subject_metadata_path=str(subject_metadata_path),
             session_uuid=session_uuid,
             session_id=session_id,
+            alignment_path=str(alignment_path),
         )
         conversion_options["IRVideo"] = {}
-    source_data.update(
-        dict(
-            MoseqExtract=dict(
-                file_path=str(moseq_path),
-                session_metadata_path=str(session_metadata_path),
-                subject_metadata_path=str(subject_metadata_path),
-                session_uuid=session_uuid,
-                session_id=session_id,
-            ),
-            BehavioralSyllable=dict(
-                file_path=str(behavioral_syllable_path),
-                session_metadata_path=str(session_metadata_path),
-                subject_metadata_path=str(subject_metadata_path),
-                session_uuid=session_uuid,
-                session_id=session_id,
-            ),
-            DepthVideo=dict(
-                data_path=str(depth_path),
-                timestamp_path=str(depth_ts_path),
-                session_metadata_path=str(session_metadata_path),
-                subject_metadata_path=str(subject_metadata_path),
-                session_uuid=session_uuid,
-                session_id=session_id,
-            ),
-        )
-    )
-    conversion_options.update(
-        dict(
-            MoseqExtract={},
-            BehavioralSyllable={},
-            DepthVideo={},
-        )
-    )
+        source_data["MoseqExtract"]["alignment_path"] = str(alignment_path)
+        source_data["BehavioralSyllable"]["alignment_path"] = str(alignment_path)
+        source_data["DepthVideo"]["alignment_path"] = str(alignment_path)
+        source_data["Optogenetic"]["alignment_path"] = str(alignment_path)
+    source_data["BehavioralSyllable"]["file_path"] = str(behavioral_syllable_path)
     if experiment_type == "velocity-modulation":
         conversion_options["BehavioralSyllable"] = dict(velocity_modulation=True)
 
