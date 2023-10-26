@@ -71,18 +71,19 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
             columns=self.source_data["columns"],
             filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
+        notnan = pd.notnull(session_df.signal_dff)
         signal_series = RoiResponseSeries(
             name="SignalDfOverF",
             description="The ΔF/F from the blue light excitation (470nm) corresponding to the dopamine signal.",
-            data=H5DataIO(session_df.signal_dff.to_numpy(), compression=True),
+            data=H5DataIO(session_df.signal_dff.to_numpy()[notnan], compression=True),
             unit="a.u.",
-            timestamps=H5DataIO(timestamps, compression=True),
+            timestamps=H5DataIO(timestamps[notnan], compression=True),
             rois=self.fibers_ref,
         )
         reference_series = RoiResponseSeries(
             name="ReferenceDfOverF",
             description="The ∆F/F from the isosbestic UV excitation (405nm) corresponding to the reference signal.",
-            data=H5DataIO(session_df.reference_dff.to_numpy(), compression=True),
+            data=H5DataIO(session_df.reference_dff.to_numpy()[notnan], compression=True),
             unit="a.u.",
             timestamps=signal_series.timestamps,
             rois=self.fibers_ref,
@@ -93,7 +94,7 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
                 "The ∆F/F from the isosbestic UV excitation (405nm) that has been smoothed "
                 "(See Methods: Photometry Active Referencing)."
             ),
-            data=H5DataIO(session_df.reference_dff_fit.to_numpy(), compression=True),
+            data=H5DataIO(session_df.reference_dff_fit.to_numpy()[notnan], compression=True),
             unit="a.u.",
             timestamps=signal_series.timestamps,
             rois=self.fibers_ref,
@@ -104,7 +105,7 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
                 "Raw fluorescence (F) from the isosbestic UV excitation (405nm) that has been smoothed "
                 "(See Methods: Photometry Active Referencing)."
             ),
-            data=H5DataIO(session_df.uv_reference_fit.to_numpy(), compression=True),
+            data=H5DataIO(session_df.uv_reference_fit.to_numpy()[notnan], compression=True),
             unit="n.a.",
             timestamps=signal_series.timestamps,
             rois=self.fibers_ref,
