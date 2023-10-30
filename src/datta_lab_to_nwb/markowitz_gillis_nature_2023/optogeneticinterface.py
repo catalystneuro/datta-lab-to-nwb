@@ -88,7 +88,7 @@ class OptogeneticInterface(BaseDattaInterface):
         )
         return session_df["timestamp"].to_numpy()
 
-    def align_timestamps(self, metadata: dict) -> np.ndarray:
+    def align_timestamps(self, metadata: dict, velocity_modulation: bool) -> np.ndarray:
         timestamps = self.get_original_timestamps()
         self.set_aligned_timestamps(aligned_timestamps=timestamps)
         if self.source_data["alignment_path"] is not None:
@@ -96,10 +96,13 @@ class OptogeneticInterface(BaseDattaInterface):
                 metadata["Alignment"]["bias"] / metadata["Constants"]["DEMODULATED_PHOTOMETRY_SAMPLING_RATE"]
             )
             self.set_aligned_starting_time(aligned_starting_time=aligned_starting_time)
+        elif velocity_modulation:
+            aligned_starting_time = 2700  # See Methods: Closed-loop velocity modulation experiments
+            self.set_aligned_starting_time(aligned_starting_time=aligned_starting_time)
         return self.aligned_timestamps
 
-    def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
-        session_timestamps = self.align_timestamps(metadata=metadata)
+    def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict, velocity_modulation: bool = False) -> None:
+        session_timestamps = self.align_timestamps(metadata=metadata, velocity_modulation=velocity_modulation)
         session_df = pd.read_parquet(
             self.source_data["file_path"],
             columns=self.source_data["columns"],

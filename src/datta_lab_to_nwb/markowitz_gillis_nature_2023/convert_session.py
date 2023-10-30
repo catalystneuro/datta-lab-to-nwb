@@ -121,6 +121,7 @@ def session_to_nwb(
     source_data["BehavioralSyllable"]["file_path"] = str(behavioral_syllable_path)
     if experiment_type == "velocity-modulation":
         conversion_options["BehavioralSyllable"] = dict(velocity_modulation=True)
+        conversion_options["Optogenetic"] = dict(velocity_modulation=True)
 
     converter = DattaNWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
