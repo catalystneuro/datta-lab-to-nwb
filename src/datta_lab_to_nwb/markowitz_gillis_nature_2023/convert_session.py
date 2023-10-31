@@ -42,42 +42,9 @@ def session_to_nwb(
     depth_path = raw_path / "depth.avi"
     depth_ts_path = raw_path / "depth_ts.txt"
     moseq_path = raw_path / "proc/results_00.h5"
+    alignment_path = raw_path / "alignment_df.parquet"
 
     source_data, conversion_options = {}, {}
-    if "reinforcement" in session_metadata.keys():
-        source_data["Optogenetic"] = dict(
-            file_path=str(optoda_path),
-            session_metadata_path=str(session_metadata_path),
-            subject_metadata_path=str(subject_metadata_path),
-            session_uuid=session_uuid,
-            session_id=session_id,
-        )
-        conversion_options["Optogenetic"] = {}
-        behavioral_syllable_path = optoda_path
-    if "photometry" in session_metadata.keys():
-        tdt_path = list(raw_path.glob("tdt_data*.dat"))[0]
-        tdt_metadata_path = list(raw_path.glob("tdt_data*.json"))[0]
-        ir_path = raw_path / "ir.avi"
-        source_data["FiberPhotometry"] = dict(
-            file_path=str(photometry_path),
-            tdt_path=str(tdt_path),
-            tdt_metadata_path=str(tdt_metadata_path),
-            session_metadata_path=str(session_metadata_path),
-            subject_metadata_path=str(subject_metadata_path),
-            session_uuid=session_uuid,
-            session_id=session_id,
-        )
-        conversion_options["FiberPhotometry"] = {}
-        behavioral_syllable_path = photometry_path  # Note: if photometry and optogenetics are both present, photometry is used for syllable data bc it is quicker to load
-        source_data["IRVideo"] = dict(
-            data_path=str(ir_path),
-            timestamp_path=str(depth_ts_path),
-            session_metadata_path=str(session_metadata_path),
-            subject_metadata_path=str(subject_metadata_path),
-            session_uuid=session_uuid,
-            session_id=session_id,
-        )
-        conversion_options["IRVideo"] = {}
     source_data.update(
         dict(
             MoseqExtract=dict(
@@ -88,7 +55,6 @@ def session_to_nwb(
                 session_id=session_id,
             ),
             BehavioralSyllable=dict(
-                file_path=str(behavioral_syllable_path),
                 session_metadata_path=str(session_metadata_path),
                 subject_metadata_path=str(subject_metadata_path),
                 session_uuid=session_uuid,
@@ -111,8 +77,51 @@ def session_to_nwb(
             DepthVideo={},
         )
     )
+    if "reinforcement" in session_metadata.keys():
+        source_data["Optogenetic"] = dict(
+            file_path=str(optoda_path),
+            session_metadata_path=str(session_metadata_path),
+            subject_metadata_path=str(subject_metadata_path),
+            session_uuid=session_uuid,
+            session_id=session_id,
+        )
+        conversion_options["Optogenetic"] = {}
+        behavioral_syllable_path = optoda_path
+    if "photometry" in session_metadata.keys():
+        tdt_path = list(raw_path.glob("tdt_data*.dat"))[0]
+        tdt_metadata_path = list(raw_path.glob("tdt_data*.json"))[0]
+        ir_path = raw_path / "ir.avi"
+        source_data["FiberPhotometry"] = dict(
+            file_path=str(photometry_path),
+            tdt_path=str(tdt_path),
+            tdt_metadata_path=str(tdt_metadata_path),
+            depth_timestamp_path=str(depth_ts_path),
+            session_metadata_path=str(session_metadata_path),
+            subject_metadata_path=str(subject_metadata_path),
+            session_uuid=session_uuid,
+            session_id=session_id,
+            alignment_path=str(alignment_path),
+        )
+        conversion_options["FiberPhotometry"] = {}
+        behavioral_syllable_path = photometry_path  # Note: if photometry and optogenetics are both present, photometry is used for syllable data bc it is quicker to load
+        source_data["IRVideo"] = dict(
+            data_path=str(ir_path),
+            timestamp_path=str(depth_ts_path),
+            session_metadata_path=str(session_metadata_path),
+            subject_metadata_path=str(subject_metadata_path),
+            session_uuid=session_uuid,
+            session_id=session_id,
+            alignment_path=str(alignment_path),
+        )
+        conversion_options["IRVideo"] = {}
+        source_data["MoseqExtract"]["alignment_path"] = str(alignment_path)
+        source_data["BehavioralSyllable"]["alignment_path"] = str(alignment_path)
+        source_data["DepthVideo"]["alignment_path"] = str(alignment_path)
+        source_data["Optogenetic"]["alignment_path"] = str(alignment_path)
+    source_data["BehavioralSyllable"]["file_path"] = str(behavioral_syllable_path)
     if experiment_type == "velocity-modulation":
         conversion_options["BehavioralSyllable"] = dict(velocity_modulation=True)
+        conversion_options["Optogenetic"] = dict(velocity_modulation=True)
 
     converter = DattaNWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
