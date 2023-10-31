@@ -42,7 +42,7 @@ class MoseqExtractInterface(BaseDattaInterface):
             loglikelihood_video = np.array(file["frames_mask"])
 
             # Timestamps
-            TIMESTAMPS_TO_SECONDS = 1.25e-4
+            TIMESTAMPS_TO_SECONDS = metadata["Constants"]["TIMESTAMPS_TO_SECONDS"]
             timestamps = np.array(file["timestamps"]) * TIMESTAMPS_TO_SECONDS
             timestamps -= timestamps[0]
 
