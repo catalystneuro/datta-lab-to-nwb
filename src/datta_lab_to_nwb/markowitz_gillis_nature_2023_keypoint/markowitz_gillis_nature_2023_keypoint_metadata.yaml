@@ -36,21 +36,21 @@ Constants:
 Keypoint:
   reference_frame: TBD
   index_to_name: # Mapping from keypoint index --> keypoint name (unique) [See fig_s03 notebook]
-    0: 'rostral spine'
-    1: 'medial spine'
-    2: 'caudal spine'
-    3: 'tail base'
-    4: 'tail tip'
-    5: 'head center'
-    6: 'left ear'
-    7: 'right ear'
+    0: 'rostral_spine'
+    1: 'medial_spine'
+    2: 'caudal_spine'
+    3: 'tail_base'
+    4: 'tail_tip'
+    5: 'head_center'
+    6: 'left_ear'
+    7: 'right_ear'
     8: 'nose'
-    9: 'left hind ankle'
-    10: 'left hindpaw'
-    11: 'right hind ankle'
-    12: 'right hindpaw'
-    13: 'left forepaw'
-    14: 'right forepaw'
+    9: 'left_hind_ankle'
+    10: 'left_hindpaw'
+    11: 'right_hind_ankle'
+    12: 'right_hindpaw'
+    13: 'left_forepaw'
+    14: 'right_forepaw'
   edges:
     - [4, 3]
     - [3, 2]
