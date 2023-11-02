@@ -9,6 +9,195 @@ from neuroconv.utils import load_dict_from_file
 from neuroconv.utils import dict_deep_update
 
 
+sex_map = {
+    "1520": "F",
+    "1515": "F",
+    "1521": "F",
+    "1519": "F",
+    "1524": "M",
+    "1525": "M",
+    "1529": "F",
+    "1527": "M",
+    "1528": "M",
+    "1546": "M",
+    "1544": "M",
+    "1561": "F",
+    "1562": "F",
+    "1778": "M",
+    "197": "M",
+    "200": "M",
+    "208": "F",
+    "209": "F",
+    "184": "F",
+    "185": "F",
+    "186": "F",
+    "189": "F",
+    "194": "M",
+    "1738": "M",
+    "1734": "M",
+    "1737": "M",
+    "1736": "M",
+    "15809": "F",
+    "15814": "F",
+    "15825": "F",
+    "15817": "F",
+    "15827": "F",
+    "15816": "F",
+    "15847": "F",
+    "15848": "F",
+    "15836": "F",
+    "15839": "F",
+    "15822": "M",
+    "15823": "M",
+    "211": "M",
+    "12": "M",
+    "10": "M",
+    "8": "M",
+    "357": "F",
+    "358": "F",
+    "355": "F",
+    "356": "F",
+    "361": "M",
+    "363": "M",
+    "414": "F",
+    "413": "F",
+    "416": "F",
+    "417": "F",
+    "368": "M",
+    "364": "M",
+    "408": "M",
+    "410": "M",
+    "429": "F",
+    "427": "F",
+    "428": "F",
+    "810": "M",
+    "136": "F",
+    "137": "F",
+    "133": "F",
+    "806": "M",
+    "807": "F",
+    "768": "M",
+    "770": "M",
+    "769": "M",
+    "767": "M",
+    "779": "F",
+    "778": "F",
+    "776": "F",
+    "127": "M",
+    "126": "M",
+    "780": "F",
+    "784": "F",
+    "781": "F",
+    "782": "F",
+    "138": "F",
+    "2273": "F",
+    "2275": "F",
+    "2274": "F",
+    "2270": "M",
+    "2269": "M",
+    "2271": "M",
+    "2272": "F",
+    "240": "F",
+    "239": "F",
+    "242": "F",
+    "241": "F",
+    "snc-acr-1": "F",
+    "vta-acr-1": "F",
+    "vta-acr-2": "F",
+    "snc-acr-2": "F",
+    "snc-acr-3": "F",
+    "vta-acr-3": "F",
+    "snc-acr-4": "M",
+    "snc-acr-5": "M",
+    "vta-acr-4": "M",
+    "vta-acr-5": "M",
+    "snc-acr-6": "M",
+    "snc-acr-7": "M",
+    "vta-acr-6": "M",
+    "vta-acr-7": "M",
+    "3172": "F",
+    "3169": "F",
+    "3173": "F",
+    "2865": "F",
+    "2860": "F",
+    "2859": "F",
+    "2863": "F",
+    "2864": "F",
+    "2862": "F",
+    "3158": "F",
+    "3155": "F",
+    "3157": "F",
+    "3214": "M",
+    "3216": "M",
+    "3439": "F",
+    "3440": "F",
+    "3441": "F",
+    "3442": "F",
+    "3474": "M",
+    "3472": "M",
+    "3473": "M",
+    "3475": "M",
+    "vta-nacc-ctrl-6": "M",
+    "snc-dls-ctrl-6": "F",
+    "dlight-chrimson-1": "F",
+    "dlight-chrimson-2": "F",
+    "dlight-chrimson-3": "M",
+    "dlight-chrimson-4": "M",
+    "dlight-chrimson-5": "F",
+    "dlight-chrimson-6": "M",
+    "dlight-chrimson-7": "M",
+    "dlight-chrimson-8": "M",
+    "dlight-chrimson-9": "M",
+    "dls-ai32jr-1": "M",
+    "dls-ai32jr-2": "M",
+    "dls-ai32jr-3": "M",
+    "dls-ai32jr-4": "F",
+    "dls-ai32jr-5": "F",
+    "dms-ai32-1": "M",
+    "dms-ai32-2": "M",
+    "dms-ai32-3": "F",
+    "dms-ai32-4": "F",
+    "dms-ai32-5": "F",
+    "dms-ai32-6": "M",
+    "dms-ai32-7": "M",
+    "dms-ai32-8": "M",
+    "dms-ai32-9": "M",
+    "dms-ai32-10": "F",
+    "dms-ai32-11": "F",
+    "snc-dls-ctrl-7": "M",
+    "vta-nacc-ai32-18": "M",
+    "vta-nacc-ai32-19": "M",
+    "vta-nacc-ai32-20": "F",
+    "dls-dlight-1": "M",
+    "dls-dlight-2": "M",
+    "dls-dlight-3": "M",
+    "dls-dlight-4": "M",
+    "dls-dlight-5": "M",
+    "dls-dlight-6": "M",
+    "dls-dlight-7": "M",
+    "dls-dlight-8": "M",
+    "dls-dlight-9": "M",
+    "dls-dlight-10": "M",
+    "dls-dlight-11": "M",
+    "dls-dlight-12": "M",
+    "dls-dlight-13": "M",
+    "dms-dlight-1": "M",
+    "dms-dlight-2": "M",
+    "dms-dlight-3": "M",
+    "dms-dlight-4": "M",
+    "dms-dlight-5": "F",
+    "dms-dlight-6": "F",
+    "dms-dlight-7": "M",
+    "dms-dlight-8": "M",
+    "dms-dlight-9": "M",
+    "dms-dlight-10": "M",
+    "dms-dlight-11": "M",
+    "dms-dlight-12": "M",
+    "dms-dlight-13": "M",
+    "dms-dlight-14": "M",
+}
+
+
 def extract_photometry_metadata(
     data_path: str,
     example_uuids: str = None,
@@ -89,7 +278,7 @@ def extract_photometry_metadata(
     for mouse_id in tqdm(subject_ids, desc="Extracting photometry subject metadata"):
         extract_subject_metadata(subject_columns, photometry_data_path, subject_metadata, mouse_id)
         subject_metadata[mouse_id]["photometry_area"] = subject_metadata[mouse_id].pop("area")
-        subject_metadata[mouse_id]["sex"] = "U"
+        subject_metadata[mouse_id]["sex"] = sex_map[mouse_id]
 
     return session_metadata, subject_metadata
 
@@ -131,7 +320,6 @@ def extract_reinforcement_metadata(
     )
     subject_columns = (
         "mouse_id",
-        "sex",
         "opsin",
         "genotype",
         "area",
@@ -174,12 +362,7 @@ def extract_reinforcement_metadata(
     for mouse_id in tqdm(subject_ids, desc="Extracting reinforcement subject metadata"):
         extract_subject_metadata(subject_columns, reinforcement_data_path, subject_metadata, mouse_id)
         subject_metadata[mouse_id]["optogenetic_area"] = subject_metadata[mouse_id].pop("area")
-        if subject_metadata[mouse_id]["sex"] == "male":
-            subject_metadata[mouse_id]["sex"] = "M"
-        elif subject_metadata[mouse_id]["sex"] == "female":
-            subject_metadata[mouse_id]["sex"] = "F"
-        else:
-            subject_metadata[mouse_id]["sex"] = "U"
+        subject_metadata[mouse_id]["sex"] = sex_map[mouse_id]
 
     return session_metadata, subject_metadata
 
@@ -246,7 +429,7 @@ def extract_velocity_modulation_metadata(
     for mouse_id in tqdm(subject_ids, desc="Extracting reinforcement subject metadata"):
         extract_subject_metadata(subject_columns, velocity_data_path, subject_metadata, mouse_id)
         subject_metadata[mouse_id]["optogenetic_area"] = "snc (axon)"  # from paper
-        subject_metadata[mouse_id]["sex"] = "U"
+        subject_metadata[mouse_id]["sex"] = sex_map[mouse_id]
 
     return session_metadata, subject_metadata
 
@@ -308,7 +491,7 @@ def extract_keypoint_metadata(data_path: str):
             genotype="dls-dlight",
             opsin="n/a",
             photometry_area="dls",
-            sex="U",
+            sex=sex_map[subject],
         )
     return session_metadata, subject_metadata
 
@@ -333,14 +516,9 @@ def _resolve_duplicates(resolved_dict, ids1, dict1, ids2, dict2):
             resolved_dict[id1] = {}
         for key1 in dict1[id1].keys():
             if key1 in dict2[id1].keys():
-                try:
-                    assert (
-                        dict1[id1][key1] == dict2[id1][key1]
-                    ), f"dict1 and dict2 don't match (dict1[{id1}][{key1}]: {dict1[id1][key1]}, dict2[{id1}][{key1}]: {dict2[id1][key1]})"
-                except AssertionError:
-                    assert key1 == "sex"
-                    if dict1[id1][key1] == "U":
-                        dict1[id1][key1] = dict2[id1][key1]
+                assert (
+                    dict1[id1][key1] == dict2[id1][key1]
+                ), f"dict1 and dict2 don't match (dict1[{id1}][{key1}]: {dict1[id1][key1]}, dict2[{id1}][{key1}]: {dict2[id1][key1]})"
             resolved_dict[id1][key1] = dict1[id1][key1]
 
 
