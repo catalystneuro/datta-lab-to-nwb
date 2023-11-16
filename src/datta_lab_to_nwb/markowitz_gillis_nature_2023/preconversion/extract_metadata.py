@@ -201,7 +201,6 @@ sex_map = {
 def extract_photometry_metadata(
     data_path: str,
     example_uuids: str = None,
-    num_sessions: int = None,
     reinforcement_photometry: bool = False,
 ) -> dict:
     """Extract metadata from photometry data.
@@ -212,8 +211,6 @@ def extract_photometry_metadata(
         Path to data.
     example_uuids : str, optional
         UUID of example session to extract metadata from.
-    num_sessions : int, optional
-        Number of sessions to extract metadata from.
     reinforcement_photometry : bool, optional
         If True, extract metadata from reinforcement photometry sessions. If False, extract metadata from
         non-reinforcement photometry sessions.
@@ -265,14 +262,10 @@ def extract_photometry_metadata(
         del df
     else:
         uuids = set(example_uuids)
-    if num_sessions is None:
-        num_sessions = len(uuids)
     session_metadata = {}
     for i, uuid in enumerate(tqdm(uuids, desc="Extracting photometry session metadata")):
         extract_session_metadata(session_columns, photometry_data_path, session_metadata, uuid)
         session_metadata[uuid]["photometry"] = True
-        if i + 1 >= num_sessions:
-            break
     subject_ids = set(session_metadata[uuid]["subject_id"] for uuid in session_metadata)
     subject_metadata = {}
     for mouse_id in tqdm(subject_ids, desc="Extracting photometry subject metadata"):
@@ -284,7 +277,7 @@ def extract_photometry_metadata(
 
 
 def extract_reinforcement_metadata(
-    data_path: str, example_uuids: str = None, num_sessions: int = None, reinforcement_photometry: bool = False
+    data_path: str, example_uuids: str = None, reinforcement_photometry: bool = False
 ) -> dict:
     """Extract metadata from reinforcement data.
 
@@ -294,8 +287,6 @@ def extract_reinforcement_metadata(
         Path to data.
     example_uuids : str, optional
         UUID of example session to extract metadata from.
-    num_sessions : int, optional
-        Number of sessions to extract metadata from.
     reinforcement_photometry : bool, optional
         If True, extract metadata from reinforcement photometry sessions. If False, extract metadata from
         non-photometry reinforcement sessions.
@@ -346,18 +337,16 @@ def extract_reinforcement_metadata(
     else:
         uuids = set(example_uuids)
     session_metadata, subject_metadata = {}, {}
-    if num_sessions is None:
-        num_sessions = len(uuids)
     for i, uuid in enumerate(tqdm(uuids, desc="Extracting reinforcement session metadata")):
-        extract_session_metadata(session_columns, reinforcement_data_path, session_metadata, uuid)
+        session_df = extract_session_metadata(session_columns, reinforcement_data_path, session_metadata, uuid)
+        target_syllables = set(session_df.target_syllable[session_df.target_syllable.notnull()])
+        session_metadata[uuid]["target_syllable"] = list(target_syllables)
         # add si units to names
         session_metadata[uuid]["stim_duration_s"] = session_metadata[uuid].pop("stim_duration")
         session_metadata[uuid]["stim_frequency_Hz"] = session_metadata[uuid].pop("stim_frequency")
         session_metadata[uuid]["pulse_width_s"] = session_metadata[uuid].pop("pulse_width")
         session_metadata[uuid]["power_watts"] = session_metadata[uuid].pop("power") / 1000
         session_metadata[uuid]["reinforcement"] = True
-        if i + 1 >= num_sessions:
-            break
     subject_ids = set(session_metadata[uuid]["subject_id"] for uuid in session_metadata)
     for mouse_id in tqdm(subject_ids, desc="Extracting reinforcement subject metadata"):
         extract_subject_metadata(subject_columns, reinforcement_data_path, subject_metadata, mouse_id)
@@ -370,7 +359,6 @@ def extract_reinforcement_metadata(
 def extract_velocity_modulation_metadata(
     data_path: str,
     example_uuids: str = None,
-    num_sessions: int = None,
 ) -> dict:
     """Extract metadata from velocity modulation data.
     Parameters
@@ -379,8 +367,6 @@ def extract_velocity_modulation_metadata(
         Path to data.
     example_uuids : str, optional
         UUID of example session to extract metadata from.
-    num_sessions : int, optional
-        Number of sessions to extract metadata from.
     Returns
     -------
     metadata : dict
@@ -412,8 +398,6 @@ def extract_velocity_modulation_metadata(
     else:
         uuids = set(example_uuids)
     session_metadata, subject_metadata = {}, {}
-    if num_sessions is None:
-        num_sessions = len(uuids)
     for i, uuid in enumerate(tqdm(uuids, desc="Extracting velocity-modulation session metadata")):
         extract_session_metadata(session_columns, velocity_data_path, session_metadata, uuid)
         # add si units to names
@@ -423,8 +407,6 @@ def extract_velocity_modulation_metadata(
         session_metadata[uuid]["power_watts"] = 10 / 1000  # power = 10mW from paper
         session_metadata[uuid]["reinforcement"] = True
         session_metadata[uuid]["velocity_modulation"] = True
-        if i + 1 >= num_sessions:
-            break
     subject_ids = set(session_metadata[uuid]["subject_id"] for uuid in session_metadata)
     for mouse_id in tqdm(subject_ids, desc="Extracting reinforcement subject metadata"):
         extract_subject_metadata(subject_columns, velocity_data_path, subject_metadata, mouse_id)
@@ -434,9 +416,7 @@ def extract_velocity_modulation_metadata(
     return session_metadata, subject_metadata
 
 
-def extract_reinforcement_photometry_metadata(
-    data_path: str, example_uuids: str = None, num_sessions: int = None
-) -> dict:
+def extract_reinforcement_photometry_metadata(data_path: str, example_uuids: str = None) -> dict:
     """Extract metadata from reinforcement photometry data.
 
     Parameters
@@ -445,8 +425,6 @@ def extract_reinforcement_photometry_metadata(
         Path to data.
     example_uuids : str, optional
         UUID of example session to extract metadata from.
-    num_sessions : int, optional
-        Number of sessions to extract metadata from.
 
     Returns
     -------
@@ -454,10 +432,10 @@ def extract_reinforcement_photometry_metadata(
         Dictionary of metadata.
     """
     photometry_session_metadata, photometry_subject_metadata = extract_photometry_metadata(
-        data_path, example_uuids, num_sessions, reinforcement_photometry=True
+        data_path, example_uuids, reinforcement_photometry=True
     )
     reinforcement_session_metadata, reinforcement_subject_metadata = extract_reinforcement_metadata(
-        data_path, example_uuids, num_sessions, reinforcement_photometry=True
+        data_path, example_uuids, reinforcement_photometry=True
     )
     photometry_uuids = set(photometry_session_metadata.keys())
     reinforcement_uuids = set(reinforcement_session_metadata.keys())
@@ -542,6 +520,7 @@ def extract_session_metadata(columns, data_path, metadata, uuid):
     date = timezone.localize(metadata[uuid].pop("date"))
     metadata[uuid]["session_start_time"] = date.isoformat()
     metadata[uuid]["subject_id"] = metadata[uuid].pop("mouse_id")
+    return session_df
 
 
 def extract_subject_metadata(columns, data_path, metadata, subject_id):
@@ -627,7 +606,13 @@ if __name__ == "__main__":
     reinforcement_example = "dcf0767a-b75d-4c79-a242-84dd5b5cdd00"
     excitation_example = "380d4711-85a6-4672-ad48-76e91607c41f"
     excitation_pulsed_example = "be01945e-c6d0-4bca-bd56-4d4466d9d832"
-    reinforcement_examples = [reinforcement_example, excitation_example, excitation_pulsed_example]
+    duplicated_session_example = "1c5441a6-aee8-44ff-999d-6f0787ad4632"
+    reinforcement_examples = [
+        reinforcement_example,
+        excitation_example,
+        excitation_pulsed_example,
+        duplicated_session_example,
+    ]
     figure1d_example = "2891f649-4fbd-4119-a807-b8ef507edfab"
     pulsed_photometry_example = "b8360fcd-acfd-4414-9e67-ba0dc5c979a8"
     excitation_photometry_example = "95bec433-2242-4276-b8a5-6d069afa3910"
