@@ -75,21 +75,24 @@ class OptogeneticInterface(BaseDattaInterface):
                 "stim_duration_s": {"type": "number"},
                 "power_watts": {"type": "number"},
                 "pulse_width_s": {"type": "number"},
-                "target_syllable": {"type": "number"},
+                "target_syllable": {"type": "array"},
             },
         }
         return metadata_schema
 
-    def get_original_timestamps(self) -> np.ndarray:
+    def get_original_timestamps(self, metadata: dict) -> np.ndarray:
         session_df = pd.read_parquet(
             self.source_data["file_path"],
             columns=["timestamp", "uuid"],
-            filters=[("uuid", "==", self.source_data["session_uuid"])],
+            filters=[
+                ("uuid", "==", self.source_data["session_uuid"]),
+                ("target_syllable", "==", metadata["Optogenetics"]["target_syllable"][0]),
+            ],
         )
         return session_df["timestamp"].to_numpy()
 
     def align_timestamps(self, metadata: dict, velocity_modulation: bool) -> np.ndarray:
-        timestamps = self.get_original_timestamps()
+        timestamps = self.get_original_timestamps(metadata=metadata)
         self.set_aligned_timestamps(aligned_timestamps=timestamps)
         if self.source_data["alignment_path"] is not None:
             aligned_starting_time = (
@@ -106,7 +109,10 @@ class OptogeneticInterface(BaseDattaInterface):
         session_df = pd.read_parquet(
             self.source_data["file_path"],
             columns=self.source_data["columns"],
-            filters=[("uuid", "==", self.source_data["session_uuid"])],
+            filters=[
+                ("uuid", "==", self.source_data["session_uuid"]),
+                ("target_syllable", "==", metadata["Optogenetics"]["target_syllable"][0]),
+            ],
         )
 
         device = nwbfile.create_device(
@@ -127,11 +133,11 @@ class OptogeneticInterface(BaseDattaInterface):
         else:  # pulsed stim
             data, timestamps = self.reconstruct_pulsed_stim(metadata, session_df, session_timestamps)
         id2sorted_index = metadata["BehavioralSyllable"]["id2sorted_index"]
-        target_syllable = id2sorted_index[metadata["Optogenetics"]["target_syllable"]]
+        target_syllables = [id2sorted_index[syllable_id] for syllable_id in metadata["Optogenetics"]["target_syllable"]]
         ogen_series = OptogeneticSeries(
             name="OptogeneticSeries",
             description="Onset of optogenetic stimulation is recorded as a 1, and offset is recorded as a 0.",
-            comments=f"target_syllable = {target_syllable}",
+            comments=f"target_syllable(s) = {target_syllables}",
             site=ogen_site,
             data=H5DataIO(data, compression=True),
             timestamps=H5DataIO(timestamps, compression=True),
