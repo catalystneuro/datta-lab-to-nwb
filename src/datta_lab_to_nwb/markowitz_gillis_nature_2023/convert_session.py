@@ -19,6 +19,7 @@ def session_to_nwb(
     raw_path: Union[str, Path],
     output_dir_path: Union[str, Path],
     experiment_type: Literal["reinforcement", "photometry", "reinforcement-photometry", "velocity-modulation"],
+    processed_only: bool = False,
     stub_test: bool = False,
 ):
     processed_path = Path(processed_path)
@@ -85,7 +86,7 @@ def session_to_nwb(
             session_uuid=session_uuid,
             session_id=session_id,
         )
-        conversion_options["Optogenetic"] = {}
+        conversion_options["BehavioralSyllable"] = dict(reinforcement=True)
         behavioral_syllable_path = optoda_path
     if "photometry" in session_metadata.keys():
         tdt_path = list(raw_path.glob("tdt_data*.dat"))[0]
@@ -122,6 +123,11 @@ def session_to_nwb(
     if experiment_type == "velocity-modulation":
         conversion_options["BehavioralSyllable"] = dict(velocity_modulation=True)
         conversion_options["Optogenetic"] = dict(velocity_modulation=True)
+    if processed_only:
+        source_data.pop("MoseqExtract")
+        source_data.pop("DepthVideo")
+        conversion_options.pop("MoseqExtract")
+        conversion_options.pop("DepthVideo")
 
     converter = DattaNWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
@@ -160,16 +166,23 @@ if __name__ == "__main__":
     reinforcement_photometry_examples = [figure1d_example, pulsed_photometry_example, excitation_photometry_example]
     raw_rp_example = "b814a426-7ec9-440e-baaa-105ba27a5fa6"
     velocity_modulation_example = "c621e134-50ec-4e8b-8175-a8c023d92789"
+    duplicated_session_example = "1c5441a6-aee8-44ff-999d-6f0787ad4632"
 
     experiment_type2example_sessions = {
         "reinforcement-photometry": [raw_rp_example],
         "velocity-modulation": [velocity_modulation_example],
+        "reinforcement": [duplicated_session_example],
     }
     experiment_type2raw_path = {
         "reinforcement-photometry": raw_rp_path,
         "velocity-modulation": raw_velocity_path,
+        "reinforcement": "",
     }
     for experiment_type, example_sessions in experiment_type2example_sessions.items():
+        if experiment_type == "reinforcement":
+            processed_only = True
+        else:
+            processed_only = False
         for example_session in example_sessions:
             session_to_nwb(
                 session_uuid=example_session,
@@ -177,6 +190,7 @@ if __name__ == "__main__":
                 raw_path=experiment_type2raw_path[experiment_type],
                 output_dir_path=output_dir_path,
                 experiment_type=experiment_type,
+                processed_only=processed_only,
                 stub_test=stub_test,
             )
     with NWBHDF5IO(output_dir_path / f"reinforcement-photometry-{raw_rp_example}.nwb", "r") as io:

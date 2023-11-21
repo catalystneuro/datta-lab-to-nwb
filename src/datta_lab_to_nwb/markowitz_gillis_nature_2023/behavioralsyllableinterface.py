@@ -49,16 +49,23 @@ class BehavioralSyllableInterface(BaseDattaInterface):
         }
         return metadata_schema
 
-    def get_original_timestamps(self) -> np.ndarray:
+    def get_original_timestamps(self, metadata: dict, reinforcement: bool = False) -> np.ndarray:
+        if reinforcement:
+            filters = [
+                ("uuid", "==", self.source_data["session_uuid"]),
+                ("target_syllable", "==", metadata["Optogenetics"]["target_syllable"][0]),
+            ]
+        else:
+            filters = [("uuid", "==", self.source_data["session_uuid"])]
         session_df = pd.read_parquet(
             self.source_data["file_path"],
             columns=["timestamp", "uuid"],
-            filters=[("uuid", "==", self.source_data["session_uuid"])],
+            filters=filters,
         )
         return session_df["timestamp"].to_numpy()
 
-    def align_timestamps(self, metadata: dict) -> np.ndarray:
-        timestamps = self.get_original_timestamps()
+    def align_timestamps(self, metadata: dict, reinforcement: bool = False) -> np.ndarray:
+        timestamps = self.get_original_timestamps(metadata=metadata, reinforcement=reinforcement)
         self.set_aligned_timestamps(aligned_timestamps=timestamps)
         if self.source_data["alignment_path"] is not None:
             aligned_starting_time = (
@@ -67,17 +74,26 @@ class BehavioralSyllableInterface(BaseDattaInterface):
             self.set_aligned_starting_time(aligned_starting_time=aligned_starting_time)
         return self.aligned_timestamps
 
-    def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict, velocity_modulation: bool = False) -> None:
+    def add_to_nwbfile(
+        self, nwbfile: NWBFile, metadata: dict, velocity_modulation: bool = False, reinforcement: bool = False
+    ) -> None:
         if velocity_modulation:
             columns = ["uuid", "predicted_syllable"]
         else:
             columns = self.source_data["columns"]
+        if reinforcement:
+            filters = [
+                ("uuid", "==", self.source_data["session_uuid"]),
+                ("target_syllable", "==", metadata["Optogenetics"]["target_syllable"][0]),
+            ]
+        else:
+            filters = [("uuid", "==", self.source_data["session_uuid"])]
         session_df = pd.read_parquet(
             self.source_data["file_path"],
             columns=columns,
-            filters=[("uuid", "==", self.source_data["session_uuid"])],
+            filters=filters,
         )
-        timestamps = self.align_timestamps(metadata=metadata)
+        timestamps = self.align_timestamps(metadata=metadata, reinforcement=reinforcement)
         # Add Syllable Data
         sorted_pseudoindex2name = metadata["BehavioralSyllable"]["sorted_pseudoindex2name"]
         id2sorted_index = metadata["BehavioralSyllable"]["id2sorted_index"]

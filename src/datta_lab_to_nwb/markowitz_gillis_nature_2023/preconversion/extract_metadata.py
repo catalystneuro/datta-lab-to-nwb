@@ -399,7 +399,9 @@ def extract_velocity_modulation_metadata(
         uuids = set(example_uuids)
     session_metadata, subject_metadata = {}, {}
     for i, uuid in enumerate(tqdm(uuids, desc="Extracting velocity-modulation session metadata")):
-        extract_session_metadata(session_columns, velocity_data_path, session_metadata, uuid)
+        session_df = extract_session_metadata(session_columns, velocity_data_path, session_metadata, uuid)
+        target_syllables = set(session_df.target_syllable[session_df.target_syllable.notnull()])
+        session_metadata[uuid]["target_syllable"] = list(target_syllables)
         # add si units to names
         session_metadata[uuid]["stim_duration_s"] = session_metadata[uuid].pop("stim_duration")
         session_metadata[uuid]["stim_frequency_Hz"] = np.NaN
