@@ -25,9 +25,7 @@ class BaseDattaInterface(BaseTemporalAlignmentInterface):
         metadata["Subject"]["sex"] = subject_metadata["sex"]
 
         if self.source_data["alignment_path"] is not None:
-            alignment_df = pd.read_parquet(
-                "/Volumes/T7/CatalystNeuro/NWB/Datta/xtra_raw/session_20210215162554-455929/alignment_df.parquet"
-            )
+            alignment_df = pd.read_parquet(self.source_data["alignment_path"])
             metadata["Alignment"]["slope"] = alignment_df["slope"].iloc[0]
             metadata["Alignment"]["bias"] = alignment_df["bias"].iloc[0]
 
