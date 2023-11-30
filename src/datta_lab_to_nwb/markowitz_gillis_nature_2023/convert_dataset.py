@@ -40,6 +40,19 @@ def dataset_to_nwb(
     output_dir_path = Path(output_dir_path)
     output_dir_path.mkdir(parents=True, exist_ok=True)
 
+    photometry_uuids = pd.read_parquet(
+        processed_path / "dlight_raw_data/dlight_photometry_processed_full.parquet", columns=["uuid"]
+    )
+    photometry_uuids = set(photometry_uuids["uuid"])
+    reinforcement_uuids = pd.read_parquet(
+        processed_path / "optoda_raw_data/closed_loop_behavior.parquet", columns=["uuid"]
+    )
+    reinforcement_uuids = set(reinforcement_uuids["uuid"])
+    velocity_uuids = pd.read_parquet(
+        processed_path / "optoda_raw_data/closed_loop_behavior_velocity_conditioned.parquet", columns=["uuid"]
+    )
+    velocity_uuids = set(velocity_uuids["uuid"])
+    missing_uuids = []
     for experimental_folder in tqdm(list(raw_dir_path.iterdir())):
         if experimental_folder.is_dir() and experimental_folder.name not in skip_experiments:
             experiment_type = folder_name_to_experiment_type[experimental_folder.name]
@@ -49,23 +62,16 @@ def dataset_to_nwb(
                     results = load_dict_from_file(results_file)
                     raw_uuid = results["uuid"]
                     if experiment_type == "photometry":
-                        file_paths = [processed_path / "dlight_raw_data/dlight_photometry_processed_full.parquet"]
+                        processed_uuids = photometry_uuids
                     elif experiment_type == "reinforcement":
-                        file_paths = [processed_path / "optoda_raw_data/closed_loop_behavior.parquet"]
+                        processed_uuids = reinforcement_uuids
                     elif experiment_type == "reinforcement-photometry":
-                        file_paths = [
-                            processed_path / "optoda_raw_data/closed_loop_behavior.parquet",
-                            processed_path / "dlight_raw_data/dlight_photometry_processed_full.parquet",
-                        ]
+                        processed_uuids = photometry_uuids.union(reinforcement_uuids)
                     elif experiment_type == "velocity-modulation":
-                        file_paths = [
-                            processed_path / "optoda_raw_data/closed_loop_behavior_velocity_conditioned.parquet"
-                        ]
-                    for file_path in file_paths:
-                        session_df = pd.read_parquet(file_path, columns=["uuid"], filters=[("uuid", "==", raw_uuid)])
-                        assert raw_uuid in set(
-                            session_df["uuid"]
-                        ), f"UUID {raw_uuid} for {session_folder} not found in {file_path}"
+                        processed_uuids = velocity_uuids
+                    if raw_uuid not in processed_uuids:
+                        missing_uuids.append(raw_uuid)
+    print(missing_uuids)
 
 
 if __name__ == "__main__":
