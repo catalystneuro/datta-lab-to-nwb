@@ -2,6 +2,31 @@ from pathlib import Path
 from typing import Union
 from neuroconv.utils import load_dict_from_file
 from tqdm import tqdm
+import pandas as pd
+
+folder_name_to_experiment_type = {
+    "_aggregate_results_arhmm_03": "reinforcement",
+    "_aggregate_results_arhmm_04": "reinforcement",
+    "_aggregate_results_arhmm_05": "reinforcement",
+    "_aggregate_results_arhmm_06": "reinforcement",
+    "_aggregate_results_arhmm_07": "reinforcement",
+    "_aggregate_results_arhmm_08": "reinforcement",
+    "_aggregate_results_arhmm_09": "reinforcement",
+    "_aggregate_results_arhmm_11": "reinforcement",
+    "_aggregate_results_arhmm_photometry_02": "reinforcement-photometry",
+    "_aggregate_results_arhmm_photometry_03": "reinforcement-photometry",
+    "_aggregate_results_arhmm_scalar_01": "velocity-modulation",
+    "_aggregate_results_arhmm_scalar_03": "velocity-modulation",
+    "_aggregate_results_arhmm_excitation_01": "reinforcement",
+    "_aggregate_results_arhmm_excitation_02": "reinforcement",
+    "_aggregate_results_arhmm_excitation_03": "reinforcement",
+    "_aggregate_results_arhmm_photometry_excitation_02": "reinforcement-photometry",
+    "_aggregate_results_arhmm_excitation_pulsed_01": "reinforcement",
+    "_aggregate_results_arhmm_photometry_excitation_pulsed_01": "reinforcement-photometry",
+    "_aggregate_results_arhmm_photometry_06": "photometry",
+    "_aggregate_results_arhmm_photometry_07": "photometry",
+    "_aggregate_results_arhmm_photometry_08": "photometry",
+}
 
 
 def dataset_to_nwb(
@@ -17,11 +42,30 @@ def dataset_to_nwb(
 
     for experimental_folder in tqdm(list(raw_dir_path.iterdir())):
         if experimental_folder.is_dir() and experimental_folder.name not in skip_experiments:
+            experiment_type = folder_name_to_experiment_type[experimental_folder.name]
             for session_folder in experimental_folder.iterdir():
                 if session_folder.is_dir() and session_folder.name not in skip_sessions:
                     results_file = session_folder / "proc" / "results_00.yaml"
                     results = load_dict_from_file(results_file)
-                    assert "uuid" in results, f"UUID not found in {results_file}"
+                    raw_uuid = results["uuid"]
+                    if experiment_type == "photometry":
+                        file_paths = [processed_path / "dlight_raw_data/dlight_photometry_processed_full.parquet"]
+                    elif experiment_type == "reinforcement":
+                        file_paths = [processed_path / "optoda_raw_data/closed_loop_behavior.parquet"]
+                    elif experiment_type == "reinforcement-photometry":
+                        file_paths = [
+                            processed_path / "optoda_raw_data/closed_loop_behavior.parquet",
+                            processed_path / "dlight_raw_data/dlight_photometry_processed_full.parquet",
+                        ]
+                    elif experiment_type == "velocity-modulation":
+                        file_paths = [
+                            processed_path / "optoda_raw_data/closed_loop_behavior_velocity_conditioned.parquet"
+                        ]
+                    for file_path in file_paths:
+                        session_df = pd.read_parquet(file_path, columns=["uuid"], filters=[("uuid", "==", raw_uuid)])
+                        assert raw_uuid in set(
+                            session_df["uuid"]
+                        ), f"UUID {raw_uuid} for {session_folder} not found in {file_path}"
 
 
 if __name__ == "__main__":
