@@ -53,8 +53,9 @@ def dataset_to_nwb(
         processed_path / "optoda_raw_data/closed_loop_behavior_velocity_conditioned.parquet", columns=["uuid"]
     )
     velocity_uuids = set(velocity_uuids["uuid"])
-    all_uuids = photometry_uuids.union(reinforcement_uuids).union(velocity_uuids)
-    missing_uuids = []
+    all_processed_uuids = photometry_uuids.union(reinforcement_uuids).union(velocity_uuids)
+    all_raw_uuids = set()
+    extra_uuids = []
     for experimental_folder in tqdm(list(raw_dir_path.iterdir())):
         if experimental_folder.is_dir() and experimental_folder.name not in skip_experiments:
             experiment_type = folder_name_to_experiment_type[experimental_folder.name]
@@ -63,6 +64,7 @@ def dataset_to_nwb(
                     results_file = session_folder / "proc" / "results_00.yaml"
                     results = load_dict_from_file(results_file)
                     raw_uuid = results["uuid"]
+                    all_raw_uuids.add(raw_uuid)
                     if experiment_type == "photometry":
                         processed_uuids = photometry_uuids
                     elif experiment_type == "reinforcement":
@@ -73,11 +75,16 @@ def dataset_to_nwb(
                         processed_uuids = velocity_uuids
                     if raw_uuid not in processed_uuids:
                         assert (
-                            raw_uuid not in all_uuids
+                            raw_uuid not in all_processed_uuids
                         ), f"expermental folder {experimental_folder.name} with uuid {raw_uuid} is not classified correctly"
-                        missing_uuids.append(raw_uuid)
+                        extra_uuids.append(raw_uuid)
+
+    # Save extra_uuids to a YAML file
+    with open(processed_path / "extra_uuids.yaml", "w") as file:
+        yaml.dump(extra_uuids, file)
 
     # Save missing_uuids to a YAML file
+    missing_uuids = all_processed_uuids.difference(all_raw_uuids)
     with open(processed_path / "missing_uuids.yaml", "w") as file:
         yaml.dump(missing_uuids, file)
 
