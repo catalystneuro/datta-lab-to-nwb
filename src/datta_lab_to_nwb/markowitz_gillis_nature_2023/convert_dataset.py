@@ -3,6 +3,7 @@ from typing import Union
 from neuroconv.utils import load_dict_from_file
 from tqdm import tqdm
 import pandas as pd
+import yaml
 
 folder_name_to_experiment_type = {
     "_aggregate_results_arhmm_03": "reinforcement",
@@ -71,7 +72,10 @@ def dataset_to_nwb(
                         processed_uuids = velocity_uuids
                     if raw_uuid not in processed_uuids:
                         missing_uuids.append(raw_uuid)
-    print(missing_uuids)
+
+    # Save missing_uuids to a YAML file
+    with open(processed_path / "missing_uuids.yaml", "w") as file:
+        yaml.dump(missing_uuids, file)
 
 
 if __name__ == "__main__":
