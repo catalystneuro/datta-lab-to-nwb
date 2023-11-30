@@ -84,7 +84,14 @@ def dataset_to_nwb(
         yaml.dump(extra_uuids, file)
 
     # Save missing_uuids to a YAML file
-    missing_uuids = all_processed_uuids.difference(all_raw_uuids)
+    missing_photometry_uuids = list(photometry_uuids.difference(all_raw_uuids))
+    missing_reinforcement_uuids = list(reinforcement_uuids.difference(all_raw_uuids))
+    missing_velocity_uuids = list(velocity_uuids.difference(all_raw_uuids))
+    missing_uuids = dict(
+        photometry=missing_photometry_uuids,
+        reinforcement=missing_reinforcement_uuids,
+        velocity=missing_velocity_uuids,
+    )
     with open(processed_path / "missing_uuids.yaml", "w") as file:
         yaml.dump(missing_uuids, file)
 
