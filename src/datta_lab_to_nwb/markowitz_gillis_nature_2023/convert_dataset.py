@@ -53,6 +53,7 @@ def dataset_to_nwb(
         processed_path / "optoda_raw_data/closed_loop_behavior_velocity_conditioned.parquet", columns=["uuid"]
     )
     velocity_uuids = set(velocity_uuids["uuid"])
+    all_uuids = photometry_uuids.union(reinforcement_uuids).union(velocity_uuids)
     missing_uuids = []
     for experimental_folder in tqdm(list(raw_dir_path.iterdir())):
         if experimental_folder.is_dir() and experimental_folder.name not in skip_experiments:
@@ -71,6 +72,9 @@ def dataset_to_nwb(
                     elif experiment_type == "velocity-modulation":
                         processed_uuids = velocity_uuids
                     if raw_uuid not in processed_uuids:
+                        assert (
+                            raw_uuid not in all_uuids
+                        ), f"expermental folder {experimental_folder.name} with uuid {raw_uuid} is not classified correctly"
                         missing_uuids.append(raw_uuid)
 
     # Save missing_uuids to a YAML file
