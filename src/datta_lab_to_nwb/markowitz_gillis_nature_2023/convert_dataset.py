@@ -64,8 +64,9 @@ def dataset_to_nwb(
         session_folders = [
             folder for folder in experimental_folder.iterdir() if folder.is_dir() and folder.name not in skip_sessions
         ]
-        if num_sessions is not None:
-            session_folders = session_folders[:num_sessions]
+        if num_sessions is None:
+            num_sessions = len(session_folders) + 1
+        session_num = 0
         for session_folder in session_folders:
             results_file = session_folder / "proc" / "results_00.yaml"
             results = load_dict_from_file(results_file)
@@ -79,6 +80,9 @@ def dataset_to_nwb(
                 raw_path=session_folder,
                 output_dir_path=output_dir_path,
             )
+            session_num += 1
+            if session_num >= num_sessions:
+                break
 
     # Save extra_uuids to a YAML file
     with open(processed_path / "extra_uuids.yaml", "w") as file:
@@ -127,4 +131,4 @@ if __name__ == "__main__":
         "session_20191111130454-333065",  # _aggregate_results_arhmm_05: missing proc folder
         "session_20191111130847-263894",  # _aggregate_results_arhmm_05: missing proc folder
     }
-    dataset_to_nwb(processed_path, raw_dir_path, output_dir_path, skip_sessions)
+    dataset_to_nwb(processed_path, raw_dir_path, output_dir_path, skip_sessions, num_sessions=1)
