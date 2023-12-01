@@ -195,6 +195,11 @@ sex_map = {
     "dms-dlight-12": "M",
     "dms-dlight-13": "M",
     "dms-dlight-14": "M",
+    "5891": "U",
+    "5892": "U",
+    "5893": "U",
+    "5894": "U",
+    "vta-nacc-ctrl-7": "U",
 }
 
 
