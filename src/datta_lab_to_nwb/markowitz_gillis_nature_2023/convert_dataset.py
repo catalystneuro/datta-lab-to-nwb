@@ -25,7 +25,7 @@ folder_name_to_experiment_type = {
     "_aggregate_results_arhmm_excitation_03": "reinforcement",
     "_aggregate_results_arhmm_photometry_excitation_02": "reinforcement-photometry",
     "_aggregate_results_arhmm_excitation_pulsed_01": "reinforcement",
-    "_aggregate_results_arhmm_photometry_excitation_pulsed_01": "reinforcement-photometry",
+    "_aggregate_results_arhmm_photometry_excitation_pulsed_01": "reinforcement",
     "_aggregate_results_arhmm_photometry_06": "photometry",
     "_aggregate_results_arhmm_photometry_07": "photometry",
     "_aggregate_results_arhmm_photometry_08": "photometry",
