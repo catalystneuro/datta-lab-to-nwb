@@ -68,6 +68,7 @@ def dataset_to_nwb(
             num_sessions = len(session_folders) + 1
         session_num = 0
         for session_folder in session_folders:
+            print(f"Processing {session_folder.name}")
             results_file = session_folder / "proc" / "results_00.yaml"
             results = load_dict_from_file(results_file)
             session_uuid = results["uuid"]
@@ -83,22 +84,6 @@ def dataset_to_nwb(
             session_num += 1
             if session_num >= num_sessions:
                 break
-
-    # Save extra_uuids to a YAML file
-    with open(processed_path / "extra_uuids.yaml", "w") as file:
-        yaml.dump(extra_uuids, file)
-
-    # Save missing_uuids to a YAML file
-    missing_photometry_uuids = list(photometry_uuids.difference(all_raw_uuids))
-    missing_reinforcement_uuids = list(reinforcement_uuids.difference(all_raw_uuids))
-    missing_velocity_uuids = list(velocity_uuids.difference(all_raw_uuids))
-    missing_uuids = dict(
-        photometry=missing_photometry_uuids,
-        reinforcement=missing_reinforcement_uuids,
-        velocity=missing_velocity_uuids,
-    )
-    with open(processed_path / "missing_uuids.yaml", "w") as file:
-        yaml.dump(missing_uuids, file)
 
 
 if __name__ == "__main__":
