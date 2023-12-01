@@ -4,7 +4,7 @@ from neuroconv.utils import load_dict_from_file
 from tqdm import tqdm
 import pandas as pd
 import yaml
-from .convert_session import session_to_nwb
+from datta_lab_to_nwb.markowitz_gillis_nature_2023.convert_session import session_to_nwb
 
 folder_name_to_experiment_type = {
     "_aggregate_results_arhmm_03": "reinforcement",
