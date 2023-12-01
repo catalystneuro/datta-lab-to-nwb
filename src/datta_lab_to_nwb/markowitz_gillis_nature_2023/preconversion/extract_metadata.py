@@ -634,18 +634,16 @@ if __name__ == "__main__":
 
     reinforcement_session_metadata, reinforcement_subject_metadata = extract_reinforcement_metadata(
         data_path,
-        example_uuids=reinforcement_examples,
     )
     photometry_session_metadata, photometry_subject_metadata = extract_photometry_metadata(
         data_path,
-        example_uuids=photometry_examples,
     )
     (
         reinforcement_photometry_session_metadata,
         reinforcement_photometry_subject_metadata,
     ) = extract_reinforcement_photometry_metadata(data_path, example_uuids=reinforcement_photometry_examples)
     velocity_session_metadata, velocity_subject_metadata = extract_velocity_modulation_metadata(
-        data_path, example_uuids=velocity_modulation_examples
+        data_path,
     )
     keypoint_session_metadata, keypoint_subject_metadata = extract_keypoint_metadata(data_path)
 
