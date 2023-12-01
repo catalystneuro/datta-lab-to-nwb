@@ -118,7 +118,8 @@ def session_to_nwb(
         source_data["MoseqExtract"]["alignment_path"] = str(alignment_path)
         source_data["BehavioralSyllable"]["alignment_path"] = str(alignment_path)
         source_data["DepthVideo"]["alignment_path"] = str(alignment_path)
-        source_data["Optogenetic"]["alignment_path"] = str(alignment_path)
+        if "reinforcement" in session_metadata.keys():
+            source_data["Optogenetic"]["alignment_path"] = str(alignment_path)
     source_data["BehavioralSyllable"]["file_path"] = str(behavioral_syllable_path)
     if experiment_type == "velocity-modulation":
         conversion_options["BehavioralSyllable"] = dict(velocity_modulation=True)
