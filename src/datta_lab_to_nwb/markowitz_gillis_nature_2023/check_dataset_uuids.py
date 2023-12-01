@@ -4,7 +4,6 @@ from neuroconv.utils import load_dict_from_file
 from tqdm import tqdm
 import pandas as pd
 import yaml
-from .convert_session import session_to_nwb
 
 folder_name_to_experiment_type = {
     "_aggregate_results_arhmm_03": "reinforcement",
@@ -36,7 +35,6 @@ def dataset_to_nwb(
     raw_dir_path: Union[str, Path],
     output_dir_path: Union[str, Path],
     skip_sessions: set,
-    num_sessions: int = None,
 ):
     processed_path = Path(processed_path)
     raw_dir_path = Path(raw_dir_path)
@@ -56,29 +54,30 @@ def dataset_to_nwb(
     )
     velocity_uuids = set(velocity_uuids["uuid"])
     all_processed_uuids = photometry_uuids.union(reinforcement_uuids).union(velocity_uuids)
-    experimental_folders = [
-        folder for folder in raw_dir_path.iterdir() if folder.is_dir() and folder.name not in skip_experiments
-    ]
-    for experimental_folder in tqdm(experimental_folders):
-        experiment_type = folder_name_to_experiment_type[experimental_folder.name]
-        session_folders = [
-            folder for folder in experimental_folder.iterdir() if folder.is_dir() and folder.name not in skip_sessions
-        ]
-        if num_sessions is not None:
-            session_folders = session_folders[:num_sessions]
-        for session_folder in session_folders:
-            results_file = session_folder / "proc" / "results_00.yaml"
-            results = load_dict_from_file(results_file)
-            session_uuid = results["uuid"]
-            if session_uuid not in all_processed_uuids:
-                continue
-            session_to_nwb(
-                session_uuid=session_uuid,
-                experiment_type=experiment_type,
-                processed_path=processed_path,
-                raw_path=session_folder,
-                output_dir_path=output_dir_path,
-            )
+    all_raw_uuids = set()
+    extra_uuids = []
+    for experimental_folder in tqdm(list(raw_dir_path.iterdir())):
+        if experimental_folder.is_dir() and experimental_folder.name not in skip_experiments:
+            experiment_type = folder_name_to_experiment_type[experimental_folder.name]
+            for session_folder in experimental_folder.iterdir():
+                if session_folder.is_dir() and session_folder.name not in skip_sessions:
+                    results_file = session_folder / "proc" / "results_00.yaml"
+                    results = load_dict_from_file(results_file)
+                    raw_uuid = results["uuid"]
+                    all_raw_uuids.add(raw_uuid)
+                    if experiment_type == "photometry":
+                        processed_uuids = photometry_uuids
+                    elif experiment_type == "reinforcement":
+                        processed_uuids = reinforcement_uuids
+                    elif experiment_type == "reinforcement-photometry":
+                        processed_uuids = photometry_uuids.union(reinforcement_uuids)
+                    elif experiment_type == "velocity-modulation":
+                        processed_uuids = velocity_uuids
+                    if raw_uuid not in processed_uuids:
+                        assert (
+                            raw_uuid not in all_processed_uuids
+                        ), f"expermental folder {experimental_folder.name} with uuid {raw_uuid} is not classified correctly"
+                        extra_uuids.append(raw_uuid)
 
     # Save extra_uuids to a YAML file
     with open(processed_path / "extra_uuids.yaml", "w") as file:
