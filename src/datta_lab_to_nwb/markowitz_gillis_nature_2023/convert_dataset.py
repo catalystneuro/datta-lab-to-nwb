@@ -5,6 +5,7 @@ from tqdm import tqdm
 import pandas as pd
 import yaml
 from datta_lab_to_nwb.markowitz_gillis_nature_2023.convert_session import session_to_nwb
+import shutil
 
 folder_name_to_experiment_type = {
     "_aggregate_results_arhmm_03": "reinforcement",
@@ -90,6 +91,10 @@ if __name__ == "__main__":
     processed_path = Path("NWB/DattaConv/processed_data")
     raw_dir_path = Path("NWB/DattaConv/raw_data")
     output_dir_path = Path("NWB/DattaConv/conversion_output")
+    if output_dir_path.exists():
+        shutil.rmtree(
+            output_dir_path, ignore_errors=True
+        )  # ignore errors due to MacOS race condition (https://github.com/python/cpython/issues/81441)
     skip_experiments = {
         "keypoint",  # no proc folder for keypoints
     }
