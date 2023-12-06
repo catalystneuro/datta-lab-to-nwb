@@ -132,7 +132,7 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
             ),
             data=H5DataIO(commanded_signal, compression=True),
             frequency=metadata["FiberPhotometry"]["signal_freq"],
-            power=metadata["FiberPhotometry"]["signal_amp"],  # TODO: Fix this in ndx-photometry
+            power=float(metadata["FiberPhotometry"]["signal_amp"]),  # TODO: Fix this in ndx-photometry
             timestamps=H5DataIO(timestamps, compression=True),
             unit="volts",
         )
@@ -144,7 +144,7 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
             ),
             data=H5DataIO(commanded_reference, compression=True),
             frequency=metadata["FiberPhotometry"]["reference_freq"],
-            power=metadata["FiberPhotometry"]["reference_amp"],  # TODO: Fix this in ndx-photometry
+            power=float(metadata["FiberPhotometry"]["reference_amp"]),  # TODO: Fix this in ndx-photometry
             timestamps=commanded_signal_series.timestamps,
             unit="volts",
         )

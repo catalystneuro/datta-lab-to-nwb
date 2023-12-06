@@ -32,7 +32,7 @@ colorcet==3.0.1
 comm==0.1.4
 contourpy==1.1.0
 cycler==0.11.0
-dandi==0.55.1
+dandi==0.58.0
 dandischema==0.8.4
 debugpy==1.6.7
 decorator==5.1.1
@@ -120,6 +120,7 @@ nbformat==5.9.2
 ndx-events==0.2.0
 ndx-grayscalevolume==0.0.2
 ndx-icephys-meta==0.1.0
+ndx-moseq @ git+https://github.com/pauladkisson/ndx-moseq.git@cac0b4003525b3ac902fed9a68d90ca459a211f8
 ndx-photometry @ git+https://github.com/catalystneuro/ndx-photometry.git@7ea9d755ceac9524125f50ab528b403b135c4530
 -e git+https://github.com/rly/ndx-pose.git@f9dd18a8290897e48bdd6ebeedcc0a7095d86265#egg=ndx_pose
 ndx-spectrum==0.2.2
