@@ -1,4 +1,4 @@
-dandi==0.58.0
+dandi
 hdmf==3.6.1
 colorcet
 cellpose
@@ -8,6 +8,4 @@ ndx-photometry @ git+https://github.com/catalystneuro/ndx-photometry.git@7ea9d75
 ndx-depth-moseq @ git+https://github.com/catalystneuro/ndx-depth-moseq.git@main
 pyarrow
 neuroconv
-nwbwidgets
-nwbinspector
 pre-commit

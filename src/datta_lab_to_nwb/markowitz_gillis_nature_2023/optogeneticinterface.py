@@ -115,6 +115,12 @@ class OptogeneticInterface(BaseDattaInterface):
             ],
         )
 
+        # Reconstruct optogenetic series from feedback status
+        if pd.isnull(metadata["Optogenetics"]["stim_frequency_Hz"]):  # cts stim
+            data, timestamps = self.reconstruct_cts_stim(metadata, session_df, session_timestamps)
+        else:  # pulsed stim
+            data, timestamps = self.reconstruct_pulsed_stim(metadata, session_df, session_timestamps)
+
         device = nwbfile.create_device(
             name="OptoEngineMRL",
             description="Optogenetic stimulator (Opto Engine MRL-III-635; SKU: RD-635-00500-CWM-SD-03-LED-0)",
@@ -127,11 +133,6 @@ class OptogeneticInterface(BaseDattaInterface):
             excitation_lambda=635.0,
             location=metadata["Optogenetics"]["area"],
         )
-        # Reconstruct optogenetic series from feedback status
-        if pd.isnull(metadata["Optogenetics"]["stim_frequency_Hz"]):  # cts stim
-            data, timestamps = self.reconstruct_cts_stim(metadata, session_df, session_timestamps)
-        else:  # pulsed stim
-            data, timestamps = self.reconstruct_pulsed_stim(metadata, session_df, session_timestamps)
         id2sorted_index = metadata["BehavioralSyllable"]["id2sorted_index"]
         target_syllables = [id2sorted_index[syllable_id] for syllable_id in metadata["Optogenetics"]["target_syllable"]]
         ogen_series = OptogeneticSeries(

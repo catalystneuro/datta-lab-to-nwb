@@ -1,16 +1,40 @@
 """Primary script to run to convert an entire session for of data using the NWBConverter."""
-# Standard Library
-from pathlib import Path
 import shutil
+import traceback
+from pathlib import Path
 from typing import Union, Literal
 
-# Third Party
 from neuroconv.utils import dict_deep_update, load_dict_from_file
 from pynwb import NWBHDF5IO
 
-# Local
 from datta_lab_to_nwb.markowitz_gillis_nature_2023.postconversion import reproduce_fig1d
 from datta_lab_to_nwb.markowitz_gillis_nature_2023.nwbconverter import DattaNWBConverter
+
+
+def _safe_session_to_nwb(
+    *,
+    session_uuid: str,
+    processed_path: Union[str, Path],
+    raw_path: Union[str, Path],
+    output_dir_path: Union[str, Path],
+    experiment_type: Literal["reinforcement", "photometry", "reinforcement-photometry", "velocity-modulation"],
+    log_file_path: Path,
+    processed_only: bool = False,
+    stub_test: bool = False,
+):
+    try:
+        session_to_nwb(
+            session_uuid=session_uuid,
+            processed_path=processed_path,
+            raw_path=raw_path,
+            output_dir_path=output_dir_path,
+            experiment_type=experiment_type,
+            processed_only=processed_only,
+            stub_test=stub_test,
+        )
+    except Exception as exception:
+        with open(file=log_file_path, mode="w") as io:
+            io.write(f"{type(exception)}: {str(exception)}\n\n{traceback.format_exc()}")
 
 
 def session_to_nwb(
@@ -139,7 +163,9 @@ def session_to_nwb(
     metadata = dict_deep_update(metadata, paper_metadata)
 
     # Run conversion
-    converter.run_conversion(metadata=metadata, nwbfile_path=nwbfile_path, conversion_options=conversion_options)
+    converter.run_conversion(
+        metadata=metadata, nwbfile_path=nwbfile_path, conversion_options=conversion_options, overwrite=True
+    )
 
 
 if __name__ == "__main__":
