@@ -641,7 +641,7 @@ if __name__ == "__main__":
     (
         reinforcement_photometry_session_metadata,
         reinforcement_photometry_subject_metadata,
-    ) = extract_reinforcement_photometry_metadata(data_path, example_uuids=reinforcement_photometry_examples)
+    ) = extract_reinforcement_photometry_metadata(data_path)
     velocity_session_metadata, velocity_subject_metadata = extract_velocity_modulation_metadata(
         data_path,
     )
