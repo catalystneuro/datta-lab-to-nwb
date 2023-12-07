@@ -1,4 +1,3 @@
-import traceback
 import json
 from pathlib import Path
 from typing import Union
@@ -101,7 +100,9 @@ def dataset_to_nwb(
         for folder in raw_dir_path.iterdir()
         if folder.is_dir() and folder.name not in skip_experiments and folder.name.startswith("_")
     ]
-    for experimental_folder in tqdm(iterable=experimental_folders, position=0, description="Converting experiments..."):
+    for experimental_folder in tqdm(
+        iterable=experimental_folders, position=0, desc="Converting experiments...", leave=False
+    ):
         experiment_type = folder_name_to_experiment_type[experimental_folder.name]
         session_folders = [
             folder for folder in experimental_folder.iterdir() if folder.is_dir() and folder.name not in skip_sessions
@@ -143,7 +144,11 @@ def dataset_to_nwb(
                     break
 
             parallel_iterable = tqdm(
-                iterable=as_completed(futures), position=1, description="Converting sessionsin parallel..."
+                iterable=as_completed(futures),
+                total=len(futures),
+                position=1,
+                desc="Converting sessions in parallel...",
+                leave=False,
             )
             for _ in parallel_iterable:
                 pass
@@ -154,7 +159,7 @@ if __name__ == "__main__":
 
     processed_path = Path("E:/Datta/dopamine-reinforces-spontaneous-behavior")
     raw_dir_path = Path("E:/Datta")
-    output_dir_path = Path("E:/datta_output/files")
+    output_dir_path = Path("F:/Datta/nwbfiles")
 
     skip_experiments = {
         "keypoint",  # no proc folder for keypoints
@@ -190,5 +195,5 @@ if __name__ == "__main__":
         output_dir_path=output_dir_path,
         skip_sessions=temporary_skip_sessions,
         number_of_jobs=number_of_jobs,
-        num_sessions_per_experiment=1,
+        # num_sessions_per_experiment=1,
     )
