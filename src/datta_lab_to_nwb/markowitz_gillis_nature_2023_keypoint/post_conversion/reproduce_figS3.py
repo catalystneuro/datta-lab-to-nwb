@@ -125,7 +125,7 @@ def reproduce_figS3(nwbfile_paths, config_path, metadata):
             timestamps = (
                 nwbfile.processing["behavior"]
                 .data_interfaces["keypoints"]
-                .pose_estimation_series["rostral spine"]
+                .pose_estimation_series["rostral_spine"]
                 .timestamps[:]
             )
             positions_median = np.zeros((len(timestamps), 15, 3))
