@@ -7,7 +7,6 @@ from typing import Union, Literal
 from neuroconv.utils import dict_deep_update, load_dict_from_file
 from pynwb import NWBHDF5IO
 
-from datta_lab_to_nwb.markowitz_gillis_nature_2023.postconversion import reproduce_fig1d
 from datta_lab_to_nwb.markowitz_gillis_nature_2023.nwbconverter import DattaNWBConverter
 
 
@@ -52,7 +51,11 @@ def session_to_nwb(
         output_dir_path = output_dir_path / "nwb_stub"
     output_dir_path.mkdir(parents=True, exist_ok=True)
     session_id = f"{experiment_type}-{session_uuid}"
+
     nwbfile_path = output_dir_path / f"{session_id}.nwb"
+    if nwbfile_path.exists():
+        return
+
     photometry_path = processed_path / "dlight_raw_data/dlight_photometry_processed_full.parquet"
     if experiment_type == "velocity-modulation":
         optoda_path = processed_path / "optoda_raw_data/closed_loop_behavior_velocity_conditioned.parquet"
@@ -128,7 +131,9 @@ def session_to_nwb(
             alignment_path=str(alignment_path),
         )
         conversion_options["FiberPhotometry"] = {}
-        behavioral_syllable_path = photometry_path  # Note: if photometry and optogenetics are both present, photometry is used for syllable data bc it is quicker to load
+        behavioral_syllable_path = photometry_path
+        # Note: if photometry and optogenetics are both present
+        # photometry is used for syllable data bc it is quicker to load
         source_data["IRVideo"] = dict(
             data_path=str(ir_path),
             timestamp_path=str(depth_ts_path),
@@ -222,7 +227,7 @@ if __name__ == "__main__":
             )
     with NWBHDF5IO(output_dir_path / f"reinforcement-photometry-{raw_rp_example}.nwb", "r") as io:
         nwbfile = io.read()
-        print(nwbfile)
+        # print(nwbfile)
     # nwbfile_path = output_dir_path / f"{figure1d_example}.nwb"
     # paper_metadata_path = Path(__file__).parent / "markowitz_gillis_nature_2023_metadata.yaml"
     # reproduce_figures.reproduce_fig1d(nwbfile_path, paper_metadata_path)

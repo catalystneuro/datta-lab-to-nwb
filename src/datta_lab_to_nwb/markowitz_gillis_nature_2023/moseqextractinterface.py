@@ -1,7 +1,5 @@
 """Primary class for converting MoSeq Extraction data."""
 from pynwb import NWBFile
-from datetime import datetime
-from pytz import timezone
 import h5py
 import numpy as np
 from hdmf.backends.hdf5.h5_utils import H5DataIO
@@ -19,7 +17,7 @@ from ndx_depth_moseq import DepthImageSeries, MoSeqExtractGroup, MoSeqExtractPar
 
 
 class MoseqExtractInterface(BaseDattaInterface):
-    """Moseq interface for markowitz_gillis_nature_2023 conversion"""
+    """Moseq interface for markowitz_gillis_nature_2023 conversion."""
 
     def __init__(
         self,

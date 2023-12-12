@@ -118,6 +118,8 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         photometry_dict = load_tdt_data(self.source_data["tdt_path"], fs=metadata["FiberPhotometry"]["raw_rate"])
         timestamps = self.align_raw_timestamps(metadata=metadata)
+        ascending_timestamps_indices = np.argsort(timestamps)
+
         raw_photometry = photometry_dict["pmt00"]
         commanded_signal = photometry_dict["pmt00_x"]
         commanded_reference = photometry_dict["pmt01_x"]
@@ -130,10 +132,10 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
                 "A 470nm (blue) LED and a 405nM (UV) LED (Mightex) were sinusoidally modulated at 161Hz and 381Hz, "
                 "respectively (these frequencies were chosen to avoid harmonic cross-talk)."
             ),
-            data=H5DataIO(commanded_signal, compression=True),
+            data=H5DataIO(commanded_signal[ascending_timestamps_indices], compression=True),
             frequency=metadata["FiberPhotometry"]["signal_freq"],
             power=float(metadata["FiberPhotometry"]["signal_amp"]),  # TODO: Fix this in ndx-photometry
-            timestamps=H5DataIO(timestamps, compression=True),
+            timestamps=H5DataIO(timestamps[ascending_timestamps_indices], compression=True),
             unit="volts",
         )
         commanded_reference_series = multi_commanded_voltage.create_commanded_voltage_series(
@@ -142,7 +144,7 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
                 "A 470nm (blue) LED and a 405nM (UV) LED (Mightex) were sinusoidally modulated at 161Hz and 381Hz, "
                 "respectively (these frequencies were chosen to avoid harmonic cross-talk)."
             ),
-            data=H5DataIO(commanded_reference, compression=True),
+            data=H5DataIO(commanded_reference[ascending_timestamps_indices], compression=True),
             frequency=metadata["FiberPhotometry"]["reference_freq"],
             power=float(metadata["FiberPhotometry"]["reference_amp"]),  # TODO: Fix this in ndx-photometry
             timestamps=commanded_signal_series.timestamps,
@@ -239,7 +241,7 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
         raw_photometry = RoiResponseSeries(
             name="RawPhotometry",
             description="The raw acquisition with mixed signal from both the blue light excitation (470nm) and UV excitation (405nm).",
-            data=H5DataIO(raw_photometry, compression=True),
+            data=H5DataIO(raw_photometry[ascending_timestamps_indices], compression=True),
             unit="F",
             timestamps=commanded_signal_series.timestamps,
             rois=self.fibers_ref,
