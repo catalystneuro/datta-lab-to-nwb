@@ -1,8 +1,10 @@
 """Primary class for handling metadata non-specific to any other DataInterfaces."""
-from neuroconv.basetemporalalignmentinterface import BaseTemporalAlignmentInterface
-from neuroconv.utils import load_dict_from_file
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
+from neuroconv.basetemporalalignmentinterface import BaseTemporalAlignmentInterface
+from neuroconv.utils import load_dict_from_file
 
 
 class BaseDattaInterface(BaseTemporalAlignmentInterface):
@@ -24,10 +26,13 @@ class BaseDattaInterface(BaseTemporalAlignmentInterface):
         metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
         metadata["Subject"]["sex"] = subject_metadata["sex"]
 
-        if self.source_data["alignment_path"] is not None:
+        if self.source_data["alignment_path"] is not None and Path(self.source_data["alignment_path"]).exists():
             alignment_df = pd.read_parquet(self.source_data["alignment_path"])
             metadata["Alignment"]["slope"] = alignment_df["slope"].iloc[0]
             metadata["Alignment"]["bias"] = alignment_df["bias"].iloc[0]
+        else:
+            metadata["Alignment"]["slope"] = 1.0
+            metadata["Alignment"]["bias"] = 0.0
 
         return metadata
 

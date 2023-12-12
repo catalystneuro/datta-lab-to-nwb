@@ -101,7 +101,7 @@ def dataset_to_nwb(
         folder
         for folder in raw_dir_path.iterdir()
         if folder.is_dir() and folder.name not in skip_experiments and folder.name.startswith("_")
-    ]
+    ][11:]
     for experimental_folder in tqdm(
         iterable=experimental_folders, position=0, desc="Converting experiments...", leave=False
     ):
@@ -157,7 +157,7 @@ def dataset_to_nwb(
 
 
 if __name__ == "__main__":
-    number_of_jobs = 1
+    number_of_jobs = 2
 
     processed_path = Path("E:/Datta/dopamine-reinforces-spontaneous-behavior")
     raw_dir_path = Path("E:/Datta")
