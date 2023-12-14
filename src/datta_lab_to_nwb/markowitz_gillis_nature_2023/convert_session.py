@@ -53,9 +53,7 @@ def session_to_nwb(
     session_id = f"{experiment_type}-{session_uuid}"
 
     nwbfile_path = output_dir_path / f"{session_id}.nwb"
-    if (
-        nwbfile_path.parent.parent / "initial_nwbfiles" / nwbfile_path.name
-    ).exists() or nwbfile_path.exists():  # temporary
+    if nwbfile_path.exists():
         return
 
     photometry_path = processed_path / "dlight_raw_data/dlight_photometry_processed_full.parquet"
