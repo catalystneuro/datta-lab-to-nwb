@@ -162,8 +162,10 @@ def session_to_nwb(
     if processed_only:
         source_data.pop("MoseqExtract")
         source_data.pop("DepthVideo")
+        source_data.pop("IRVideo")
         conversion_options.pop("MoseqExtract")
         conversion_options.pop("DepthVideo")
+        conversion_options.pop("IRVideo")
 
     converter = DattaNWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
@@ -206,34 +208,38 @@ if __name__ == "__main__":
     velocity_modulation_example = "c621e134-50ec-4e8b-8175-a8c023d92789"
     duplicated_session_example = "1c5441a6-aee8-44ff-999d-6f0787ad4632"
 
-    experiment_type2example_sessions = {
-        "reinforcement-photometry": [raw_rp_example],
-        "velocity-modulation": [velocity_modulation_example],
-        "reinforcement": [duplicated_session_example],
-    }
-    experiment_type2raw_path = {
-        "reinforcement-photometry": raw_rp_path,
-        "velocity-modulation": raw_velocity_path,
-        "reinforcement": "",
-    }
-    for experiment_type, example_sessions in experiment_type2example_sessions.items():
-        if experiment_type == "reinforcement":
-            processed_only = True
-        else:
-            processed_only = False
-        for example_session in example_sessions:
-            session_to_nwb(
-                session_uuid="0fc7bbac-adee-46d8-897a-213a56983ebe",
-                processed_path=processed_path,
-                raw_path=experiment_type2raw_path[experiment_type],
-                output_dir_path=output_dir_path,
-                experiment_type=experiment_type,
-                processed_only=processed_only,
-                stub_test=stub_test,
-            )
-    with NWBHDF5IO(output_dir_path / f"reinforcement-photometry-{raw_rp_example}.nwb", "r") as io:
-        nwbfile = io.read()
+    # experiment_type2example_sessions = {
+    #     "reinforcement-photometry": [raw_rp_example],
+    #     "velocity-modulation": [velocity_modulation_example],
+    #     "reinforcement": [duplicated_session_example],
+    # }
+    # experiment_type2raw_path = {
+    #     "reinforcement-photometry": raw_rp_path,
+    #     "velocity-modulation": raw_velocity_path,
+    #     "reinforcement": "",
+    # }
+    # for experiment_type, example_sessions in experiment_type2example_sessions.items():
+    #     if experiment_type == "reinforcement":
+    #         processed_only = True
+    #     else:
+    #         processed_only = False
+    #     for example_session in example_sessions:
+    #         session_to_nwb(
+    #             session_uuid="0fc7bbac-adee-46d8-897a-213a56983ebe",
+    #             processed_path=processed_path,
+    #             raw_path=experiment_type2raw_path[experiment_type],
+    #             output_dir_path=output_dir_path,
+    #             experiment_type=experiment_type,
+    #             processed_only=processed_only,
+    #             stub_test=stub_test,
+    #         )
 
-    # nwbfile_path = output_dir_path / f"{figure1d_example}.nwb"
-    # paper_metadata_path = Path(__file__).parent / "markowitz_gillis_nature_2023_metadata.yaml"
-    # reproduce_figures.reproduce_fig1d(nwbfile_path, paper_metadata_path)
+    session_to_nwb(
+        session_uuid=figure1d_example,
+        processed_path=processed_path,
+        raw_path="",
+        output_dir_path=output_dir_path,
+        experiment_type="reinforcement-photometry",
+        processed_only=True,
+        stub_test=stub_test,
+    )
