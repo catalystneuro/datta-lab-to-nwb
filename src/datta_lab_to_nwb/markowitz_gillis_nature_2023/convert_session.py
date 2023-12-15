@@ -162,10 +162,11 @@ def session_to_nwb(
     if processed_only:
         source_data.pop("MoseqExtract")
         source_data.pop("DepthVideo")
-        source_data.pop("IRVideo")
         conversion_options.pop("MoseqExtract")
         conversion_options.pop("DepthVideo")
-        conversion_options.pop("IRVideo")
+        if "IRVideo" in source_data.keys():  # if photometry
+            source_data.pop("IRVideo")
+            conversion_options.pop("IRVideo")
 
     converter = DattaNWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
