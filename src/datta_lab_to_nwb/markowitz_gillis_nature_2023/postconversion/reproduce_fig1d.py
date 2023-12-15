@@ -4,6 +4,7 @@ from pynwb import NWBHDF5IO
 from neuroconv.utils import load_dict_from_file
 import matplotlib.pyplot as plt
 import colorcet as cc
+from pathlib import Path
 
 
 def reproduce_fig1d(file_path, metadata_path):
@@ -11,7 +12,7 @@ def reproduce_fig1d(file_path, metadata_path):
     sorted_index2id = metadata["BehavioralSyllable"]["sorted_index2id"]
     n_frames = 361
     start = 3520
-    with NWBHDF5IO(file_path, mode="r") as io:
+    with NWBHDF5IO(file_path, mode="r", load_namespaces=True) as io:
         nwbfile = io.read()
 
         signal_dff = nwbfile.processing["ophys"]["SignalDfOverF"].data[start : start + n_frames]
@@ -104,3 +105,13 @@ def reproduce_fig1d(file_path, metadata_path):
     plt.subplots_adjust(hspace=0.55)
     plt.suptitle("Figure 1d")
     plt.show()
+
+
+if __name__ == "__main__":
+    file_path = Path(
+        "/Volumes/T7/CatalystNeuro/NWB/Datta/conversion_nwb/reinforcement-photometry-2891f649-4fbd-4119-a807-b8ef507edfab.nwb"
+    )
+    metadata_path = Path(
+        "/Users/pauladkisson/Documents/CatalystNeuro/NWB/DattaConv/catalystneuro/datta-lab-to-nwb/src/datta_lab_to_nwb/markowitz_gillis_nature_2023/markowitz_gillis_nature_2023_metadata.yaml"
+    )
+    reproduce_fig1d(file_path, metadata_path)
