@@ -652,7 +652,7 @@ if __name__ == "__main__":
     velocity_session_metadata, velocity_subject_metadata = extract_velocity_modulation_metadata(
         data_path,
     )
-    keypoint_session_metadata, keypoint_subject_metadata = extract_keypoint_metadata(data_path)
+    keypoint_session_metadata, keypoint_subject_metadata = extract_keypoint_metadata()
 
     path2metadata = {
         photometry_session_metadata_path: photometry_session_metadata,
