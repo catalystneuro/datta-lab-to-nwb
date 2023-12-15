@@ -52,7 +52,7 @@ class KeypointInterface(BaseDattaInterface):
         timestamps = H5DataIO(np.arange(raw_keypoints.shape[0]) / SAMPLING_RATE, compression=True)
 
         index_to_name = metadata["Keypoint"]["index_to_name"]
-        camera_names = ["bottom", "side1", "side2", "side3", "side4", "top"]
+        camera_names = ["bottom", "side1", "side2", "side3", "side4", "top"]  # as confirmed by email with authors
         keypoints = []
         for camera in camera_names:
             nwbfile.create_device(
