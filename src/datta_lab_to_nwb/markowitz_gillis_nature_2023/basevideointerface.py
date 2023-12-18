@@ -1,17 +1,17 @@
 """Base class for converting raw video data."""
-from pynwb import NWBFile
-from datetime import datetime
-from pytz import timezone
-import h5py
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
+from pynwb import NWBFile
 from neuroconv.datainterfaces import VideoInterface
+
 from .basedattainterface import BaseDattaInterface
 from .utils import convert_timestamps_to_seconds
 
 
 class BaseVideoInterface(BaseDattaInterface):
-    """Base video interface for markowitz_gillis_nature_2023 conversion"""
+    """Base video interface for markowitz_gillis_nature_2023 conversion."""
 
     def __init__(
         self,
@@ -50,6 +50,9 @@ class BaseVideoInterface(BaseDattaInterface):
 
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         timestamps = self.align_timestamps(metadata=metadata)
+
+        if not Path(self.source_data["data_path"]).exists():
+            return
 
         video_interface = VideoInterface(file_paths=[self.source_data["data_path"]], verbose=True)
         video_interface.set_aligned_timestamps(aligned_timestamps=[timestamps])
