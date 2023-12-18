@@ -53,9 +53,7 @@ def session_to_nwb(
     session_id = f"{experiment_type}-{session_uuid}"
 
     nwbfile_path = output_dir_path / f"{session_id}.nwb"
-    if (
-        nwbfile_path.parent.parent / "initial_nwbfiles" / nwbfile_path.name
-    ).exists() or nwbfile_path.exists():  # temporary
+    if nwbfile_path.exists():
         return
 
     photometry_path = processed_path / "dlight_raw_data/dlight_photometry_processed_full.parquet"
@@ -217,38 +215,28 @@ if __name__ == "__main__":
     velocity_modulation_example = "c621e134-50ec-4e8b-8175-a8c023d92789"
     duplicated_session_example = "1c5441a6-aee8-44ff-999d-6f0787ad4632"
 
-    # experiment_type2example_sessions = {
-    #     "reinforcement-photometry": [raw_rp_example],
-    #     "velocity-modulation": [velocity_modulation_example],
-    #     "reinforcement": [duplicated_session_example],
-    # }
-    # experiment_type2raw_path = {
-    #     "reinforcement-photometry": raw_rp_path,
-    #     "velocity-modulation": raw_velocity_path,
-    #     "reinforcement": "",
-    # }
-    # for experiment_type, example_sessions in experiment_type2example_sessions.items():
-    #     if experiment_type == "reinforcement":
-    #         processed_only = True
-    #     else:
-    #         processed_only = False
-    #     for example_session in example_sessions:
-    #         session_to_nwb(
-    #             session_uuid="0fc7bbac-adee-46d8-897a-213a56983ebe",
-    #             processed_path=processed_path,
-    #             raw_path=experiment_type2raw_path[experiment_type],
-    #             output_dir_path=output_dir_path,
-    #             experiment_type=experiment_type,
-    #             processed_only=processed_only,
-    #             stub_test=stub_test,
-    #         )
-
-    session_to_nwb(
-        session_uuid=figure1d_example,
-        processed_path=processed_path,
-        raw_path="",
-        output_dir_path=output_dir_path,
-        experiment_type="reinforcement-photometry",
-        processed_only=True,
-        stub_test=stub_test,
-    )
+    experiment_type2example_sessions = {
+        "reinforcement-photometry": [raw_rp_example],
+        "velocity-modulation": [velocity_modulation_example],
+        "reinforcement": [duplicated_session_example],
+    }
+    experiment_type2raw_path = {
+        "reinforcement-photometry": raw_rp_path,
+        "velocity-modulation": raw_velocity_path,
+        "reinforcement": "",
+    }
+    for experiment_type, example_sessions in experiment_type2example_sessions.items():
+        if experiment_type == "reinforcement":
+            processed_only = True
+        else:
+            processed_only = False
+        for example_session in example_sessions:
+            session_to_nwb(
+                session_uuid="0fc7bbac-adee-46d8-897a-213a56983ebe",
+                processed_path=processed_path,
+                raw_path=experiment_type2raw_path[experiment_type],
+                output_dir_path=output_dir_path,
+                experiment_type=experiment_type,
+                processed_only=processed_only,
+                stub_test=stub_test,
+            )
