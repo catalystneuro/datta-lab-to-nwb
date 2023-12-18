@@ -14,15 +14,22 @@ def reproduce_fig1d(file_path, metadata_path):
     start = 3520
     with NWBHDF5IO(file_path, mode="r", load_namespaces=True) as io:
         nwbfile = io.read()
+        start_time = nwbfile.processing["behavior"]["BehavioralSyllableOffline"].timestamps[start]
+        stop_time = nwbfile.processing["behavior"]["BehavioralSyllableOffline"].timestamps[start + n_frames]
+        photometry_timestamps = nwbfile.processing["ophys"]["ReferenceDfOverF"].timestamps[:]
 
-        signal_dff = nwbfile.processing["ophys"]["SignalDfOverF"].data[start : start + n_frames]
-        reference_dff = nwbfile.processing["ophys"]["ReferenceDfOverF"].data[start : start + n_frames]
+        signal_dff = nwbfile.processing["ophys"]["SignalDfOverF"].data[:]
+        signal_dff = signal_dff[np.logical_and(photometry_timestamps >= start_time, photometry_timestamps < stop_time)]
+        reference_dff = nwbfile.processing["ophys"]["ReferenceDfOverF"].data[:]
+        reference_dff = reference_dff[
+            np.logical_and(photometry_timestamps >= start_time, photometry_timestamps < stop_time)
+        ]
 
         position = pd.DataFrame(
             nwbfile.processing["behavior"]["Position"]["SpatialSeries"].data, columns=["x", "y", "height"]
         )
         angle = pd.Series(nwbfile.processing["behavior"]["CompassDirection"]["HeadOrientation"].data)
-        syllables = pd.Series(nwbfile.acquisition["BehavioralSyllable"].data).map(sorted_index2id)
+        syllables = pd.Series(nwbfile.processing["behavior"]["BehavioralSyllableOffline"].data).map(sorted_index2id)
     vel_height = (
         position["height"].interpolate(limit_direction="both").diff(2).iloc[start : start + n_frames].to_numpy()
         / 2

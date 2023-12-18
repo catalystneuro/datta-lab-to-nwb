@@ -6,6 +6,7 @@ from .behavioralsyllableinterface import BehavioralSyllableInterface
 from .moseqextractinterface import MoseqExtractInterface
 from .depthvideointerface import DepthVideoInterface
 from .irvideointerface import IRVideoInterface
+from .behaviorinterface import BehaviorInterface
 
 
 class DattaNWBConverter(NWBConverter):
@@ -18,4 +19,5 @@ class DattaNWBConverter(NWBConverter):
         MoseqExtract=MoseqExtractInterface,
         DepthVideo=DepthVideoInterface,
         IRVideo=IRVideoInterface,
+        Behavior=BehaviorInterface,
     )

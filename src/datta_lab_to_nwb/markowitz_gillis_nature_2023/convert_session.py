@@ -167,6 +167,14 @@ def session_to_nwb(
         if "IRVideo" in source_data.keys():  # if photometry
             source_data.pop("IRVideo")
             conversion_options.pop("IRVideo")
+        source_data["Behavior"] = dict(
+            file_path=str(behavioral_syllable_path),
+            session_metadata_path=str(session_metadata_path),
+            subject_metadata_path=str(subject_metadata_path),
+            session_uuid=session_uuid,
+            session_id=session_id,
+        )
+        conversion_options["Behavior"] = {}
 
     converter = DattaNWBConverter(source_data=source_data)
     metadata = converter.get_metadata()
