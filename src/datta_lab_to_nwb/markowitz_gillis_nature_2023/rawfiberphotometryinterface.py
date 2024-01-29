@@ -1,4 +1,5 @@
 """Primary class for converting Raw fiber photometry data (dLight fluorescence) from the TDT system."""
+
 from pathlib import Path
 from typing import Union
 

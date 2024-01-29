@@ -1,4 +1,5 @@
 """Primary class for converting MoSeq Extraction data."""
+
 from pynwb import NWBFile
 import h5py
 import numpy as np

@@ -1,4 +1,5 @@
 """Base class for converting raw video data."""
+
 from pathlib import Path
 
 import numpy as np
