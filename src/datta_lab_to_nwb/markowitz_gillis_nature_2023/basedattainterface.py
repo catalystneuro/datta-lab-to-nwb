@@ -1,4 +1,5 @@
 """Primary class for handling metadata non-specific to any other DataInterfaces."""
+
 from pathlib import Path
 
 import pandas as pd

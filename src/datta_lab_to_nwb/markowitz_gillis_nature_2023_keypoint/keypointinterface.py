@@ -1,4 +1,5 @@
 """Primary class for converting experiment-specific behavior."""
+
 import numpy as np
 from pynwb import NWBFile
 from pynwb.image import RGBImage, Images

@@ -1,4 +1,5 @@
 """Primary script to run to convert an entire session for of data using the NWBConverter."""
+
 import shutil
 import traceback
 from pathlib import Path

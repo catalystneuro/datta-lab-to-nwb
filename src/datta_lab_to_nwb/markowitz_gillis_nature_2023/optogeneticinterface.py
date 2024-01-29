@@ -1,4 +1,5 @@
 """Primary class for converting fiber photometry data (dLight fluorescence)."""
+
 # Standard Scientific Python
 import pandas as pd
 import numpy as np

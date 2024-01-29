@@ -1,4 +1,5 @@
 """Primary class for converting fiber photometry data (dLight fluorescence)."""
+
 # Standard Scientific Python
 import numpy as np
 import joblib
