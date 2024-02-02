@@ -508,6 +508,14 @@ def _resolve_duplicates(resolved_dict, ids1, dict1, ids2, dict2):
             resolved_dict[id1] = {}
         for key1 in dict1[id1].keys():
             if key1 in dict2[id1].keys():
+                if dict1[id1][key1] == "":
+                    dict1[id1][key1] = dict2[id1][key1]
+                if dict2[id1][key1] == "":
+                    dict2[id1][key1] = dict1[id1][key1]
+                if dict1[id1][key1] != dict2[id1][key1]:
+                    print(
+                        f"dict1 and dict2 don't match (dict1[{id1}][{key1}]: {dict1[id1][key1]}, dict2[{id1}][{key1}]: {dict2[id1][key1]})"
+                    )
                 assert (
                     dict1[id1][key1] == dict2[id1][key1]
                 ), f"dict1 and dict2 don't match (dict1[{id1}][{key1}]: {dict1[id1][key1]}, dict2[{id1}][{key1}]: {dict2[id1][key1]})"
@@ -639,12 +647,12 @@ if __name__ == "__main__":
     ]
     velocity_modulation_examples = ["c621e134-50ec-4e8b-8175-a8c023d92789"]
 
-    reinforcement_session_metadata, reinforcement_subject_metadata = extract_reinforcement_metadata(
-        data_path,
-    )
-    photometry_session_metadata, photometry_subject_metadata = extract_photometry_metadata(
-        data_path,
-    )
+    # reinforcement_session_metadata, reinforcement_subject_metadata = extract_reinforcement_metadata(
+    #     data_path,
+    # )
+    # photometry_session_metadata, photometry_subject_metadata = extract_photometry_metadata(
+    #     data_path,
+    # )
     (
         reinforcement_photometry_session_metadata,
         reinforcement_photometry_subject_metadata,
@@ -653,18 +661,17 @@ if __name__ == "__main__":
         data_path,
     )
     keypoint_session_metadata, keypoint_subject_metadata = extract_keypoint_metadata()
-
     path2metadata = {
-        photometry_session_metadata_path: photometry_session_metadata,
-        photometry_subject_metadata_path: photometry_subject_metadata,
-        reinforcement_session_metadata_path: reinforcement_session_metadata,
-        reinforcement_subject_metadata_path: reinforcement_subject_metadata,
+        # photometry_session_metadata_path: photometry_session_metadata,
+        # photometry_subject_metadata_path: photometry_subject_metadata,
+        # reinforcement_session_metadata_path: reinforcement_session_metadata,
+        # reinforcement_subject_metadata_path: reinforcement_subject_metadata,
         reinforcement_photometry_session_metadata_path: reinforcement_photometry_session_metadata,
         reinforcement_photometry_subject_metadata_path: reinforcement_photometry_subject_metadata,
-        velocity_session_metadata_path: velocity_session_metadata,
-        velocity_subject_metadata_path: velocity_subject_metadata,
-        keypoint_session_metadata_path: keypoint_session_metadata,
-        keypoint_subject_metadata_path: keypoint_subject_metadata,
+        # velocity_session_metadata_path: velocity_session_metadata,
+        # velocity_subject_metadata_path: velocity_subject_metadata,
+        # keypoint_session_metadata_path: keypoint_session_metadata,
+        # keypoint_subject_metadata_path: keypoint_subject_metadata,
     }
     for path, resolved_dict in path2metadata.items():
         with open(path, "w") as f:

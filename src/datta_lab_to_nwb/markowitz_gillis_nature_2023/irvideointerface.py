@@ -1,4 +1,5 @@
 """Primary class for converting raw ir video data."""
+
 from pynwb import NWBFile
 from .basevideointerface import BaseVideoInterface
 

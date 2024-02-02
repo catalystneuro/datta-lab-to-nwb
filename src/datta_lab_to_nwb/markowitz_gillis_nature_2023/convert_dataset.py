@@ -1,4 +1,5 @@
-import traceback
+"""Convert the entire dataset."""
+
 import json
 from pathlib import Path
 from typing import Union
@@ -71,7 +72,7 @@ def get_all_processed_uuids(
     all_processed_uuids = unique_photometry_uuids | unique_reinforcement_uuids | unique_velocity_uuids
 
     with open(file=uuid_file_path, mode="w") as io:
-        json.dump(obj=list(all_processed_uuids), fp=io)
+        json.dump(obj=list(all_processed_uuids), fp=io, indent=4)
     return all_processed_uuids
 
 
@@ -80,13 +81,14 @@ def dataset_to_nwb(
     processed_path: Union[str, Path],
     raw_dir_path: Union[str, Path],
     output_dir_path: Union[str, Path],
-    skip_sessions: set,
-    number_of_jobs: int,
+    skip_sessions: Union[set, None] = None,
+    number_of_jobs: int = 1,
     num_sessions_per_experiment: int = None,
 ):
     processed_path = Path(processed_path)
     raw_dir_path = Path(raw_dir_path)
     output_dir_path = Path(output_dir_path)
+    skip_sessions = skip_sessions or set()
 
     log_folder_path = output_dir_path.parent / "logs"
     log_folder_path.mkdir(exist_ok=True)
@@ -101,7 +103,9 @@ def dataset_to_nwb(
         for folder in raw_dir_path.iterdir()
         if folder.is_dir() and folder.name not in skip_experiments and folder.name.startswith("_")
     ]
-    for experimental_folder in tqdm(iterable=experimental_folders, position=0, description="Converting experiments..."):
+    for experimental_folder in tqdm(
+        iterable=experimental_folders, position=0, desc="Converting experiments...", leave=False
+    ):
         experiment_type = folder_name_to_experiment_type[experimental_folder.name]
         session_folders = [
             folder for folder in experimental_folder.iterdir() if folder.is_dir() and folder.name not in skip_sessions
@@ -143,52 +147,30 @@ def dataset_to_nwb(
                     break
 
             parallel_iterable = tqdm(
-                iterable=as_completed(futures), position=1, description="Converting sessionsin parallel..."
+                iterable=as_completed(futures),
+                total=len(futures),
+                position=1,
+                desc="Converting sessions in parallel...",
+                leave=False,
             )
             for _ in parallel_iterable:
                 pass
 
 
 if __name__ == "__main__":
-    number_of_jobs = 4
+    number_of_jobs = 1
 
     processed_path = Path("E:/Datta/dopamine-reinforces-spontaneous-behavior")
     raw_dir_path = Path("E:/Datta")
-    output_dir_path = Path("E:/datta_output/files")
+    output_dir_path = Path("F:/Datta/nwbfiles")
 
     skip_experiments = {
         "keypoint",  # no proc folder for keypoints
-    }
-    temporary_skip_sessions = {
-        "session_20210420113646-974717",  # _aggregate_results_arhmm_photometry_excitation_pulsed_01: missing everything except depth video
-        "session_20210309134748-687283",  # _aggregate_results_arhmm_excitation_03: missing everything except depth video
-        "session_20210224083612-947426",  # _aggregate_results_arhmm_excitation_03: missing proc folder
-        "session_20210224094428-535503",  # _aggregate_results_arhmm_excitation_03: missing proc folder
-        "session_20210309120607-939403",  # _aggregate_results_arhmm_excitation_03: proc folder empty
-        "session_20201109130417-162983",  # _aggregate_results_arhmm_excitation_01: proc folder empty
-        "session_20220308114215-760303",  # _aggregate_results_arhmm_scalar_03: missing proc folder
-        "session_20211217102637-612299",  # _aggregate_results_arhmm_photometry_06: missing everything except ir video
-        "session_20211202155132-245700",  # _aggregate_results_arhmm_photometry_06: missing everything except ir video
-        "session_20210128093041-475933",  # _aggregate_results_arhmm_photometry_02: missing everything except ir video
-        "session_20210215185110-281693",  # _aggregate_results_arhmm_photometry_02: missing everything except ir video
-        "session_20210208173229-833584",  # _aggregate_results_arhmm_photometry_02: missing everything except ir video
-        "session_20210201115439-569392",  # _aggregate_results_arhmm_photometry_02: missing everything except ir video
-        "session_20200729112540-313279",  # _aggregate_results_arhmm_07: missing everything except depth video
-        "session_20200810085750-497237",  # _aggregate_results_arhmm_07: missing everything except depth video
-        "session_20200730090228-985303",  # _aggregate_results_arhmm_07: missing everything except depth video
-        "session_20201207093653-476370",  # _aggregate_results_arhmm_excitation_02: missing everything except depth video
-        "session_20210426143230-310843",  # _aggregate_results_arhmm_09: missing everything except depth video
-        "session_20210429135801-758690",  # _aggregate_results_arhmm_09: missing everything except depth video
-        "session_20191111130454-333065",  # _aggregate_results_arhmm_05: missing proc folder
-        "session_20191111130847-263894",  # _aggregate_results_arhmm_05: missing proc folder
-        "session_20200720110309-817092",
-        "session_20210115130943-880998",
     }
     dataset_to_nwb(
         processed_path=processed_path,
         raw_dir_path=raw_dir_path,
         output_dir_path=output_dir_path,
-        skip_sessions=temporary_skip_sessions,
         number_of_jobs=number_of_jobs,
-        num_sessions_per_experiment=1,
+        # num_sessions_per_experiment=1,
     )

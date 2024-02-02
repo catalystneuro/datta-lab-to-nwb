@@ -1,4 +1,5 @@
 """Primary class for converting in-vitro photometry data."""
+
 from typing import Literal, Optional
 import numpy as np
 from pynwb import NWBFile

@@ -1,4 +1,5 @@
 """Primary class for converting raw depth video data."""
+
 from pynwb import NWBFile
 from .basevideointerface import BaseVideoInterface
 

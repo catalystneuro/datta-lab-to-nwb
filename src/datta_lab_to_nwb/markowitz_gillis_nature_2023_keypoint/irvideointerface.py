@@ -1,4 +1,5 @@
 """Base class for converting raw video data."""
+
 from pynwb import NWBFile
 import numpy as np
 from pathlib import Path

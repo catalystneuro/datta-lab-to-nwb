@@ -1,4 +1,5 @@
 """Primary class for converting experiment-specific behavior."""
+
 import numpy as np
 import pandas as pd
 from pynwb import NWBFile

@@ -1,27 +1,30 @@
 """Primary class for converting fiber photometry data (dLight fluorescence)."""
-# Standard Scientific Python
+
+from typing import Union
+
 import pandas as pd
 import numpy as np
 
-# NWB Ecosystem
 from pynwb.file import NWBFile
 from pynwb.ophys import RoiResponseSeries
-from .rawfiberphotometryinterface import RawFiberPhotometryInterface
 from neuroconv.tools import nwb_helpers
+from neuroconv.utils import FilePathType
 from hdmf.backends.hdf5.h5_utils import H5DataIO
+
+from .rawfiberphotometryinterface import RawFiberPhotometryInterface
 
 
 class FiberPhotometryInterface(RawFiberPhotometryInterface):
     def __init__(
         self,
         file_path: str,
-        tdt_path: str,
-        tdt_metadata_path: str,
         depth_timestamp_path: str,
         session_uuid: str,
         session_id: str,
         session_metadata_path: str,
         subject_metadata_path: str,
+        tdt_path: Union[FilePathType, None] = None,
+        tdt_metadata_path: Union[FilePathType, None] = None,
         alignment_path: str = None,
     ):
         # This should load the data lazily and prepare variables you need
@@ -72,6 +75,10 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
             filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
         notnan = pd.notnull(session_df.signal_dff)
+
+        if not any(notnan):
+            return
+
         signal_series = RoiResponseSeries(
             name="SignalDfOverF",
             description="The ΔF/F from the blue light excitation (470nm) corresponding to the dopamine signal.",

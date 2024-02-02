@@ -1,4 +1,5 @@
 """Primary NWBConverter class for this dataset."""
+
 from neuroconv import NWBConverter
 from .fiberphotometryinterface import FiberPhotometryInterface
 from .optogeneticinterface import OptogeneticInterface
