@@ -287,6 +287,7 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
         raw_photometry = RoiResponseSeries(
             name="RawPhotometry",
             description="The raw acquisition with mixed signal from both the blue light excitation (470nm) and UV excitation (405nm).",
+            comments=("Note: Raw photometry data is not temporally aligned for keypoint sessions."),
             data=H5DataIO(raw_photometry[ascending_timestamps_indices], compression=True),
             unit="F",
             timestamps=commanded_signal_series.timestamps,
