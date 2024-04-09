@@ -43,6 +43,7 @@ def session_to_nwb(
         file_path=str(processed_path),
         tdt_path=str(tdt_path),
         tdt_metadata_path=str(tdt_metadata_path),
+        depth_timestamp_path="",
         session_metadata_path=str(session_metadata_path),
         subject_metadata_path=str(subject_metadata_path),
         session_uuid=subject_id,

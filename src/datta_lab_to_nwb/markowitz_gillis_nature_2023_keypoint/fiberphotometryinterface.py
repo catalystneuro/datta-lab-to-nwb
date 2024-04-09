@@ -7,7 +7,7 @@ import joblib
 # NWB Ecosystem
 from pynwb.file import NWBFile
 from pynwb.ophys import RoiResponseSeries
-from ..markowitz_gillis_nature_2023.rawfiberphotometryinterface import RawFiberPhotometryInterface
+from ..markowitz_gillis_nature_2023.rawfiberphotometryinterface import RawFiberPhotometryInterface, load_tdt_data
 from neuroconv.tools import nwb_helpers
 from hdmf.backends.hdf5.h5_utils import H5DataIO
 
@@ -18,26 +18,47 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
         file_path: str,
         tdt_path: str,
         tdt_metadata_path: str,
+        depth_timestamp_path: str,
         session_uuid: str,
         session_id: str,
         session_metadata_path: str,
         subject_metadata_path: str,
+        alignment_path: str = None,
     ):
         super().__init__(
             file_path=file_path,
             tdt_path=tdt_path,
             tdt_metadata_path=tdt_metadata_path,
+            depth_timestamp_path=depth_timestamp_path,
             session_uuid=session_uuid,
             session_id=session_id,
             session_metadata_path=session_metadata_path,
             subject_metadata_path=subject_metadata_path,
+            alignment_path=alignment_path,
         )
 
+    def get_original_timestamps(self, metadata) -> np.ndarray:
+        processed_photometry = joblib.load(self.source_data["file_path"])
+        timestamps = np.arange(processed_photometry["dlight"].shape[0]) / metadata["Constants"]["VIDEO_SAMPLING_RATE"]
+        return timestamps
+
+    def align_processed_timestamps(
+        self, metadata: dict
+    ) -> np.ndarray:  # TODO: align timestamps if we get alignment_df.parquet
+        timestamps = self.get_original_timestamps(metadata=metadata)
+        self.set_aligned_timestamps(aligned_timestamps=timestamps)
+        return self.aligned_timestamps
+
+    def align_raw_timestamps(self, metadata: dict) -> np.ndarray:  # TODO: remove if we get alignment_df.parquet
+        photometry_dict = load_tdt_data(self.source_data["tdt_path"], fs=metadata["FiberPhotometry"]["raw_rate"])
+        timestamps = photometry_dict["tstep"]
+        self.set_aligned_timestamps(aligned_timestamps=timestamps)
+        return self.aligned_timestamps
+
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
-        SAMPLING_RATE = 30
         super().add_to_nwbfile(nwbfile, metadata)
         processed_photometry = joblib.load(self.source_data["file_path"])
-        timestamps = np.arange(processed_photometry["dlight"].shape[0]) / SAMPLING_RATE
+        timestamps = self.align_processed_timestamps(metadata)
         signal_series = RoiResponseSeries(
             name="SignalF",
             description=(

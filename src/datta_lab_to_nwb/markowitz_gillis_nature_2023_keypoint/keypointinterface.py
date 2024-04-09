@@ -21,6 +21,7 @@ class KeypointInterface(BaseDattaInterface):
         session_metadata_path: str,
         subject_metadata_path: str,
         summary_image_path: str,
+        alignment_path: str = None,
     ):
         super().__init__(
             file_path=file_path,
@@ -29,6 +30,7 @@ class KeypointInterface(BaseDattaInterface):
             session_id=session_id,
             session_metadata_path=session_metadata_path,
             subject_metadata_path=subject_metadata_path,
+            alignment_path=alignment_path,
         )
 
     def get_metadata_schema(self) -> dict:
@@ -41,6 +43,9 @@ class KeypointInterface(BaseDattaInterface):
         }
         return metadata_schema
 
+    def get_original_timestamps(self, metadata) -> np.ndarray:
+        raise NotImplementedError  # TODO: align timestamps if we get alignment_df.parquet
+
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         SAMPLING_RATE = metadata["Constants"]["VIDEO_SAMPLING_RATE"]
         keypoint_dict = joblib.load(self.source_data["file_path"])
@@ -48,7 +53,7 @@ class KeypointInterface(BaseDattaInterface):
         timestamps = H5DataIO(np.arange(raw_keypoints.shape[0]) / SAMPLING_RATE, compression=True)
 
         index_to_name = metadata["Keypoint"]["index_to_name"]
-        camera_names = ["bottom", "side1", "side2", "side3", "side4", "top"]
+        camera_names = ["bottom", "side1", "side2", "side3", "side4", "top"]  # as confirmed by email with authors
         keypoints = []
         for camera in camera_names:
             nwbfile.create_device(

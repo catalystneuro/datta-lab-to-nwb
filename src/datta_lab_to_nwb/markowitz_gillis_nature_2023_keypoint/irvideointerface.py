@@ -17,6 +17,7 @@ class IRVideoInterface(BaseDattaInterface):
         session_id: str,
         session_metadata_path: str,
         subject_metadata_path: str,
+        alignment_path: str = None,
     ):
         super().__init__(
             data_path=Path(data_path),
@@ -24,7 +25,11 @@ class IRVideoInterface(BaseDattaInterface):
             session_id=session_id,
             session_metadata_path=session_metadata_path,
             subject_metadata_path=subject_metadata_path,
+            alignment_path=alignment_path,
         )
+
+    def get_original_timestamps(self, metadata) -> np.ndarray:
+        raise NotImplementedError  # TODO: align timestamps if we get alignment_df.parquet
 
     def add_to_nwbfile(self, nwbfile: NWBFile, metadata: dict) -> None:
         SAMPLING_RATE = metadata["Constants"]["VIDEO_SAMPLING_RATE"]

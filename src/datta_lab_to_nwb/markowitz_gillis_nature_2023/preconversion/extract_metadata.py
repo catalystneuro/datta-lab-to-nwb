@@ -457,15 +457,22 @@ def extract_reinforcement_photometry_metadata(data_path: str, example_uuids: str
     return session_metadata, subject_metadata
 
 
-def extract_keypoint_metadata(data_path: str):
+def extract_keypoint_metadata():
     keypoint_subjects = ["dls-dlight-9", "dls-dlight-10", "dls-dlight-11", "dls-dlight-12", "dls-dlight-13"]
+    keypoint_start_times = [
+        "2022-07-14T11:24:31-05:00",
+        "2022-07-13T11:49:49-05:00",
+        "2022-07-13T12:21:37-05:00",
+        "2022-07-13T17:03:55-05:00",
+        "2022-07-13T16:28:19-05:00",
+    ]
     session_metadata, subject_metadata = {}, {}
-    for subject in keypoint_subjects:
+    for subject, session_start_time in zip(keypoint_subjects, keypoint_start_times):
         session_metadata[subject] = dict(
             keypoint=True,
             photometry=True,
             session_description="keypoint session",
-            session_start_time="1901-01-01T00:00:00-05:00",  # TODO: replace with real session start time
+            session_start_time=session_start_time,
             reference_max=np.NaN,
             signal_max=np.NaN,
             signal_reference_corr=np.NaN,
@@ -649,12 +656,11 @@ if __name__ == "__main__":
     (
         reinforcement_photometry_session_metadata,
         reinforcement_photometry_subject_metadata,
-    ) = extract_reinforcement_photometry_metadata(data_path)
-    # velocity_session_metadata, velocity_subject_metadata = extract_velocity_modulation_metadata(
-    #     data_path,
-    # )
-    # keypoint_session_metadata, keypoint_subject_metadata = extract_keypoint_metadata(data_path)
-
+    ) = extract_reinforcement_photometry_metadata(data_path, example_uuids=reinforcement_photometry_examples)
+    velocity_session_metadata, velocity_subject_metadata = extract_velocity_modulation_metadata(
+        data_path,
+    )
+    keypoint_session_metadata, keypoint_subject_metadata = extract_keypoint_metadata()
     path2metadata = {
         # photometry_session_metadata_path: photometry_session_metadata,
         # photometry_subject_metadata_path: photometry_subject_metadata,
