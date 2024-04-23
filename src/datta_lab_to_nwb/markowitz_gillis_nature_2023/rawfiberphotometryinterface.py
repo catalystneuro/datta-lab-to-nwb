@@ -175,10 +175,20 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
             coordinates=(0.260, 2.550, -2.40),  # (AP, ML, DV)
         )
 
+        keypoint_sessions = [
+            "keypoint-dls-dlight-9",
+            "keypoint-dls-dlight-10",
+            "keypoint-dls-dlight-11",
+            "keypoint-dls-dlight-12",
+            "keypoint-dls-dlight-13",
+        ]
         skip = (
             self.source_data["tdt_path"] is None
             or not Path(self.source_data["tdt_path"]).exists()
-            or not (Path(self.source_data["tdt_path"]).parent / "alignment_df.parquet").exists()
+            or (
+                not (Path(self.source_data["tdt_path"]).parent / "alignment_df.parquet").exists()
+                and self.source_data["session_id"] not in keypoint_sessions
+            )
         )
         if skip:
             excitation_sources_table.add_row(peak_wavelength=470.0, source_type="LED")
