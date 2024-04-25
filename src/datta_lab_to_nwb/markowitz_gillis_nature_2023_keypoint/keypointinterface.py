@@ -50,7 +50,6 @@ class KeypointInterface(BaseDattaInterface):
         SAMPLING_RATE = metadata["Constants"]["VIDEO_SAMPLING_RATE"]
         keypoint_dict = joblib.load(self.source_data["file_path"])
         raw_keypoints = keypoint_dict["positions_median"]
-        timestamps = H5DataIO(np.arange(raw_keypoints.shape[0]) / SAMPLING_RATE, compression=True)
 
         index_to_name = metadata["Keypoint"]["index_to_name"]
         camera_names = ["bottom", "side1", "side2", "side3", "side4", "top"]  # as confirmed by email with authors
@@ -64,7 +63,7 @@ class KeypointInterface(BaseDattaInterface):
                 name=keypoint_name,
                 description=f"Keypoint corresponding to {keypoint_name}",
                 data=H5DataIO(raw_keypoints[:, keypoint_index, :], compression=True),
-                timestamps=timestamps,
+                rate=SAMPLING_RATE,
                 unit="mm",
                 reference_frame=metadata["Keypoint"]["reference_frame"],
             )
