@@ -26,6 +26,14 @@ class BaseDattaInterface(BaseTemporalAlignmentInterface):
         metadata["Subject"] = {}
         metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
         metadata["Subject"]["sex"] = subject_metadata["sex"]
+        # The paper's metadata file is merged after this, so the description must not be set there too.
+        description = "Mouse of either sex, between 6-15 weeks of age."
+        genotype, opsin = subject_metadata.get("genotype"), subject_metadata.get("opsin")
+        if genotype is not None:
+            metadata["Subject"]["genotype"] = genotype
+            opsin_text = f", opsin '{opsin}'" if opsin not in (None, "n/a") else ""
+            description += f" Experimental group '{genotype}'{opsin_text}."
+        metadata["Subject"]["description"] = description
 
         if self.source_data["alignment_path"] is not None and Path(self.source_data["alignment_path"]).exists():
             alignment_df = pd.read_parquet(self.source_data["alignment_path"])

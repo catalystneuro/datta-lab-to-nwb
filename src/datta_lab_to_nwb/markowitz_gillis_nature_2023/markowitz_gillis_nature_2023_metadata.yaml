@@ -29,7 +29,6 @@ NWBFile:
 Subject:
   species: Mus musculus
   age: P6W/P15W
-  description: This study utilized wild-type DAT-IRES-Cre (The Jackson Laboratory 006660) and Ai32 (The Jackson Laboratory 012569) mice, both male and female, between 6-15 weeks of age.
 Constants:
   VIDEO_SAMPLING_RATE: 30.0
   DEMODULATED_PHOTOMETRY_SAMPLING_RATE: 500.0
