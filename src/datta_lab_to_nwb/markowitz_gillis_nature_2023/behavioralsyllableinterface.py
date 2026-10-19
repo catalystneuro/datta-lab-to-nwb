@@ -95,6 +95,11 @@ class BehavioralSyllableInterface(BaseDattaInterface):
             filters=filters,
         )
         timestamps = self.align_timestamps(metadata=metadata, reinforcement=reinforcement)
+        # The source parquet does not store a session's rows in time order (in most closed-loop sessions they are
+        # rotated by one step), so sort the rows and their timestamps together.
+        order = np.argsort(timestamps, kind="stable")
+        timestamps = timestamps[order]
+        session_df = session_df.iloc[order].reset_index(drop=True)
         # Add Syllable Data
         sorted_pseudoindex2name = metadata["BehavioralSyllable"]["sorted_pseudoindex2name"]
         id2sorted_index = metadata["BehavioralSyllable"]["id2sorted_index"]
