@@ -18,7 +18,6 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
     def __init__(
         self,
         file_path: str,
-        depth_timestamp_path: str,
         session_uuid: str,
         session_id: str,
         session_metadata_path: str,
@@ -26,10 +25,12 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
         tdt_path: Union[FilePathType, None] = None,
         tdt_metadata_path: Union[FilePathType, None] = None,
         alignment_path: str = None,
+        depth_timestamp_path: str = None,
     ):
         # This should load the data lazily and prepare variables you need
         columns = (
             "uuid",
+            "timestamp",
             "signal_dff",
             "reference_dff",
             "uv_reference_fit",
@@ -54,7 +55,7 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
             columns=["timestamp", "uuid"],
             filters=[("uuid", "==", self.source_data["session_uuid"])],
         )
-        return session_df["timestamp"].to_numpy()
+        return np.sort(session_df["timestamp"].to_numpy(), kind="stable")
 
     def align_processed_timestamps(self, metadata: dict) -> np.ndarray:
         timestamps = self.get_original_timestamps()
@@ -73,7 +74,7 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
             self.source_data["file_path"],
             columns=self.source_data["columns"],
             filters=[("uuid", "==", self.source_data["session_uuid"])],
-        )
+        ).sort_values("timestamp", kind="stable", ignore_index=True)
         notnan = pd.notnull(session_df.signal_dff)
 
         if not any(notnan):

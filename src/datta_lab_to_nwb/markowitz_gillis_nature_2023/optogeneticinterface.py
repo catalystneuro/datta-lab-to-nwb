@@ -9,7 +9,7 @@ from pynwb.file import NWBFile
 from pynwb.core import DynamicTableRegion
 from pynwb.ophys import RoiResponseSeries
 from pynwb.ogen import OptogeneticSeries
-from .basedattainterface import BaseDattaInterface
+from .basedattainterface import BaseDattaInterface, GROUP_CODE_TO_SUBJECT
 from neuroconv.utils import load_dict_from_file
 from neuroconv.tools import nwb_helpers
 from hdmf.backends.hdf5.h5_utils import H5DataIO
@@ -58,6 +58,7 @@ class OptogeneticInterface(BaseDattaInterface):
         metadata["Optogenetics"]["power_watts"] = session_metadata["power_watts"]
         metadata["Optogenetics"]["area"] = subject_metadata["optogenetic_area"]
         metadata["Optogenetics"]["target_syllable"] = session_metadata["target_syllable"]
+        metadata["Optogenetics"]["opsin"] = GROUP_CODE_TO_SUBJECT[subject_metadata["genotype"]]["opsin"]
         if "velocity_modulation" in session_metadata.keys():
             if session_metadata["trigger_syllable_scalar_comparison"] == "lt":
                 metadata["NWBFile"]["stimulus_notes"] = "Stim Down: Stimulate when target velocity <25th percentile"
@@ -77,6 +78,7 @@ class OptogeneticInterface(BaseDattaInterface):
                 "power_watts": {"type": "number"},
                 "pulse_width_s": {"type": "number"},
                 "target_syllable": {"type": "array"},
+                "opsin": {"type": ["string", "null"]},
             },
         }
         return metadata_schema
@@ -90,7 +92,7 @@ class OptogeneticInterface(BaseDattaInterface):
                 ("target_syllable", "==", metadata["Optogenetics"]["target_syllable"][0]),
             ],
         )
-        return session_df["timestamp"].to_numpy()
+        return np.sort(session_df["timestamp"].to_numpy(), kind="stable")
 
     def align_timestamps(self, metadata: dict, velocity_modulation: bool) -> np.ndarray:
         timestamps = self.get_original_timestamps(metadata=metadata)
@@ -114,7 +116,7 @@ class OptogeneticInterface(BaseDattaInterface):
                 ("uuid", "==", self.source_data["session_uuid"]),
                 ("target_syllable", "==", metadata["Optogenetics"]["target_syllable"][0]),
             ],
-        )
+        ).sort_values("timestamp", kind="stable", ignore_index=True)
 
         # Reconstruct optogenetic series from feedback status
         if pd.isnull(metadata["Optogenetics"]["stim_frequency_Hz"]):  # cts stim
@@ -122,16 +124,26 @@ class OptogeneticInterface(BaseDattaInterface):
         else:  # pulsed stim
             data, timestamps = self.reconstruct_pulsed_stim(metadata, session_df, session_timestamps)
 
-        device = nwbfile.create_device(
-            name="OptoEngineMRL",
-            description="Optogenetic stimulator (Opto Engine MRL-III-635; SKU: RD-635-00500-CWM-SD-03-LED-0)",
-            manufacturer="Opto Engine LLC",
-        )
+        # ChrimsonR mice were stimulated with the 635 nm laser; the ChR2 (Ai32) and control mice with 470 nm
+        # blue light, whose source the paper does not name.
+        if metadata["Optogenetics"]["opsin"] == "ChrimsonR":
+            device = nwbfile.create_device(
+                name="OptoEngineMRL",
+                description="Optogenetic stimulator (Opto Engine MRL-III-635; SKU: RD-635-00500-CWM-SD-03-LED-0)",
+                manufacturer="Opto Engine LLC",
+            )
+            excitation_lambda = 635.0
+        else:
+            device = nwbfile.create_device(
+                name="BlueLightSource",
+                description="Optogenetic stimulator delivering 470 nm blue light (model not stated in the paper)",
+            )
+            excitation_lambda = 470.0
         ogen_site = nwbfile.create_ogen_site(
             name="OptogeneticStimulusSite",
             device=device,
             description="Optogenetic stimulus site",
-            excitation_lambda=635.0,
+            excitation_lambda=excitation_lambda,
             location=metadata["Optogenetics"]["area"],
         )
         id2sorted_index = metadata["BehavioralSyllable"]["id2sorted_index"]

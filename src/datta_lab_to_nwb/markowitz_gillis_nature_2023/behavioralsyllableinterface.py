@@ -25,6 +25,7 @@ class BehavioralSyllableInterface(BaseDattaInterface):
         # This should load the data lazily and prepare variables you need
         columns = (
             "uuid",
+            "timestamp",
             "predicted_syllable (offline)",
             "predicted_syllable",
         )
@@ -63,7 +64,7 @@ class BehavioralSyllableInterface(BaseDattaInterface):
             columns=["timestamp", "uuid"],
             filters=filters,
         )
-        return session_df["timestamp"].to_numpy()
+        return np.sort(session_df["timestamp"].to_numpy(), kind="stable")
 
     def align_timestamps(self, metadata: dict, reinforcement: bool = False) -> np.ndarray:
         timestamps = self.get_original_timestamps(metadata=metadata, reinforcement=reinforcement)
@@ -79,7 +80,7 @@ class BehavioralSyllableInterface(BaseDattaInterface):
         self, nwbfile: NWBFile, metadata: dict, velocity_modulation: bool = False, reinforcement: bool = False
     ) -> None:
         if velocity_modulation:
-            columns = ["uuid", "predicted_syllable"]
+            columns = ["uuid", "timestamp", "predicted_syllable"]
         else:
             columns = self.source_data["columns"]
         if reinforcement:
@@ -93,7 +94,7 @@ class BehavioralSyllableInterface(BaseDattaInterface):
             self.source_data["file_path"],
             columns=columns,
             filters=filters,
-        )
+        ).sort_values("timestamp", kind="stable", ignore_index=True)
         timestamps = self.align_timestamps(metadata=metadata, reinforcement=reinforcement)
         # Add Syllable Data
         sorted_pseudoindex2name = metadata["BehavioralSyllable"]["sorted_pseudoindex2name"]

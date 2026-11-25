@@ -30,7 +30,6 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
 
     def __init__(
         self,
-        depth_timestamp_path: str,
         session_uuid: str,
         session_id: str,
         session_metadata_path: str,
@@ -38,6 +37,7 @@ class RawFiberPhotometryInterface(BaseDattaInterface):
         tdt_path: Union[FilePathType, None] = None,
         tdt_metadata_path: Union[FilePathType, None] = None,
         alignment_path: str = None,
+        depth_timestamp_path: str = None,
         **kwargs,
     ):
         super().__init__(
