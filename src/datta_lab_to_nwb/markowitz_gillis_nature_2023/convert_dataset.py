@@ -29,7 +29,7 @@ folder_name_to_experiment_type = {
     "_aggregate_results_arhmm_excitation_03": "reinforcement",
     "_aggregate_results_arhmm_photometry_excitation_02": "reinforcement-photometry",
     "_aggregate_results_arhmm_excitation_pulsed_01": "reinforcement",
-    "_aggregate_results_arhmm_photometry_excitation_pulsed_01": "reinforcement-photometry",
+    "_aggregate_results_arhmm_photometry_excitation_pulsed_01": "reinforcement",
     "_aggregate_results_arhmm_photometry_06": "photometry",
     "_aggregate_results_arhmm_photometry_07": "photometry",
     "_aggregate_results_arhmm_photometry_08": "photometry",
@@ -103,6 +103,7 @@ def dataset_to_nwb(
         for folder in raw_dir_path.iterdir()
         if folder.is_dir() and folder.name not in skip_experiments and folder.name.startswith("_")
     ]
+    raw_folder_uuids = set()
     for experimental_folder in tqdm(
         iterable=experimental_folders, position=0, desc="Converting experiments...", leave=False
     ):
@@ -129,6 +130,7 @@ def dataset_to_nwb(
                 session_uuid = results["uuid"]
                 if session_uuid not in all_processed_uuids:
                     continue
+                raw_folder_uuids.add(session_uuid)
 
                 futures.append(
                     executor.submit(
@@ -151,6 +153,38 @@ def dataset_to_nwb(
                 total=len(futures),
                 position=1,
                 desc="Converting sessions in parallel...",
+                leave=False,
+            )
+            for _ in parallel_iterable:
+                pass
+
+    # Sessions in the processed data without a raw folder are converted from the processed data alone.
+    for experiment_type in ("reinforcement", "reinforcement-photometry", "photometry", "velocity-modulation"):
+        session_metadata = load_dict_from_file(processed_path / "metadata" / f"{experiment_type}-session-metadata.yaml")
+        session_uuids = [
+            session_uuid
+            for session_uuid in session_metadata
+            if session_uuid in all_processed_uuids and session_uuid not in raw_folder_uuids
+        ]
+        with ProcessPoolExecutor(max_workers=number_of_jobs) as executor:
+            futures = [
+                executor.submit(
+                    _safe_session_to_nwb,
+                    session_uuid=session_uuid,
+                    experiment_type=experiment_type,
+                    processed_path=processed_path,
+                    raw_path=None,
+                    output_dir_path=output_dir_path,
+                    log_file_path=log_folder_path / f"processed_only_{experiment_type}_{session_uuid}.txt",
+                    processed_only=True,
+                )
+                for session_uuid in session_uuids
+            ]
+            parallel_iterable = tqdm(
+                iterable=as_completed(futures),
+                total=len(futures),
+                position=1,
+                desc=f"Converting {experiment_type} sessions without a raw folder...",
                 leave=False,
             )
             for _ in parallel_iterable:

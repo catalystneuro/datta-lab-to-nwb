@@ -18,7 +18,6 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
     def __init__(
         self,
         file_path: str,
-        depth_timestamp_path: str,
         session_uuid: str,
         session_id: str,
         session_metadata_path: str,
@@ -26,6 +25,7 @@ class FiberPhotometryInterface(RawFiberPhotometryInterface):
         tdt_path: Union[FilePathType, None] = None,
         tdt_metadata_path: Union[FilePathType, None] = None,
         alignment_path: str = None,
+        depth_timestamp_path: str = None,
     ):
         # This should load the data lazily and prepare variables you need
         columns = (
