@@ -9,7 +9,7 @@ from pynwb.file import NWBFile
 from pynwb.core import DynamicTableRegion
 from pynwb.ophys import RoiResponseSeries
 from pynwb.ogen import OptogeneticSeries
-from .basedattainterface import BaseDattaInterface
+from .basedattainterface import BaseDattaInterface, GROUP_CODE_TO_SUBJECT
 from neuroconv.utils import load_dict_from_file
 from neuroconv.tools import nwb_helpers
 from hdmf.backends.hdf5.h5_utils import H5DataIO
@@ -58,7 +58,7 @@ class OptogeneticInterface(BaseDattaInterface):
         metadata["Optogenetics"]["power_watts"] = session_metadata["power_watts"]
         metadata["Optogenetics"]["area"] = subject_metadata["optogenetic_area"]
         metadata["Optogenetics"]["target_syllable"] = session_metadata["target_syllable"]
-        metadata["Optogenetics"]["opsin"] = subject_metadata.get("opsin")
+        metadata["Optogenetics"]["opsin"] = GROUP_CODE_TO_SUBJECT[subject_metadata["genotype"]]["opsin"]
         if "velocity_modulation" in session_metadata.keys():
             if session_metadata["trigger_syllable_scalar_comparison"] == "lt":
                 metadata["NWBFile"]["stimulus_notes"] = "Stim Down: Stimulate when target velocity <25th percentile"
@@ -126,7 +126,7 @@ class OptogeneticInterface(BaseDattaInterface):
 
         # ChrimsonR mice were stimulated with the 635 nm laser; the ChR2 (Ai32) and control mice with 470 nm
         # blue light, whose source the paper does not name.
-        if metadata["Optogenetics"].get("opsin") == "chrimson":
+        if metadata["Optogenetics"]["opsin"] == "ChrimsonR":
             device = nwbfile.create_device(
                 name="OptoEngineMRL",
                 description="Optogenetic stimulator (Opto Engine MRL-III-635; SKU: RD-635-00500-CWM-SD-03-LED-0)",

@@ -7,6 +7,82 @@ import numpy as np
 from neuroconv.basetemporalalignmentinterface import BaseTemporalAlignmentInterface
 from neuroconv.utils import load_dict_from_file
 
+DAT_IRES_CRE = "DAT-IRES-Cre (Slc6a3-IRES-Cre, The Jackson Laboratory 006660)"
+DAT_IRES_CRE_AI32 = f"{DAT_IRES_CRE}::Ai32 (Rosa26-CAG-LSL-ChR2(H134R)-EYFP, The Jackson Laboratory 012569)"
+WILD_TYPE = "wild type (C57BL/6J, The Jackson Laboratory 000664)"
+
+# Lab group code (the `genotype` field of the subject metadata) -> genotype, opsin and description, per the Methods.
+GROUP_CODE_TO_SUBJECT = {
+    "snc-dls-ai32": dict(
+        genotype=DAT_IRES_CRE_AI32,
+        opsin="ChR2",
+        description=(
+            "Opto-DA mouse: DAT-IRES-Cre::Ai32, expressing ChR2 in dopamine neurons, with optical fibers over the "
+            "dorsolateral striatum (DLS) for stimulating the axons of substantia nigra pars compacta (SNc) dopamine "
+            "neurons."
+        ),
+    ),
+    "snc-dls-ai32-jrcamp1a": dict(
+        genotype=DAT_IRES_CRE_AI32,
+        opsin="ChR2",
+        description=(
+            "Opto-DA mouse: DAT-IRES-Cre::Ai32, expressing ChR2 in dopamine neurons, with optical fibers over the "
+            "dorsolateral striatum (DLS) for stimulating the axons of substantia nigra pars compacta (SNc) dopamine "
+            "neurons. The lab group code also names jRCaMP1a."
+        ),
+    ),
+    "snc-dls-ctrl": dict(
+        genotype=DAT_IRES_CRE,
+        opsin=None,
+        description="No-opsin control mouse: DAT-IRES-Cre, with optical fibers over the dorsolateral striatum (DLS).",
+    ),
+    "vta-nacc-ctrl": dict(
+        genotype=DAT_IRES_CRE,
+        opsin=None,
+        description="No-opsin control mouse: DAT-IRES-Cre, with optical fibers over the nucleus accumbens.",
+    ),
+    # Not described in the Methods; inferred from the lab group code, to be confirmed with the lab.
+    "snc-eyfp": dict(
+        genotype=f"{DAT_IRES_CRE} (inferred, not confirmed)",
+        opsin=None,
+        description=(
+            "No-opsin control mouse. Presumed DAT-IRES-Cre with an eYFP control virus in the substantia nigra pars "
+            "compacta (SNc); the paper does not describe this group, so the genotype and virus are inferred from the "
+            "lab group code and not confirmed."
+        ),
+    ),
+    "ctrl": dict(
+        genotype=DAT_IRES_CRE,
+        opsin=None,
+        description="No-opsin control mouse: DAT-IRES-Cre.",
+    ),
+    "dls-dlight": dict(
+        genotype=WILD_TYPE,
+        opsin=None,
+        description=(
+            "C57BL/6J mouse with the dopamine sensor dLight1.1 (AAV) injected in the dorsolateral striatum (DLS) and "
+            "an optical fiber over the injection site for photometry."
+        ),
+    ),
+    "dms-dlight": dict(
+        genotype=WILD_TYPE,
+        opsin=None,
+        description=(
+            "C57BL/6J mouse with the dopamine sensor dLight1.1 (AAV) injected in the dorsomedial striatum (DMS) and "
+            "an optical fiber over the injection site for photometry."
+        ),
+    ),
+    "dls-chrimson-dlight": dict(
+        genotype=DAT_IRES_CRE,
+        opsin="ChrimsonR",
+        description=(
+            "DAT-IRES-Cre mouse with Cre-dependent ChrimsonR (AAV) injected in the right substantia nigra pars "
+            "compacta (SNc) and dLight1.1 (AAV) injected in the right dorsolateral striatum (DLS), with an optical "
+            "fiber over the DLS for photometry and for stimulating the ChrimsonR-expressing dopamine axons."
+        ),
+    ),
+}
+
 
 class BaseDattaInterface(BaseTemporalAlignmentInterface):
     """Base interface for markowitz_gillis_nature_2023 conversion w/ non-specific metadata"""
@@ -26,14 +102,10 @@ class BaseDattaInterface(BaseTemporalAlignmentInterface):
         metadata["Subject"] = {}
         metadata["Subject"]["subject_id"] = session_metadata["subject_id"]
         metadata["Subject"]["sex"] = subject_metadata["sex"]
-        # The paper's metadata file is merged after this, so the description must not be set there too.
-        description = "Mouse of either sex, between 6-15 weeks of age."
-        genotype, opsin = subject_metadata.get("genotype"), subject_metadata.get("opsin")
-        if genotype is not None:
-            metadata["Subject"]["genotype"] = genotype
-            opsin_text = f", opsin '{opsin}'" if opsin not in (None, "n/a") else ""
-            description += f" Experimental group '{genotype}'{opsin_text}."
-        metadata["Subject"]["description"] = description
+        group_code = subject_metadata["genotype"]
+        subject = GROUP_CODE_TO_SUBJECT[group_code]
+        metadata["Subject"]["genotype"] = subject["genotype"]
+        metadata["Subject"]["description"] = f"{subject['description']} Lab group code: {group_code}."
 
         if self.source_data["alignment_path"] is not None and Path(self.source_data["alignment_path"]).exists():
             alignment_df = pd.read_parquet(self.source_data["alignment_path"])
