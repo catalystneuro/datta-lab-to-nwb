@@ -92,7 +92,7 @@ class OptogeneticInterface(BaseDattaInterface):
                 ("target_syllable", "==", metadata["Optogenetics"]["target_syllable"][0]),
             ],
         )
-        return session_df["timestamp"].to_numpy()
+        return np.sort(session_df["timestamp"].to_numpy(), kind="stable")
 
     def align_timestamps(self, metadata: dict, velocity_modulation: bool) -> np.ndarray:
         timestamps = self.get_original_timestamps(metadata=metadata)
@@ -116,7 +116,7 @@ class OptogeneticInterface(BaseDattaInterface):
                 ("uuid", "==", self.source_data["session_uuid"]),
                 ("target_syllable", "==", metadata["Optogenetics"]["target_syllable"][0]),
             ],
-        )
+        ).sort_values("timestamp", kind="stable", ignore_index=True)
 
         # Reconstruct optogenetic series from feedback status
         if pd.isnull(metadata["Optogenetics"]["stim_frequency_Hz"]):  # cts stim
